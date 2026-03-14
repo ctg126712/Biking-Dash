@@ -141,6 +141,9 @@
             <button id="saveRouteBtn" class="hidden flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
                 Save Route
             </button>
+            <button id="resetBtn" class="hidden flex-1 bg-red-900/80 hover:bg-red-800 text-red-100 border border-red-700 font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
+                Discard
+            </button>
             <button id="openRoutesBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
                 Compare Past Route
             </button>
@@ -249,6 +252,7 @@
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
         const saveRouteBtn = document.getElementById('saveRouteBtn');
+        const resetBtn = document.getElementById('resetBtn');
         const openRoutesBtn = document.getElementById('openRoutesBtn');
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
@@ -332,23 +336,33 @@
 
             requestWakeLock();
 
-            raceGoalMiles = parseFloat(goalInput.value) || 0;
+            // Only clear data if starting a fresh ride (not resuming)
+            if (startBtn.innerText === "Start Ride") {
+                raceGoalMiles = parseFloat(goalInput.value) || 0;
+                totalDistanceMiles = 0;
+                lastPosition = null;
+                currentRouteCoords = [];
+                currentRoutePolyline.setLatLngs([]);
+                updateOdometer(0);
+                isFirstFix = true;
+                startTime = Date.now();
+                topSpeedMph = 0;
+                isRaceFinished = false;
+                
+                if (currentMarker) {
+                    map.removeLayer(currentMarker);
+                    currentMarker = null;
+                }
+            }
+
             goalInput.disabled = true;
             goalInput.classList.add('opacity-50', 'cursor-not-allowed');
 
-            totalDistanceMiles = 0;
-            lastPosition = null;
-            currentRouteCoords = [];
-            currentRoutePolyline.setLatLngs([]);
             speedEl.innerText = "00";
-            updateOdometer(0);
             speedGauge.style.strokeDashoffset = 75;
-            isFirstFix = true;
             saveRouteBtn.classList.add('hidden');
-            
-            startTime = Date.now();
-            topSpeedMph = 0;
-            isRaceFinished = false;
+            resetBtn.classList.add('hidden');
+            openRoutesBtn.classList.add('hidden');
 
             updateStatus("Locating GPS...", "bg-yellow-500", true);
             
@@ -386,7 +400,41 @@
 
             if (currentRouteCoords.length > 2) {
                 saveRouteBtn.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+                openRoutesBtn.classList.add('hidden');
+            } else {
+                openRoutesBtn.classList.remove('hidden');
             }
+        }
+
+        function resetRide() {
+            totalDistanceMiles = 0;
+            lastPosition = null;
+            currentRouteCoords = [];
+            currentRoutePolyline.setLatLngs([]);
+            speedEl.innerText = "00";
+            updateOdometer(0);
+            speedGauge.style.strokeDashoffset = 75;
+            isFirstFix = true;
+            
+            startTime = null;
+            topSpeedMph = 0;
+            isRaceFinished = false;
+
+            updateStatus("Ready to ride", "bg-yellow-500");
+            
+            startBtn.innerText = "Start Ride";
+            
+            saveRouteBtn.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+            openRoutesBtn.classList.remove('hidden');
+            
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                currentMarker = null;
+            }
+            headingText.innerText = "--";
+            compassRose.style.transform = `rotate(0deg)`;
         }
 
         function updatePosition(position) {
@@ -545,7 +593,9 @@
                 
                 saveModal.classList.add('hidden');
                 showAlert("Route saved successfully to device!");
-                saveRouteBtn.classList.add('hidden'); 
+                
+                // Clear the map and prep for a new ride after saving
+                resetRide(); 
             } catch (err) {
                 console.error("Save error", err);
                 // Usually means local storage quota is full (over ~5MB)
@@ -613,6 +663,7 @@
         // --- Attach Main Button Events ---
         startBtn.addEventListener('click', startTracking);
         stopBtn.addEventListener('click', stopTracking);
+        resetBtn.addEventListener('click', resetRide);
 
     </script>
 </body>
