@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bike Computer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: #0f172a; 
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        /* Map container takes full screen behind the UI */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        /* Custom Leaflet overrides for dark mode feel */
+        .leaflet-layer,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out,
+        .leaflet-control-attribution {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        .font-digital {
+            font-family: 'Share Tech Mono', monospace;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-full w-full no-select relative">
+
+    <!-- Leaflet Map Background -->
+    <div id="map"></div>
+
+    <!-- Header / Status (Floating over map) -->
+    <div class="absolute top-6 w-full px-4 z-[1000] flex justify-center pointer-events-none">
+        <!-- Status Indicator -->
+        <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-md text-slate-200 text-sm font-bold shadow-lg pointer-events-auto transition-colors">
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span>
+            <span id="statusText">Ready to ride</span>
+        </div>
+    </div>
+
+    <!-- Bottom Dashboard UI -->
+    <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-xl border-t border-slate-700 rounded-t-[2.5rem] p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-transform duration-300">
+        
+        <!-- 2x2 Stats Grid -->
+        <div class="grid grid-cols-2 gap-4 mb-6 w-full max-w-lg mx-auto">
+            
+            <!-- 1. Speed Gauge (Top Left) -->
+            <div class="relative w-full aspect-square max-w-[160px] mx-auto flex flex-col items-center justify-center bg-black rounded-full border-[8px] border-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.6)_inset]">
+                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                    <defs>
+                        <mask id="gaugeMask">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="20" stroke-dasharray="2 1.12" pathLength="100" />
+                        </mask>
+                    </defs>
+                    <!-- Dim background track -->
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#222" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
+                    <!-- Bright Fill -->
+                    <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 4px #fff);" />
+                </svg>
+                <div class="absolute flex flex-col items-center justify-center font-digital mt-3">
+                    <div id="speed" class="text-4xl md:text-5xl text-white tracking-tighter" style="text-shadow: 0 0 8px rgba(255,255,255,0.8);">00</div>
+                    <div class="text-[0.6rem] md:text-xs text-white tracking-widest mt-0.5 uppercase font-sans font-bold">MPH</div>
+                </div>
+            </div>
+
+            <!-- 2. Odometer (Top Right) -->
+            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full">
+                <div class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Miles</div>
+                <div class="flex space-x-[1px] md:space-x-[2px] font-digital text-2xl md:text-3xl items-baseline bg-slate-900 p-1 md:p-1.5 rounded-lg shadow-inner">
+                    <div id="odo1" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
+                    <div id="odo2" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
+                    <div id="odo3" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
+                    <div class="text-slate-500 font-black text-lg md:text-xl px-0.5">.</div>
+                    <div id="odo4" class="bg-slate-200 text-black px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-300">0</div>
+                    <div id="odo5" class="bg-slate-200 text-black px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-300">0</div>
+                </div>
+            </div>
+
+            <!-- 3. Compass (Bottom Left) -->
+            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full relative overflow-hidden">
+                <div class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider absolute top-2 md:top-3 z-10">Heading</div>
+                <div class="relative w-16 h-16 md:w-20 md:h-20 mt-4 md:mt-5">
+                    <div id="compassRose" class="absolute inset-0 transition-transform duration-500 ease-out flex items-center justify-center bg-slate-900 rounded-full border-2 border-slate-700 shadow-inner">
+                         <span class="absolute top-1 text-[0.55rem] font-bold text-emerald-500">N</span>
+                         <span class="absolute right-1 text-[0.55rem] font-bold text-slate-500">E</span>
+                         <span class="absolute bottom-1 text-[0.55rem] font-bold text-slate-500">S</span>
+                         <span class="absolute left-1 text-[0.55rem] font-bold text-slate-500">W</span>
+                         <div class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[14px] md:border-b-[18px] border-b-emerald-500 absolute top-3 md:top-4"></div>
+                    </div>
+                    <div class="absolute inset-0 m-auto w-2 h-2 md:w-3 md:h-3 bg-slate-800 rounded-full border border-slate-600 z-10"></div>
+                </div>
+                <div class="absolute bottom-1 md:bottom-2 text-[0.65rem] md:text-xs font-digital text-white"><span id="headingText">--</span>°</div>
+            </div>
+
+            <!-- 4. Goal Input (Bottom Right) -->
+            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full">
+                <label for="goalInput" class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-2 text-center">Race Goal</label>
+                <div class="flex items-center space-x-1 md:space-x-2 bg-slate-900 p-1 md:p-2 rounded-xl border border-slate-700 w-full justify-center">
+                    <input type="number" id="goalInput" class="w-12 md:w-16 bg-transparent text-white text-center focus:outline-none font-digital text-2xl md:text-3xl tabular-nums placeholder-slate-600" placeholder="0.0" min="0.1" step="0.1">
+                    <span class="text-slate-500 font-bold text-[0.6rem] md:text-xs uppercase pr-1 md:pr-2">Mi</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Primary Controls -->
+        <div class="flex space-x-3 mb-3">
+            <button id="startBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl">
+                Start Ride
+            </button>
+            <button id="stopBtn" disabled class="flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl transition-transform text-xl cursor-not-allowed border border-slate-700">
+                Stop
+            </button>
+        </div>
+
+        <!-- Secondary Controls -->
+        <div class="flex space-x-3">
+            <button id="saveRouteBtn" class="hidden flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
+                Save Route
+            </button>
+            <button id="openRoutesBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
+                Compare Past Route
+            </button>
+        </div>
+    </div>
+
+    <!-- Save Route Modal -->
+    <div id="saveModal" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-700 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Save Your Route</h3>
+            <p class="text-slate-400 text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-white font-bold"></span> miles</p>
+            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-slate-900 text-white border border-slate-600 rounded-lg p-3 mb-6 focus:outline-none focus:border-blue-500">
+            <div class="flex space-x-3">
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-slate-300 bg-slate-700">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-white bg-blue-600">Save Locally</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Routes Modal -->
+    <div id="loadModal" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-700 shadow-2xl flex flex-col max-h-[80vh]">
+            <h3 class="text-xl font-bold text-white mb-4">Saved Routes (On Device)</h3>
+            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
+                <p class="text-slate-400 text-sm text-center py-4">Loading routes...</p>
+            </div>
+            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-slate-300 bg-slate-700">Close</button>
+        </div>
+    </div>
+
+    <!-- Race Finish Modal -->
+    <div id="finishModal" class="hidden absolute inset-0 bg-slate-900/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
+        <div class="text-6xl mb-4">🏆</div>
+        <h2 class="text-4xl font-black text-white mb-2 tracking-tight uppercase">Goal Reached!</h2>
+        <p class="text-emerald-400 font-bold text-xl mb-8"><span id="finishDistance">0</span> Mile Race Complete</p>
+        
+        <div class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Time</span>
+                <span id="finishTime" class="text-white font-black text-2xl tabular-nums">00:00</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Avg Speed</span>
+                <span class="text-white font-black text-2xl tabular-nums"><span id="finishAvgSpeed">0.0</span> <span class="text-sm text-slate-400">MPH</span></span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                <span class="text-white font-black text-2xl tabular-nums"><span id="finishTopSpeed">0.0</span> <span class="text-sm text-slate-400">MPH</span></span>
+            </div>
+            <div class="flex justify-between items-center pt-1">
+                <span class="text-yellow-500 font-bold uppercase tracking-wider text-sm">Prev Record</span>
+                <span id="finishRecord" class="text-yellow-500 font-black text-xl tabular-nums">--:--</span>
+            </div>
+        </div>
+
+        <button id="closeFinishBtn" class="w-full max-w-sm py-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg transition-transform active:scale-95 text-lg">
+            Awesome!
+        </button>
+    </div>
+
+    <!-- Alert Modal (replaces browser alerts) -->
+    <div id="alertModal" class="hidden absolute inset-0 bg-slate-900/60 z-[3000] flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-slate-700 shadow-2xl">
+            <p id="alertText" class="text-white mb-6 font-medium"></p>
+            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-white bg-blue-600">OK</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- App Logic -->
+    <script>
+        // --- Storage Keys ---
+        const ROUTES_KEY = 'bikeTracker_routes_v1';
+        const RECORDS_KEY = 'bikeTracker_records_v1';
+
+        // --- Map Setup (Leaflet) ---
+        const map = L.map('map', { zoomControl: false }).setView([39.8283, -98.5795], 4);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        let currentRoutePolyline = L.polyline([], {color: '#10b981', weight: 6, opacity: 0.9}).addTo(map); 
+        let compareRoutePolyline = L.polyline([], {color: '#64748b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
+        let currentMarker = null;
+
+        // --- App State ---
+        let watchId = null;
+        let totalDistanceMiles = 0;
+        let lastPosition = null;
+        let currentRouteCoords = []; 
+        let isFirstFix = true;
+        
+        let raceGoalMiles = 0;
+        let startTime = null;
+        let topSpeedMph = 0;
+        let isRaceFinished = false;
+
+        let wakeLock = null;
+
+        // --- DOM Elements ---
+        const speedEl = document.getElementById('speed');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const saveRouteBtn = document.getElementById('saveRouteBtn');
+        const openRoutesBtn = document.getElementById('openRoutesBtn');
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const goalInput = document.getElementById('goalInput');
+        
+        const speedGauge = document.getElementById('speedGauge');
+        const odo1 = document.getElementById('odo1');
+        const odo2 = document.getElementById('odo2');
+        const odo3 = document.getElementById('odo3');
+        const odo4 = document.getElementById('odo4');
+        const odo5 = document.getElementById('odo5');
+        const compassRose = document.getElementById('compassRose');
+        const headingText = document.getElementById('headingText');
+
+        const saveModal = document.getElementById('saveModal');
+        const loadModal = document.getElementById('loadModal');
+        const finishModal = document.getElementById('finishModal');
+        const alertModal = document.getElementById('alertModal');
+        const alertText = document.getElementById('alertText');
+
+        // --- Utility Functions ---
+        function updateStatus(text, dotColor, pulse = false) {
+            statusText.innerText = text;
+            statusDot.className = `w-2 h-2 rounded-full mr-2 ${dotColor} ${pulse ? 'animate-pulse' : ''}`;
+        }
+
+        function showAlert(message) {
+            alertText.innerText = message;
+            alertModal.classList.remove('hidden');
+        }
+        document.getElementById('closeAlertBtn').addEventListener('click', () => alertModal.classList.add('hidden'));
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 3958.8;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c; 
+        }
+        
+        function formatTime(totalSeconds) {
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = Math.floor(totalSeconds % 60);
+            if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- Wake Lock ---
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Screen Wake Lock active');
+                } catch (err) {
+                    console.warn(`Wake Lock error: ${err.message}`);
+                }
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => wakeLock = null);
+            }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+
+        // --- Tracking Logic ---
+        function startTracking() {
+            if (!navigator.geolocation) {
+                showAlert("GPS is not supported by your browser.");
+                return;
+            }
+
+            requestWakeLock();
+
+            raceGoalMiles = parseFloat(goalInput.value) || 0;
+            goalInput.disabled = true;
+            goalInput.classList.add('opacity-50', 'cursor-not-allowed');
+
+            totalDistanceMiles = 0;
+            lastPosition = null;
+            currentRouteCoords = [];
+            currentRoutePolyline.setLatLngs([]);
+            speedEl.innerText = "00";
+            updateOdometer(0);
+            speedGauge.style.strokeDashoffset = 75;
+            isFirstFix = true;
+            saveRouteBtn.classList.add('hidden');
+            
+            startTime = Date.now();
+            topSpeedMph = 0;
+            isRaceFinished = false;
+
+            updateStatus("Locating GPS...", "bg-yellow-500", true);
+            
+            startBtn.disabled = true;
+            startBtn.className = "flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl border border-slate-700 cursor-not-allowed text-xl";
+            
+            stopBtn.disabled = false;
+            stopBtn.className = "flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl";
+
+            const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 };
+            watchId = navigator.geolocation.watchPosition(updatePosition, handleError, options);
+        }
+
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            releaseWakeLock();
+
+            updateStatus("Ride Paused", "bg-slate-500");
+            speedEl.innerText = "00";
+            speedGauge.style.strokeDashoffset = 75;
+
+            goalInput.disabled = false;
+            goalInput.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            startBtn.disabled = false;
+            startBtn.innerText = "Resume";
+            startBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl";
+
+            stopBtn.disabled = true;
+            stopBtn.className = "flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl border border-slate-700 cursor-not-allowed text-xl";
+
+            if (currentRouteCoords.length > 2) {
+                saveRouteBtn.classList.remove('hidden');
+            }
+        }
+
+        function updatePosition(position) {
+            updateStatus("Tracking active", "bg-emerald-500", true);
+
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const currentSpeedMps = position.coords.speed; 
+            
+            let currentSpeedMph = 0;
+            if (currentSpeedMps !== null && currentSpeedMps > 0) {
+                currentSpeedMph = currentSpeedMps * 2.23694;
+                speedEl.innerText = Math.round(currentSpeedMph).toString().padStart(2, '0');
+                if (currentSpeedMph > topSpeedMph) topSpeedMph = currentSpeedMph;
+            } else {
+                speedEl.innerText = "00";
+            }
+
+            // Visual max set to 50 MPH (competitive road bike max)
+            const speedPercent = Math.min(currentSpeedMph / 50, 1);
+            speedGauge.style.strokeDashoffset = 75 - (75 * speedPercent);
+
+            const heading = position.coords.heading;
+            if (heading !== null && !isNaN(heading)) {
+                compassRose.style.transform = `rotate(${-heading}deg)`;
+                headingText.innerText = Math.round(heading);
+            } else {
+                headingText.innerText = "--";
+            }
+
+            const latLng = [lat, lng];
+            currentRouteCoords.push(latLng);
+            currentRoutePolyline.setLatLngs(currentRouteCoords);
+
+            if (!currentMarker) {
+                currentMarker = L.circleMarker(latLng, {
+                    radius: 8, fillColor: '#3b82f6', color: '#ffffff', weight: 3, opacity: 1, fillOpacity: 1
+                }).addTo(map);
+            } else {
+                currentMarker.setLatLng(latLng);
+            }
+
+            if (isFirstFix) {
+                map.setView(latLng, 16);
+                isFirstFix = false;
+            } else {
+                map.panTo(latLng, {animate: true, duration: 0.5});
+            }
+
+            if (lastPosition) {
+                const distMiles = calculateDistance(
+                    lastPosition.coords.latitude, lastPosition.coords.longitude,
+                    lat, lng
+                );
+                if (distMiles > 0.0005) { 
+                    totalDistanceMiles += distMiles;
+                    updateOdometer(totalDistanceMiles);
+                }
+            }
+
+            if (raceGoalMiles > 0 && totalDistanceMiles >= raceGoalMiles && !isRaceFinished) {
+                triggerRaceFinish();
+            }
+
+            lastPosition = position;
+        }
+
+        function updateOdometer(miles) {
+            const formatted = miles.toFixed(2).padStart(6, '0'); 
+            const parts = formatted.replace('.', '').split('');
+            if (parts.length >= 5) {
+                odo1.innerText = parts[parts.length - 5];
+                odo2.innerText = parts[parts.length - 4];
+                odo3.innerText = parts[parts.length - 3];
+                odo4.innerText = parts[parts.length - 2];
+                odo5.innerText = parts[parts.length - 1];
+            }
+        }
+        
+        function triggerRaceFinish() {
+            isRaceFinished = true;
+            stopTracking(); 
+
+            const endTime = Date.now();
+            const elapsedSeconds = (endTime - startTime) / 1000;
+            const elapsedHours = elapsedSeconds / 3600;
+            const avgMph = raceGoalMiles / elapsedHours;
+
+            document.getElementById('finishDistance').innerText = raceGoalMiles;
+            document.getElementById('finishTime').innerText = formatTime(elapsedSeconds);
+            document.getElementById('finishAvgSpeed').innerText = avgMph.toFixed(1);
+            document.getElementById('finishTopSpeed').innerText = topSpeedMph.toFixed(1);
+            
+            let prevRecordText = "No previous record";
+
+            try {
+                // Read from Local Storage
+                const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}');
+                const goalStr = String(raceGoalMiles);
+                
+                if (records[goalStr]) {
+                    const prevBestSeconds = records[goalStr];
+                    prevRecordText = formatTime(prevBestSeconds);
+
+                    if (elapsedSeconds < prevBestSeconds) {
+                        records[goalStr] = elapsedSeconds;
+                        localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+                        prevRecordText += " (NEW RECORD!)";
+                    }
+                } else {
+                    records[goalStr] = elapsedSeconds;
+                    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+                    prevRecordText = "First time (Record set!)";
+                }
+            } catch (err) {
+                console.error("Storage error:", err);
+                prevRecordText = "Storage error";
+            }
+
+            document.getElementById('finishRecord').innerText = prevRecordText;
+            finishModal.classList.remove('hidden');
+        }
+
+        document.getElementById('closeFinishBtn').addEventListener('click', () => {
+            finishModal.classList.add('hidden');
+        });
+
+        function handleError(error) {
+            console.warn(`GPS Error: ${error.message}`);
+            updateStatus("GPS Error", "bg-red-500");
+        }
+
+        // --- Local Storage: Save Route ---
+        saveRouteBtn.addEventListener('click', () => {
+            document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
+            document.getElementById('routeNameInput').value = "";
+            saveModal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancelSaveBtn').addEventListener('click', () => saveModal.classList.add('hidden'));
+        
+        document.getElementById('confirmSaveBtn').addEventListener('click', () => {
+            const name = document.getElementById('routeNameInput').value.trim() || "Untitled Ride";
+            
+            try {
+                const existingRoutes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                existingRoutes.push({
+                    id: Date.now().toString(),
+                    name: name,
+                    distance: totalDistanceMiles.toFixed(2),
+                    points: JSON.stringify(currentRouteCoords),
+                    timestamp: Date.now()
+                });
+                
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(existingRoutes));
+                
+                saveModal.classList.add('hidden');
+                showAlert("Route saved successfully to device!");
+                saveRouteBtn.classList.add('hidden'); 
+            } catch (err) {
+                console.error("Save error", err);
+                // Usually means local storage quota is full (over ~5MB)
+                showAlert("Failed to save route. Device storage might be full.");
+            }
+        });
+
+        // --- Local Storage: Load/Compare Routes ---
+        openRoutesBtn.addEventListener('click', () => {
+            loadModal.classList.remove('hidden');
+            const listEl = document.getElementById('routesList');
+            
+            try {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                routes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (routes.length === 0) {
+                    listEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No saved routes found on this device.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = '';
+                routes.forEach(route => {
+                    const dateStr = new Date(route.timestamp).toLocaleDateString();
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-slate-900 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl transition-colors";
+                    btn.innerHTML = `
+                        <div class="font-bold text-white">${route.name}</div>
+                        <div class="text-xs text-slate-400 mt-1 flex justify-between">
+                            <span>${route.distance} miles</span>
+                            <span>${dateStr}</span>
+                        </div>
+                    `;
+                    
+                    btn.addEventListener('click', () => loadRouteToMap(route));
+                    listEl.appendChild(btn);
+                });
+
+            } catch (err) {
+                console.error("Load error", err);
+                listEl.innerHTML = '<p class="text-red-400 text-sm text-center py-4">Error loading routes from memory.</p>';
+            }
+        });
+
+        document.getElementById('closeLoadBtn').addEventListener('click', () => loadModal.classList.add('hidden'));
+
+        function loadRouteToMap(routeData) {
+            try {
+                const points = JSON.parse(routeData.points);
+                if (points && points.length > 0) {
+                    compareRoutePolyline.setLatLngs(points);
+                    map.fitBounds(compareRoutePolyline.getBounds(), { padding: [50, 50] });
+                    
+                    loadModal.classList.add('hidden');
+                    showAlert(`Loaded "${routeData.name}". Try to beat ${routeData.distance} miles!`);
+                } else {
+                    showAlert("Route data is empty.");
+                }
+            } catch (e) {
+                console.error("Failed to parse route points", e);
+                showAlert("Error displaying route.");
+            }
+        }
+
+        // --- Attach Main Button Events ---
+        startBtn.addEventListener('click', startTracking);
+        stopBtn.addEventListener('click', stopTracking);
+
+    </script>
+</body>
+</html>
