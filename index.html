@@ -23,13 +23,21 @@
                         sans: ['"DS-Digital"', 'sans-serif'],
                     },
                     colors: {
-                        yellow: {
-                            300: '#ffffcc',
-                            400: '#ffff00', /* Pure High-Contrast Neon Yellow */
-                            500: '#cccc00',
-                            600: '#888800',
-                            700: '#555500',
+                        neon: {
+                            main: 'var(--neon-main)',
+                            bg: 'var(--neon-bg)',
+                            dark: 'var(--neon-dark)',
+                            dim: 'var(--neon-dim)',
                         }
+                    },
+                    boxShadow: {
+                        'neon-sm': '0 0 8px var(--neon-main)',
+                        'neon-md': '0 0 15px var(--neon-main)',
+                        'neon-lg': '0 0 30px var(--neon-main)',
+                        'neon-glow': '0 0 10px var(--neon-main)',
+                    },
+                    dropShadow: {
+                        'neon': '0 0 8px var(--neon-main)',
                     }
                 }
             }
@@ -42,14 +50,22 @@
     <style>
         @import url('https://fonts.cdnfonts.com/css/ds-digital');
 
+        :root {
+            /* Fallback Neon Yellow variables */
+            --neon-main: #ffff00;
+            --neon-bg: #eab308;
+            --neon-dark: #ca8a04;
+            --neon-dim: #854d0e;
+        }
+
         body, html {
             height: 100%;
             margin: 0;
             background-color: #000000; 
-            color: #ffff00; /* Neon yellow */
+            color: var(--neon-main);
             font-family: 'DS-Digital', sans-serif;
             overflow: hidden;
-            letter-spacing: 0.05em; /* Added for digital font legibility */
+            letter-spacing: 0.05em; 
         }
         .no-select {
             user-select: none;
@@ -64,12 +80,12 @@
             z-index: 0;
         }
         
-        /* Dark, grayscale map for high contrast with neon yellow */
+        /* Dark, grayscale map adjusted for MUCH better contrast so street names are visible */
         .leaflet-layer,
         .leaflet-control-zoom-in,
         .leaflet-control-zoom-out,
         .leaflet-control-attribution {
-            filter: invert(100%) grayscale(100%) contrast(150%) brightness(40%);
+            filter: invert(100%) grayscale(100%) contrast(120%) brightness(80%);
         }
 
         .font-digital {
@@ -78,7 +94,7 @@
 
         /* Neon Glow Utility */
         .neon-glow {
-            text-shadow: 0 0 10px rgba(255, 255, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.4);
+            text-shadow: 0 0 10px var(--neon-main), 0 0 20px var(--neon-dark);
         }
 
         /* Dashboard Modes */
@@ -117,18 +133,28 @@
     <!-- Leaflet Map Background -->
     <div id="map"></div>
 
+    <!-- Theme Toggle (Upper Left) -->
+    <div class="absolute top-6 left-4 z-[1000] pointer-events-auto">
+        <button onclick="cycleTheme()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+            </svg>
+            <span class="font-digital text-sm uppercase tracking-wider mt-1">Color</span>
+        </button>
+    </div>
+
     <!-- Header / Status -->
-    <div class="absolute top-6 w-full px-4 z-[1000] flex justify-center pointer-events-none">
-        <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-black/90 backdrop-blur-md text-yellow-400 text-sm font-bold shadow-lg pointer-events-auto transition-colors border border-yellow-500/30">
-            <span id="statusDot" class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse shadow-[0_0_8px_#ffff00]"></span>
+    <div class="absolute top-6 w-full px-4 z-[999] flex justify-center pointer-events-none">
+        <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-black/90 backdrop-blur-md text-neon-main text-sm font-bold shadow-lg pointer-events-auto transition-colors border border-neon-bg/30">
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-neon-main mr-2 animate-pulse shadow-neon-sm"></span>
             <span id="statusText" class="font-digital tracking-wide text-lg">Ready to ride</span>
         </div>
     </div>
 
     <!-- Live Ride Timer (Upper Right) -->
     <div class="absolute top-6 right-4 z-[1000] pointer-events-none">
-        <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.8)]">
-            <span id="liveTimerText" class="font-digital text-yellow-400 text-2xl neon-glow tracking-widest tabular-nums">00:00</span>
+        <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-md">
+            <span id="liveTimerText" class="font-digital text-neon-main text-2xl neon-glow tracking-widest tabular-nums">00:00</span>
         </div>
     </div>
 
@@ -141,14 +167,14 @@
             
             <!-- Carousel Indicators -->
             <div id="indicators" class="flex space-x-2 transition-opacity duration-300">
-                <div class="view-dot w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffff00] transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-neon-main shadow-neon-sm transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
             </div>
 
             <!-- Mode Toggle Button -->
-            <button onclick="toggleDashboardMode()" class="text-zinc-500 hover:text-yellow-400 transition-colors w-8 flex justify-end z-20">
+            <button onclick="toggleDashboardMode()" class="text-zinc-500 hover:text-neon-main transition-colors w-8 flex justify-end z-20">
                 <svg id="toggleIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                 </svg>
@@ -159,10 +185,10 @@
         <div id="dashboardContainer" class="carousel-mode relative w-full h-[220px] max-w-sm mx-auto mb-2">
             
             <!-- Cycle Navigation Buttons -->
-            <button id="navLeft" onclick="prevView()" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-yellow-400 transition-colors">
+            <button id="navLeft" onclick="prevView()" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-neon-main transition-colors">
                 <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-            <button id="navRight" onclick="nextView()" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-yellow-400 transition-colors">
+            <button id="navRight" onclick="nextView()" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-neon-main transition-colors">
                 <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
             </button>
 
@@ -176,23 +202,23 @@
                             </mask>
                         </defs>
                         <circle cx="50" cy="50" r="40" fill="none" stroke="#18181b" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
-                        <!-- Neon Yellow Stroke -->
-                        <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="#ffff00" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px #ffff00);" />
+                        <!-- Neon Stroke -->
+                        <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="var(--neon-main)" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px var(--neon-main));" />
                     </svg>
                     <div class="absolute flex flex-col items-center justify-center font-digital mt-3">
-                        <div id="speed" class="text-4xl text-yellow-400 tracking-tighter transition-all neon-glow">00</div>
-                        <div id="speedUnit" class="text-[0.6rem] text-yellow-600 tracking-widest mt-0.5 uppercase font-sans font-bold transition-all">MPH</div>
+                        <div id="speed" class="text-4xl text-neon-main tracking-tighter transition-all neon-glow">00</div>
+                        <div id="speedUnit" class="text-[0.6rem] text-neon-dark tracking-widest mt-0.5 uppercase font-sans font-bold transition-all">MPH</div>
                     </div>
                 </div>
                 
                 <div id="speedExtra" class="flex justify-between w-full px-2 transition-all duration-300">
                     <div class="text-center">
-                        <div id="avgSpeed" class="text-xl font-digital text-yellow-400 tracking-tight neon-glow">0.0</div>
-                        <div class="text-[0.55rem] font-bold text-yellow-600 uppercase tracking-widest mt-0.5">Avg Speed</div>
+                        <div id="avgSpeed" class="text-xl font-digital text-neon-main tracking-tight neon-glow">0.0</div>
+                        <div class="text-[0.55rem] font-bold text-neon-dark uppercase tracking-widest mt-0.5">Avg Speed</div>
                     </div>
                     <div class="text-center">
-                        <div id="topSpeed" class="text-xl font-digital text-yellow-400 tracking-tight neon-glow">0.0</div>
-                        <div class="text-[0.55rem] font-bold text-yellow-600 uppercase tracking-widest mt-0.5">Top Speed</div>
+                        <div id="topSpeed" class="text-xl font-digital text-neon-main tracking-tight neon-glow">0.0</div>
+                        <div class="text-[0.55rem] font-bold text-neon-dark uppercase tracking-widest mt-0.5">Top Speed</div>
                     </div>
                 </div>
             </div>
@@ -200,16 +226,16 @@
             <!-- 2. Odometer (View 1) -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
                 <div id="odoScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
-                    <div class="text-sm text-yellow-600 font-bold uppercase tracking-wider mb-4">Total Distance</div>
+                    <div class="text-sm text-neon-dark font-bold uppercase tracking-wider mb-4">Total Distance</div>
                     <div class="flex space-x-[2px] font-digital text-4xl items-baseline bg-black p-2 rounded-lg shadow-inner border border-zinc-900">
-                        <div id="odo1" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
-                        <div id="odo2" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
-                        <div id="odo3" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
-                        <div class="text-yellow-600 font-black text-2xl px-1 pb-1">.</div>
-                        <div id="odo4" class="bg-zinc-900 text-yellow-300 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
-                        <div id="odo5" class="bg-zinc-900 text-yellow-300 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
+                        <div id="odo1" class="bg-zinc-950 text-neon-main px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div id="odo2" class="bg-zinc-950 text-neon-main px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div id="odo3" class="bg-zinc-950 text-neon-main px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div class="text-neon-dark font-black text-2xl px-1 pb-1">.</div>
+                        <div id="odo4" class="bg-zinc-900 text-neon-bg px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
+                        <div id="odo5" class="bg-zinc-900 text-neon-bg px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
                     </div>
-                    <div class="text-sm text-yellow-600 font-bold uppercase tracking-wider mt-4">Miles</div>
+                    <div class="text-sm text-neon-dark font-bold uppercase tracking-wider mt-4">Miles</div>
                 </div>
             </div>
 
@@ -217,43 +243,43 @@
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
                 <div id="compassScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
                     <div class="flex flex-col items-center z-10">
-                        <div class="text-[0.65rem] text-yellow-600 font-bold uppercase tracking-wider">Heading</div>
-                        <div id="headingDir" class="text-2xl font-digital text-yellow-400 leading-none mt-1 neon-glow">--</div>
+                        <div class="text-[0.65rem] text-neon-dark font-bold uppercase tracking-wider">Heading</div>
+                        <div id="headingDir" class="text-2xl font-digital text-neon-main leading-none mt-1 neon-glow">--</div>
                     </div>
                     <div class="relative w-24 h-24 mt-4 mb-4">
                         <div id="compassRose" class="absolute inset-0 transition-transform duration-500 ease-out flex items-center justify-center bg-black rounded-full border-[3px] border-zinc-900 shadow-[0_0_10px_rgba(0,0,0,0.8)_inset]">
-                             <span class="absolute top-2 text-[0.65rem] font-bold text-yellow-400 neon-glow">N</span>
-                             <span class="absolute right-2 text-[0.65rem] font-bold text-yellow-700">E</span>
-                             <span class="absolute bottom-2 text-[0.65rem] font-bold text-yellow-700">S</span>
-                             <span class="absolute left-2 text-[0.65rem] font-bold text-yellow-700">W</span>
-                             <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[20px] border-b-yellow-400 absolute top-4 drop-shadow-[0_0_8px_#ffff00]"></div>
+                             <span class="absolute top-2 text-[0.65rem] font-bold text-neon-main neon-glow">N</span>
+                             <span class="absolute right-2 text-[0.65rem] font-bold text-neon-dim">E</span>
+                             <span class="absolute bottom-2 text-[0.65rem] font-bold text-neon-dim">S</span>
+                             <span class="absolute left-2 text-[0.65rem] font-bold text-neon-dim">W</span>
+                             <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[20px] border-b-neon-main absolute top-4 drop-shadow-neon"></div>
                         </div>
                         <div class="absolute inset-0 m-auto w-4 h-4 bg-zinc-950 rounded-full border-2 border-zinc-800 z-10"></div>
                     </div>
-                    <div class="text-lg font-digital text-yellow-400 neon-glow"><span id="headingText">--</span>°</div>
+                    <div class="text-lg font-digital text-neon-main neon-glow"><span id="headingText">--</span>°</div>
                 </div>
             </div>
 
             <!-- 4. Goal Input (View 3) -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
                 <div id="goalScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
-                    <h3 class="text-yellow-600 font-bold uppercase tracking-wider mb-4 text-sm">Race Goal</h3>
+                    <h3 class="text-neon-dark font-bold uppercase tracking-wider mb-4 text-sm">Race Goal</h3>
                     
                     <div class="flex space-x-2 bg-black p-1.5 rounded-xl mb-6 w-full max-w-[200px] border border-zinc-900">
-                        <button id="btnGoalDistance" onclick="setGoalType('distance')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-yellow-500 text-black shadow-[0_0_8px_#ffff00] transition-colors">Miles</button>
-                        <button id="btnGoalTime" onclick="setGoalType('time')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-yellow-600 hover:text-yellow-400 transition-colors">Minutes</button>
+                        <button id="btnGoalDistance" onclick="setGoalType('distance')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-neon-bg text-black shadow-neon-sm transition-colors">Miles</button>
+                        <button id="btnGoalTime" onclick="setGoalType('time')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-neon-dark hover:text-neon-main transition-colors">Minutes</button>
                     </div>
 
                     <div class="flex items-center space-x-2 bg-black p-3 rounded-2xl border border-zinc-900 w-full max-w-[200px] justify-center shadow-inner">
-                        <input type="number" id="goalInput" class="w-20 bg-transparent text-yellow-400 text-center focus:outline-none font-digital text-4xl tabular-nums placeholder-yellow-900 neon-glow" placeholder="0.0" min="0.1" step="0.1">
-                        <span id="goalUnitLabel" class="text-yellow-600 font-bold text-sm uppercase pr-2">Mi</span>
+                        <input type="number" id="goalInput" class="w-20 bg-transparent text-neon-main text-center focus:outline-none font-digital text-4xl tabular-nums placeholder-neon-dim neon-glow" placeholder="0.0" min="0.1" step="0.1">
+                        <span id="goalUnitLabel" class="text-neon-dark font-bold text-sm uppercase pr-2">Mi</span>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- Primary Controls -->
+        <!-- Primary Controls (Colors explicitly preserved) -->
         <div class="flex space-x-2 mb-2 w-full max-w-sm mx-auto">
             <button id="startBtn" class="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-3 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-transform active:scale-95 text-lg uppercase tracking-wide">
                 Start Ride
@@ -265,10 +291,10 @@
 
         <!-- Secondary Controls -->
         <div class="flex flex-wrap justify-center gap-2 w-full max-w-sm mx-auto">
-            <button id="saveRouteBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Save</button>
-            <button id="summaryBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Summary</button>
+            <button id="saveRouteBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Save</button>
+            <button id="summaryBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Summary</button>
             <button id="resetBtn" class="hidden flex-1 min-w-[80px] bg-red-950 hover:bg-red-900 text-red-500 border border-red-900 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Discard</button>
-            <button id="openRoutesBtn" class="flex-1 min-w-[120px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Compare Routes</button>
+            <button id="openRoutesBtn" class="flex-1 min-w-[120px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Compare Routes</button>
         </div>
     </div>
 
@@ -276,108 +302,108 @@
 
     <!-- 1. Current Ride Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-3xl font-black text-yellow-400 mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
+        <h2 class="text-3xl font-black text-neon-main mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Distance</span>
-                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-yellow-600 font-sans">Mi</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
+                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
             </div>
             <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Time</span>
-                <span id="sumTime" class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Time</span>
+                <span id="sumTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
             </div>
             <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Avg Speed</span>
-                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-yellow-600 font-sans">MPH</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
+                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
             </div>
             <div class="flex justify-between items-center pt-1">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Top Speed</span>
-                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-yellow-600 font-sans">MPH</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
             </div>
         </div>
-        <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-lg uppercase tracking-wide">Close</button>
+        <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide">Close</button>
     </div>
 
     <!-- 2. Save Route Modal -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.2)]">
-            <h3 class="text-xl font-bold text-yellow-400 mb-2 uppercase tracking-wide">Save Your Route</h3>
-            <p class="text-yellow-600 text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-yellow-400 font-digital font-bold text-lg neon-glow"></span> miles</p>
-            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-yellow-500 placeholder-yellow-900 font-digital">
-            <textarea id="routeNotesInput" placeholder="How did you feel? Weather? Hazards?" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-6 focus:outline-none focus:border-yellow-500 h-24 resize-none font-digital placeholder-yellow-900"></textarea>
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg">
+            <h3 class="text-xl font-bold text-neon-main mb-2 uppercase tracking-wide">Save Your Route</h3>
+            <p class="text-neon-dark text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-neon-main font-digital font-bold text-lg neon-glow"></span> miles</p>
+            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg placeholder-neon-dim font-digital">
+            <textarea id="routeNotesInput" placeholder="How did you feel? Weather? Hazards?" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-6 focus:outline-none focus:border-neon-bg h-24 resize-none font-digital placeholder-neon-dim"></textarea>
             <div class="flex space-x-3">
-                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-yellow-600 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 uppercase tracking-wide text-sm">Cancel</button>
-                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 uppercase tracking-wide text-sm shadow-[0_0_15px_rgba(255,255,0,0.5)]">Save Data</button>
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 uppercase tracking-wide text-sm">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase tracking-wide text-sm">Save Data</button>
             </div>
         </div>
     </div>
 
     <!-- 3. Load Routes Modal (List) -->
     <div id="loadModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.2)] flex flex-col max-h-[85vh]">
-            <h3 class="text-xl font-bold text-yellow-400 mb-1 uppercase tracking-wide">Saved Routes</h3>
-            <p class="text-xs text-yellow-600 mb-4">Routes near you are shown at the top.</p>
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg flex flex-col max-h-[85vh]">
+            <h3 class="text-xl font-bold text-neon-main mb-1 uppercase tracking-wide">Saved Routes</h3>
+            <p class="text-xs text-neon-dark mb-4">Routes near you are shown at the top.</p>
             <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1"></div>
-            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 uppercase tracking-wide shadow-[0_0_15px_rgba(255,255,0,0.5)]">Close</button>
+            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase tracking-wide">Close</button>
         </div>
     </div>
 
     <!-- 4. Route Details & Notes Modal -->
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-4 text-center">
-        <h2 id="detailName" class="text-2xl font-black text-yellow-400 mb-4 tracking-tight uppercase neon-glow font-digital">Route Details</h2>
+        <h2 id="detailName" class="text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital">Route Details</h2>
         
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 space-y-3 shadow-2xl text-left">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Distance</span>
-                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-yellow-600 font-sans">Mi</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
+                <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
             </div>
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Time</span>
-                <span id="detailTime" class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Time</span>
+                <span id="detailTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
             </div>
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Avg Speed</span>
-                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-yellow-600 font-sans">MPH</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Avg Speed</span>
+                <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
             </div>
             <div class="flex justify-between items-center pt-1">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Top Speed</span>
-                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-yellow-600 font-sans">MPH</span></span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
+                <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
             </div>
         </div>
 
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl">
-            <label class="block text-yellow-600 font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
-            <textarea id="detailNotesInput" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-yellow-500 h-24 resize-none text-sm font-digital placeholder-yellow-900"></textarea>
-            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-yellow-500 bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Notes</button>
+            <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
+            <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
+            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Notes</button>
         </div>
 
         <div class="w-full max-w-sm flex space-x-3">
-            <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
-            <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-yellow-600 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
+            <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
+            <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
         </div>
     </div>
 
     <!-- 5. Race Finish Modal -->
     <div id="finishModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
-        <div class="text-6xl mb-4 drop-shadow-[0_0_15px_rgba(255,255,0,0.8)]">🏆</div>
-        <h2 class="text-4xl font-black text-yellow-400 mb-2 tracking-tight uppercase neon-glow font-digital">Goal Reached!</h2>
-        <p id="finishSubtitle" class="text-yellow-300 font-bold text-xl mb-8 uppercase tracking-wide">Race Complete</p>
+        <div class="text-6xl mb-4 drop-shadow-neon">🏆</div>
+        <h2 class="text-4xl font-black text-neon-main mb-2 tracking-tight uppercase neon-glow font-digital">Goal Reached!</h2>
+        <p id="finishSubtitle" class="text-neon-main font-bold text-xl mb-8 uppercase tracking-wide">Race Complete</p>
         
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center pt-1">
-                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Prev Record</span>
-                <span id="finishRecord" class="text-yellow-400 font-digital font-black text-xl tabular-nums neon-glow">--:--</span>
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Prev Record</span>
+                <span id="finishRecord" class="text-neon-main font-digital font-black text-xl tabular-nums neon-glow">--:--</span>
             </div>
             <div class="text-zinc-500 text-xs mt-4 uppercase">Check "Summary" for full stats.</div>
         </div>
-        <button id="closeFinishBtn" class="w-full max-w-sm py-4 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-lg uppercase tracking-wide">Awesome!</button>
+        <button id="closeFinishBtn" class="w-full max-w-sm py-4 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide">Awesome!</button>
     </div>
 
     <!-- Alert Modal -->
     <div id="alertModal" class="hidden absolute inset-0 bg-black/80 z-[3000] flex items-center justify-center p-4">
-        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.3)]">
-            <p id="alertText" class="text-yellow-400 mb-6 font-medium font-digital text-lg"></p>
-            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-yellow-500 uppercase tracking-wide">OK</button>
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-neon-bg/30 shadow-neon-lg">
+            <p id="alertText" class="text-neon-main mb-6 font-medium font-digital text-lg"></p>
+            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-neon-bg uppercase tracking-wide">OK</button>
         </div>
     </div>
 
@@ -386,6 +412,56 @@
     <script>
         const ROUTES_KEY = 'bikeTracker_routes_v1';
         const RECORDS_KEY = 'bikeTracker_records_v1';
+
+        // --- Global Map Variables ---
+        let map = null;
+        let currentRoutePolyline = null;
+        let compareRoutePolyline = null;
+        let currentMarker = null;
+
+        // --- Dynamic Theme Engine ---
+        const themes = [
+            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b' } },
+            { name: 'yellow',  vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e' } },
+            { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63' } },
+            { name: 'green',   vars: { main: '#39ff14', bg: '#22c55e', dark: '#16a34a', dim: '#14532d' } },
+            { name: 'magenta', vars: { main: '#ff00ff', bg: '#d946ef', dark: '#c026d3', dim: '#701a75' } },
+            { name: 'orange',  vars: { main: '#ffaa00', bg: '#f97316', dark: '#ea580c', dim: '#9a3412' } },
+            { name: 'red',     vars: { main: '#ff3333', bg: '#ef4444', dark: '#dc2626', dim: '#7f1d1d' } }
+        ];
+        
+        let activeThemeIndex = 0;
+
+        function applyThemeToMap() {
+            if (!currentRoutePolyline) return;
+            const t = themes[activeThemeIndex];
+            currentRoutePolyline.setStyle({ color: t.vars.main });
+            if (currentMarker) currentMarker.setStyle({ fillColor: t.vars.main });
+        }
+
+        function cycleTheme() {
+            activeThemeIndex = (activeThemeIndex + 1) % themes.length;
+            const t = themes[activeThemeIndex];
+            document.documentElement.style.setProperty('--neon-main', t.vars.main);
+            document.documentElement.style.setProperty('--neon-bg', t.vars.bg);
+            document.documentElement.style.setProperty('--neon-dark', t.vars.dark);
+            document.documentElement.style.setProperty('--neon-dim', t.vars.dim);
+            localStorage.setItem('bikeTracker_theme', activeThemeIndex);
+            applyThemeToMap();
+        }
+
+        // Initialize theme from storage
+        const savedTheme = localStorage.getItem('bikeTracker_theme');
+        if (savedTheme !== null && !isNaN(parseInt(savedTheme))) {
+            activeThemeIndex = parseInt(savedTheme) - 1; // -1 to account for the +1 in cycleTheme
+            if (activeThemeIndex < -1) activeThemeIndex = -1;
+            cycleTheme();
+        } else {
+            // Default to Yellow (index 1)
+            activeThemeIndex = 0; // Starts cycle at 1
+            cycleTheme();
+        }
+
 
         // --- Carousel Logic ---
         let currentViewIndex = 0;
@@ -403,8 +479,8 @@
                 }
             });
             document.querySelectorAll('.view-dot').forEach((dot, i) => {
-                dot.classList.toggle('bg-yellow-400', i === index);
-                dot.classList.toggle('shadow-[0_0_8px_#ffff00]', i === index);
+                dot.classList.toggle('bg-neon-main', i === index);
+                dot.classList.toggle('shadow-neon-sm', i === index);
                 dot.classList.toggle('bg-zinc-800', i !== index);
             });
         }
@@ -426,22 +502,19 @@
                 indicators.classList.add('opacity-0', 'pointer-events-none');
                 navLeft.classList.add('hidden');
                 navRight.classList.add('hidden');
-                // Switch to List/Carousel Icon
                 toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>`;
             } else {
                 container.classList.replace('grid-mode', 'carousel-mode');
                 indicators.classList.remove('opacity-0', 'pointer-events-none');
                 navLeft.classList.remove('hidden');
                 navRight.classList.remove('hidden');
-                // Switch back to Grid Icon
                 toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>`;
-                
-                showView(currentViewIndex); // Refresh carousel view states
+                showView(currentViewIndex);
             }
         }
 
         // --- Goal Selection Logic ---
-        let goalType = 'distance'; // 'distance' or 'time'
+        let goalType = 'distance'; 
         function setGoalType(type) {
             goalType = type;
             const btnDist = document.getElementById('btnGoalDistance');
@@ -450,18 +523,18 @@
             const label = document.getElementById('goalUnitLabel');
 
             if (type === 'distance') {
-                btnDist.classList.replace('text-yellow-600', 'text-black');
-                btnDist.classList.add('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
-                btnTime.classList.replace('text-black', 'text-yellow-600');
-                btnTime.classList.remove('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                btnDist.classList.replace('text-neon-dark', 'text-black');
+                btnDist.classList.add('bg-neon-bg', 'shadow-neon-sm');
+                btnTime.classList.replace('text-black', 'text-neon-dark');
+                btnTime.classList.remove('bg-neon-bg', 'shadow-neon-sm');
                 label.innerText = 'Mi';
                 input.step = '0.1';
                 input.placeholder = '0.0';
             } else {
-                btnTime.classList.replace('text-yellow-600', 'text-black');
-                btnTime.classList.add('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
-                btnDist.classList.replace('text-black', 'text-yellow-600');
-                btnDist.classList.remove('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                btnTime.classList.replace('text-neon-dark', 'text-black');
+                btnTime.classList.add('bg-neon-bg', 'shadow-neon-sm');
+                btnDist.classList.replace('text-black', 'text-neon-dark');
+                btnDist.classList.remove('bg-neon-bg', 'shadow-neon-sm');
                 label.innerText = 'Min';
                 input.step = '1';
                 input.placeholder = '0';
@@ -469,20 +542,21 @@
         }
 
         // --- Map Setup (Leaflet) ---
-        const map = L.map('map', { zoomControl: false }).setView([39.8283, -98.5795], 4);
+        map = L.map('map', { zoomControl: false }).setView([39.8283, -98.5795], 4);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }).addTo(map);
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // Map Polylines - Neon Yellow for active, Dark gray for compare
-        let currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9}).addTo(map); 
-        let compareRoutePolyline = L.polyline([], {color: '#52525b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
-        let currentMarker = null;
+        // Map Polylines (Color dynamically updated by Theme Engine)
+        currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9}).addTo(map); 
+        compareRoutePolyline = L.polyline([], {color: '#52525b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
+
+        // Apply theme to map on startup
+        applyThemeToMap();
 
         // --- App State ---
         let watchId = null;
         let uiTimer = null;
         
-        // Ride Data
         let rideSeconds = 0; 
         let totalDistanceMiles = 0;
         let lastPosition = null;
@@ -490,7 +564,6 @@
         let isFirstFix = true;
         let topSpeedMph = 0;
         
-        // Goal Data
         let raceGoalValue = 0;
         let isRaceFinished = false;
         let wakeLock = null;
@@ -527,7 +600,7 @@
         // --- Utility Functions ---
         function updateStatus(text, dotColor, pulse = false) {
             statusText.innerText = text;
-            statusDot.className = `w-2 h-2 rounded-full mr-2 ${dotColor} ${pulse ? 'animate-pulse shadow-[0_0_8px_#ffff00]' : ''}`;
+            statusDot.className = `w-2 h-2 rounded-full mr-2 ${dotColor} ${pulse ? 'animate-pulse shadow-neon-sm' : ''}`;
         }
 
         function showAlert(message) {
@@ -581,7 +654,6 @@
                 rideSeconds++;
                 const elapsedHours = rideSeconds / 3600;
                 
-                // Update Live Timer
                 liveTimerText.innerText = formatTime(rideSeconds);
                 
                 if (elapsedHours > 0) {
@@ -633,7 +705,7 @@
             resetBtn.classList.add('hidden');
             openRoutesBtn.classList.add('hidden');
 
-            updateStatus("Locating GPS...", "bg-yellow-400", true);
+            updateStatus("Locating GPS...", "bg-neon-main", true);
             
             startBtn.disabled = true;
             startBtn.className = "flex-1 bg-zinc-950 text-zinc-600 font-black py-3 rounded-xl border border-zinc-900 cursor-not-allowed text-lg uppercase tracking-wide";
@@ -690,7 +762,7 @@
             topSpeedEl.innerText = "0.0";
             liveTimerText.innerText = "00:00";
 
-            updateStatus("Ready to ride", "bg-yellow-400");
+            updateStatus("Ready to ride", "bg-neon-main");
             startBtn.innerText = "START RIDE";
             
             saveRouteBtn.classList.add('hidden');
@@ -706,7 +778,7 @@
         }
 
         function updatePosition(position) {
-            updateStatus("Tracking active", "bg-yellow-400", true);
+            updateStatus("Tracking active", "bg-neon-main", true);
 
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
@@ -741,11 +813,13 @@
             currentRouteCoords.push(latLng);
             currentRoutePolyline.setLatLngs(currentRouteCoords);
 
-            // User marker: Neon yellow dot with black border
+            // User marker
+            const activeColor = getComputedStyle(document.documentElement).getPropertyValue('--neon-main').trim();
             if (!currentMarker) {
-                currentMarker = L.circleMarker(latLng, { radius: 8, fillColor: '#ffff00', color: '#000000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map);
+                currentMarker = L.circleMarker(latLng, { radius: 8, fillColor: activeColor, color: '#000000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map);
             } else {
                 currentMarker.setLatLng(latLng);
+                currentMarker.setStyle({ fillColor: activeColor });
             }
 
             if (isFirstFix) {
@@ -903,7 +977,7 @@
                     return (b.timestamp || 0) - (a.timestamp || 0); 
                 });
 
-                if (routes.length === 0) return listEl.innerHTML = '<p class="text-yellow-600 text-sm text-center py-4 uppercase">No saved routes found on this device.</p>';
+                if (routes.length === 0) return listEl.innerHTML = '<p class="text-neon-dark text-sm text-center py-4 uppercase">No saved routes found on this device.</p>';
                 
                 listEl.innerHTML = '';
                 routes.forEach(route => {
@@ -911,10 +985,10 @@
                     btn.className = "w-full text-left bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-4 rounded-xl transition-colors font-digital";
                     
                     let locationBadge = route._distAway !== null 
-                        ? `<span class="text-yellow-400 font-bold neon-glow">${route._distAway.toFixed(1)} mi away</span>` 
-                        : `<span class="text-yellow-700">${new Date(route.timestamp).toLocaleDateString()}</span>`;
+                        ? `<span class="text-neon-main font-bold neon-glow">${route._distAway.toFixed(1)} mi away</span>` 
+                        : `<span class="text-neon-dim">${new Date(route.timestamp).toLocaleDateString()}</span>`;
 
-                    btn.innerHTML = `<div class="font-bold text-yellow-400 text-lg uppercase tracking-wide">${route.name}</div><div class="text-xs text-yellow-600 mt-1 flex justify-between"><span>${route.distance} miles</span>${locationBadge}</div>`;
+                    btn.innerHTML = `<div class="font-bold text-neon-main text-lg uppercase tracking-wide">${route.name}</div><div class="text-xs text-neon-dark mt-1 flex justify-between"><span>${route.distance} miles</span>${locationBadge}</div>`;
                     
                     btn.addEventListener('click', () => openRouteDetails(route));
                     listEl.appendChild(btn);
@@ -964,12 +1038,12 @@
                     const btn = document.getElementById('btnSaveNotes');
                     const originalText = btn.innerText;
                     btn.innerText = "SAVED!";
-                    btn.classList.replace('text-yellow-500', 'text-black');
-                    btn.classList.replace('bg-zinc-900', 'bg-yellow-500');
+                    btn.classList.replace('text-neon-bg', 'text-black');
+                    btn.classList.replace('bg-zinc-900', 'bg-neon-bg');
                     setTimeout(() => {
                         btn.innerText = originalText;
-                        btn.classList.replace('text-black', 'text-yellow-500');
-                        btn.classList.replace('bg-yellow-500', 'bg-zinc-900');
+                        btn.classList.replace('text-black', 'text-neon-bg');
+                        btn.classList.replace('bg-neon-bg', 'bg-zinc-900');
                     }, 2000);
                 }
             } catch (e) { console.error(e); }
