@@ -3,28 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bike Computer</title>
+    <title>Bike Computer - Neon Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"DS-Digital"', 'sans-serif'],
+                    },
+                    colors: {
+                        yellow: {
+                            300: '#ffffcc',
+                            400: '#ffff00', /* Pure High-Contrast Neon Yellow */
+                            500: '#cccc00',
+                            600: '#888800',
+                            700: '#555500',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
     <style>
+        @import url('https://fonts.cdnfonts.com/css/ds-digital');
+
         body, html {
             height: 100%;
             margin: 0;
-            background-color: #0f172a; 
-            color: #f8fafc;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000; 
+            color: #ffff00; /* Neon yellow */
+            font-family: 'DS-Digital', sans-serif;
             overflow: hidden;
+            letter-spacing: 0.05em; /* Added for digital font legibility */
         }
         .no-select {
             user-select: none;
             -webkit-user-select: none;
         }
-        /* Map container takes full screen behind the UI */
         #map {
             position: absolute;
             top: 0;
@@ -33,250 +55,463 @@
             height: 100%;
             z-index: 0;
         }
-        /* Custom Leaflet overrides for dark mode feel */
+        
+        /* Dark, grayscale map for high contrast with neon yellow */
         .leaflet-layer,
         .leaflet-control-zoom-in,
         .leaflet-control-zoom-out,
         .leaflet-control-attribution {
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            filter: invert(100%) grayscale(100%) contrast(150%) brightness(40%);
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
         .font-digital {
-            font-family: 'Share Tech Mono', monospace;
+            font-family: 'DS-Digital', sans-serif;
         }
+
+        /* Neon Glow Utility */
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+
+        /* Dashboard Modes */
+        #dashboardContainer { transition: all 0.3s ease; }
+        
+        #dashboardContainer.grid-mode {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            height: auto !important;
+            margin-bottom: 1rem;
+        }
+        
+        #dashboardContainer.grid-mode > .dash-view {
+            position: relative !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            z-index: 10 !important;
+            aspect-ratio: 1 / 1;
+            padding: 0.5rem !important;
+            border-radius: 1rem !important;
+        }
+
+        /* Grid Mode Internal Shrink Scaling */
+        #dashboardContainer.grid-mode #speedExtra { display: none !important; }
+        #dashboardContainer.grid-mode #speedGaugeContainer { width: 90px; height: 90px; margin-top: 0; margin-bottom: 0; border-width: 4px; }
+        #dashboardContainer.grid-mode #speed { font-size: 1.75rem !important; line-height: 2rem !important; }
+        #dashboardContainer.grid-mode #speedUnit { font-size: 0.5rem !important; }
+        #dashboardContainer.grid-mode #odoScale { transform: scale(0.65); transform-origin: center center; }
+        #dashboardContainer.grid-mode #compassScale { transform: scale(0.75); transform-origin: center center; margin-top: -0.5rem; }
+        #dashboardContainer.grid-mode #goalScale { transform: scale(0.70); transform-origin: center center; }
     </style>
 </head>
-<body class="flex flex-col h-full w-full no-select relative">
+<body class="flex flex-col h-full w-full no-select relative bg-black">
 
     <!-- Leaflet Map Background -->
     <div id="map"></div>
 
-    <!-- Header / Status (Floating over map) -->
+    <!-- Header / Status -->
     <div class="absolute top-6 w-full px-4 z-[1000] flex justify-center pointer-events-none">
-        <!-- Status Indicator -->
-        <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-slate-900/90 backdrop-blur-md text-slate-200 text-sm font-bold shadow-lg pointer-events-auto transition-colors">
-            <span id="statusDot" class="w-2 h-2 rounded-full bg-yellow-500 mr-2 animate-pulse"></span>
-            <span id="statusText">Ready to ride</span>
+        <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-black/90 backdrop-blur-md text-yellow-400 text-sm font-bold shadow-lg pointer-events-auto transition-colors border border-yellow-500/30">
+            <span id="statusDot" class="w-2 h-2 rounded-full bg-yellow-400 mr-2 animate-pulse shadow-[0_0_8px_#ffff00]"></span>
+            <span id="statusText" class="font-digital tracking-wide text-lg">Ready to ride</span>
         </div>
     </div>
 
     <!-- Bottom Dashboard UI -->
-    <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-xl border-t border-slate-700 rounded-t-[2.5rem] p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-transform duration-300">
+    <div class="absolute bottom-0 w-full bg-black/95 backdrop-blur-xl border-t border-zinc-900 rounded-t-[2.5rem] p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] transition-transform duration-300">
         
-        <!-- 2x2 Stats Grid -->
-        <div class="grid grid-cols-2 gap-4 mb-6 w-full max-w-lg mx-auto">
+        <!-- View Controls (Indicators + Toggle) -->
+        <div class="flex justify-between items-center mb-4 w-full max-w-sm mx-auto px-2">
+            <div class="w-8"></div> <!-- Spacer for perfect center alignment -->
             
-            <!-- 1. Speed Gauge (Top Left) -->
-            <div class="relative w-full aspect-square max-w-[160px] mx-auto flex flex-col items-center justify-center bg-black rounded-full border-[8px] border-slate-900 shadow-[0_0_15px_rgba(0,0,0,0.6)_inset]">
-                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    <defs>
-                        <mask id="gaugeMask">
-                            <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="20" stroke-dasharray="2 1.12" pathLength="100" />
-                        </mask>
-                    </defs>
-                    <!-- Dim background track -->
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#222" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
-                    <!-- Bright Fill -->
-                    <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 4px #fff);" />
+            <!-- Carousel Indicators -->
+            <div id="indicators" class="flex space-x-2 transition-opacity duration-300">
+                <div class="view-dot w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_#ffff00] transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+            </div>
+
+            <!-- Mode Toggle Button -->
+            <button onclick="toggleDashboardMode()" class="text-zinc-500 hover:text-yellow-400 transition-colors w-8 flex justify-end z-20">
+                <svg id="toggleIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                 </svg>
-                <div class="absolute flex flex-col items-center justify-center font-digital mt-3">
-                    <div id="speed" class="text-4xl md:text-5xl text-white tracking-tighter" style="text-shadow: 0 0 8px rgba(255,255,255,0.8);">00</div>
-                    <div class="text-[0.6rem] md:text-xs text-white tracking-widest mt-0.5 uppercase font-sans font-bold">MPH</div>
-                </div>
-            </div>
+            </button>
+        </div>
 
-            <!-- 2. Odometer (Top Right) -->
-            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full">
-                <div class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Miles</div>
-                <div class="flex space-x-[1px] md:space-x-[2px] font-digital text-2xl md:text-3xl items-baseline bg-slate-900 p-1 md:p-1.5 rounded-lg shadow-inner">
-                    <div id="odo1" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
-                    <div id="odo2" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
-                    <div id="odo3" class="bg-black text-white px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-800">0</div>
-                    <div class="text-slate-500 font-black text-lg md:text-xl px-0.5">.</div>
-                    <div id="odo4" class="bg-slate-200 text-black px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-300">0</div>
-                    <div id="odo5" class="bg-slate-200 text-black px-1 md:px-1.5 py-1 rounded-sm shadow-sm border border-slate-300">0</div>
-                </div>
-            </div>
+        <!-- Carousel / Grid Container -->
+        <div id="dashboardContainer" class="carousel-mode relative w-full h-[220px] max-w-sm mx-auto mb-2">
+            
+            <!-- Cycle Navigation Buttons -->
+            <button id="navLeft" onclick="prevView()" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-yellow-400 transition-colors">
+                <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="navRight" onclick="nextView()" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 hover:text-yellow-400 transition-colors">
+                <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+            </button>
 
-            <!-- 3. Compass (Bottom Left) -->
-            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full relative overflow-hidden">
-                <div class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider absolute top-2 md:top-3 z-10">Heading</div>
-                <div class="relative w-16 h-16 md:w-20 md:h-20 mt-4 md:mt-5">
-                    <div id="compassRose" class="absolute inset-0 transition-transform duration-500 ease-out flex items-center justify-center bg-slate-900 rounded-full border-2 border-slate-700 shadow-inner">
-                         <span class="absolute top-1 text-[0.55rem] font-bold text-emerald-500">N</span>
-                         <span class="absolute right-1 text-[0.55rem] font-bold text-slate-500">E</span>
-                         <span class="absolute bottom-1 text-[0.55rem] font-bold text-slate-500">S</span>
-                         <span class="absolute left-1 text-[0.55rem] font-bold text-slate-500">W</span>
-                         <div class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[14px] md:border-b-[18px] border-b-emerald-500 absolute top-3 md:top-4"></div>
+            <!-- 1. Speed Gauge (View 0) -->
+            <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-10 opacity-100 bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner px-8">
+                <div id="speedGaugeContainer" class="relative w-[130px] h-[130px] flex flex-col items-center justify-center bg-black rounded-full border-[6px] border-zinc-900 shadow-[0_0_15px_rgba(0,0,0,0.8)_inset] mb-2 mt-2 transition-all duration-300">
+                    <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                        <defs>
+                            <mask id="gaugeMask">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="20" stroke-dasharray="2 1.12" pathLength="100" />
+                            </mask>
+                        </defs>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#18181b" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
+                        <!-- Neon Yellow Stroke -->
+                        <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="#ffff00" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px #ffff00);" />
+                    </svg>
+                    <div class="absolute flex flex-col items-center justify-center font-digital mt-3">
+                        <div id="speed" class="text-4xl text-yellow-400 tracking-tighter transition-all neon-glow">00</div>
+                        <div id="speedUnit" class="text-[0.6rem] text-yellow-600 tracking-widest mt-0.5 uppercase font-sans font-bold transition-all">MPH</div>
                     </div>
-                    <div class="absolute inset-0 m-auto w-2 h-2 md:w-3 md:h-3 bg-slate-800 rounded-full border border-slate-600 z-10"></div>
                 </div>
-                <div class="absolute bottom-1 md:bottom-2 text-[0.65rem] md:text-xs font-digital text-white"><span id="headingText">--</span>°</div>
+                
+                <div id="speedExtra" class="flex justify-between w-full px-2 transition-all duration-300">
+                    <div class="text-center">
+                        <div id="avgSpeed" class="text-xl font-digital text-yellow-400 tracking-tight neon-glow">0.0</div>
+                        <div class="text-[0.55rem] font-bold text-yellow-600 uppercase tracking-widest mt-0.5">Avg Speed</div>
+                    </div>
+                    <div class="text-center">
+                        <div id="topSpeed" class="text-xl font-digital text-yellow-400 tracking-tight neon-glow">0.0</div>
+                        <div class="text-[0.55rem] font-bold text-yellow-600 uppercase tracking-widest mt-0.5">Top Speed</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- 4. Goal Input (Bottom Right) -->
-            <div class="flex flex-col items-center justify-center bg-slate-800 rounded-3xl border border-slate-700 shadow-inner p-2 md:p-4 h-full aspect-square max-w-[160px] mx-auto w-full">
-                <label for="goalInput" class="text-[0.65rem] md:text-xs text-slate-400 font-bold uppercase tracking-wider mb-2 text-center">Race Goal</label>
-                <div class="flex items-center space-x-1 md:space-x-2 bg-slate-900 p-1 md:p-2 rounded-xl border border-slate-700 w-full justify-center">
-                    <input type="number" id="goalInput" class="w-12 md:w-16 bg-transparent text-white text-center focus:outline-none font-digital text-2xl md:text-3xl tabular-nums placeholder-slate-600" placeholder="0.0" min="0.1" step="0.1">
-                    <span class="text-slate-500 font-bold text-[0.6rem] md:text-xs uppercase pr-1 md:pr-2">Mi</span>
+            <!-- 2. Odometer (View 1) -->
+            <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
+                <div id="odoScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
+                    <div class="text-sm text-yellow-600 font-bold uppercase tracking-wider mb-4">Total Distance</div>
+                    <div class="flex space-x-[2px] font-digital text-4xl items-baseline bg-black p-2 rounded-lg shadow-inner border border-zinc-900">
+                        <div id="odo1" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div id="odo2" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div id="odo3" class="bg-zinc-950 text-yellow-400 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div class="text-yellow-600 font-black text-2xl px-1 pb-1">.</div>
+                        <div id="odo4" class="bg-zinc-900 text-yellow-300 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
+                        <div id="odo5" class="bg-zinc-900 text-yellow-300 px-2 py-1.5 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
+                    </div>
+                    <div class="text-sm text-yellow-600 font-bold uppercase tracking-wider mt-4">Miles</div>
+                </div>
+            </div>
+
+            <!-- 3. Compass (View 2) -->
+            <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
+                <div id="compassScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
+                    <div class="flex flex-col items-center z-10">
+                        <div class="text-[0.65rem] text-yellow-600 font-bold uppercase tracking-wider">Heading</div>
+                        <div id="headingDir" class="text-2xl font-digital text-yellow-400 leading-none mt-1 neon-glow">--</div>
+                    </div>
+                    <div class="relative w-24 h-24 mt-4 mb-4">
+                        <div id="compassRose" class="absolute inset-0 transition-transform duration-500 ease-out flex items-center justify-center bg-black rounded-full border-[3px] border-zinc-900 shadow-[0_0_10px_rgba(0,0,0,0.8)_inset]">
+                             <span class="absolute top-2 text-[0.65rem] font-bold text-yellow-400 neon-glow">N</span>
+                             <span class="absolute right-2 text-[0.65rem] font-bold text-yellow-700">E</span>
+                             <span class="absolute bottom-2 text-[0.65rem] font-bold text-yellow-700">S</span>
+                             <span class="absolute left-2 text-[0.65rem] font-bold text-yellow-700">W</span>
+                             <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[20px] border-b-yellow-400 absolute top-4 drop-shadow-[0_0_8px_#ffff00]"></div>
+                        </div>
+                        <div class="absolute inset-0 m-auto w-4 h-4 bg-zinc-950 rounded-full border-2 border-zinc-800 z-10"></div>
+                    </div>
+                    <div class="text-lg font-digital text-yellow-400 neon-glow"><span id="headingText">--</span>°</div>
+                </div>
+            </div>
+
+            <!-- 4. Goal Input (View 3) -->
+            <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-3xl border border-zinc-900 shadow-inner p-4">
+                <div id="goalScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
+                    <h3 class="text-yellow-600 font-bold uppercase tracking-wider mb-4 text-sm">Race Goal</h3>
+                    
+                    <div class="flex space-x-2 bg-black p-1.5 rounded-xl mb-6 w-full max-w-[200px] border border-zinc-900">
+                        <button id="btnGoalDistance" onclick="setGoalType('distance')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-yellow-500 text-black shadow-[0_0_8px_#ffff00] transition-colors">Miles</button>
+                        <button id="btnGoalTime" onclick="setGoalType('time')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-yellow-600 hover:text-yellow-400 transition-colors">Minutes</button>
+                    </div>
+
+                    <div class="flex items-center space-x-2 bg-black p-3 rounded-2xl border border-zinc-900 w-full max-w-[200px] justify-center shadow-inner">
+                        <input type="number" id="goalInput" class="w-20 bg-transparent text-yellow-400 text-center focus:outline-none font-digital text-4xl tabular-nums placeholder-yellow-900 neon-glow" placeholder="0.0" min="0.1" step="0.1">
+                        <span id="goalUnitLabel" class="text-yellow-600 font-bold text-sm uppercase pr-2">Mi</span>
+                    </div>
                 </div>
             </div>
 
         </div>
 
         <!-- Primary Controls -->
-        <div class="flex space-x-3 mb-3">
-            <button id="startBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl">
+        <div class="flex space-x-2 mb-2 w-full max-w-sm mx-auto">
+            <button id="startBtn" class="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-3 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-transform active:scale-95 text-lg uppercase tracking-wide">
                 Start Ride
             </button>
-            <button id="stopBtn" disabled class="flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl transition-transform text-xl cursor-not-allowed border border-slate-700">
+            <button id="stopBtn" disabled class="flex-1 bg-zinc-950 text-zinc-600 font-black py-3 rounded-xl transition-transform text-lg cursor-not-allowed border border-zinc-900 uppercase tracking-wide">
                 Stop
             </button>
         </div>
 
         <!-- Secondary Controls -->
-        <div class="flex space-x-3">
-            <button id="saveRouteBtn" class="hidden flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
-                Save Route
-            </button>
-            <button id="resetBtn" class="hidden flex-1 bg-red-900/80 hover:bg-red-800 text-red-100 border border-red-700 font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
-                Discard
-            </button>
-            <button id="openRoutesBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
-                Compare Past Route
-            </button>
+        <div class="flex flex-wrap justify-center gap-2 w-full max-w-sm mx-auto">
+            <button id="saveRouteBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Save</button>
+            <button id="summaryBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Summary</button>
+            <button id="resetBtn" class="hidden flex-1 min-w-[80px] bg-red-950 hover:bg-red-900 text-red-500 border border-red-900 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Discard</button>
+            <button id="openRoutesBtn" class="flex-1 min-w-[120px] bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 hover:border-yellow-500/60 text-yellow-400 font-bold py-2 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Compare Routes</button>
         </div>
     </div>
 
-    <!-- Save Route Modal -->
-    <div id="saveModal" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-700 shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-4">Save Your Route</h3>
-            <p class="text-slate-400 text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-white font-bold"></span> miles</p>
-            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-slate-900 text-white border border-slate-600 rounded-lg p-3 mb-6 focus:outline-none focus:border-blue-500">
-            <div class="flex space-x-3">
-                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-slate-300 bg-slate-700">Cancel</button>
-                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-white bg-blue-600">Save Locally</button>
-            </div>
-        </div>
-    </div>
+    <!-- Modals -->
 
-    <!-- Load Routes Modal -->
-    <div id="loadModal" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-sm border border-slate-700 shadow-2xl flex flex-col max-h-[80vh]">
-            <h3 class="text-xl font-bold text-white mb-4">Saved Routes (On Device)</h3>
-            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
-                <p class="text-slate-400 text-sm text-center py-4">Loading routes...</p>
+    <!-- 1. Current Ride Summary Modal -->
+    <div id="summaryModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
+        <h2 class="text-3xl font-black text-yellow-400 mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Distance</span>
+                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-yellow-600 font-sans">Mi</span></span>
             </div>
-            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-slate-300 bg-slate-700">Close</button>
-        </div>
-    </div>
-
-    <!-- Race Finish Modal -->
-    <div id="finishModal" class="hidden absolute inset-0 bg-slate-900/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
-        <div class="text-6xl mb-4">🏆</div>
-        <h2 class="text-4xl font-black text-white mb-2 tracking-tight uppercase">Goal Reached!</h2>
-        <p class="text-emerald-400 font-bold text-xl mb-8"><span id="finishDistance">0</span> Mile Race Complete</p>
-        
-        <div class="w-full max-w-sm bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Time</span>
-                <span id="finishTime" class="text-white font-black text-2xl tabular-nums">00:00</span>
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Time</span>
+                <span id="sumTime" class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
             </div>
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Avg Speed</span>
-                <span class="text-white font-black text-2xl tabular-nums"><span id="finishAvgSpeed">0.0</span> <span class="text-sm text-slate-400">MPH</span></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <span class="text-slate-400 font-bold uppercase tracking-wider text-sm">Top Speed</span>
-                <span class="text-white font-black text-2xl tabular-nums"><span id="finishTopSpeed">0.0</span> <span class="text-sm text-slate-400">MPH</span></span>
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Avg Speed</span>
+                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-yellow-600 font-sans">MPH</span></span>
             </div>
             <div class="flex justify-between items-center pt-1">
-                <span class="text-yellow-500 font-bold uppercase tracking-wider text-sm">Prev Record</span>
-                <span id="finishRecord" class="text-yellow-500 font-black text-xl tabular-nums">--:--</span>
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                <span class="text-yellow-400 font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-yellow-600 font-sans">MPH</span></span>
+            </div>
+        </div>
+        <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-lg uppercase tracking-wide">Close</button>
+    </div>
+
+    <!-- 2. Save Route Modal -->
+    <div id="saveModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.2)]">
+            <h3 class="text-xl font-bold text-yellow-400 mb-2 uppercase tracking-wide">Save Your Route</h3>
+            <p class="text-yellow-600 text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-yellow-400 font-digital font-bold text-lg neon-glow"></span> miles</p>
+            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-yellow-500 placeholder-yellow-900 font-digital">
+            <textarea id="routeNotesInput" placeholder="How did you feel? Weather? Hazards?" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-6 focus:outline-none focus:border-yellow-500 h-24 resize-none font-digital placeholder-yellow-900"></textarea>
+            <div class="flex space-x-3">
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-yellow-600 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 uppercase tracking-wide text-sm">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 uppercase tracking-wide text-sm shadow-[0_0_15px_rgba(255,255,0,0.5)]">Save Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Load Routes Modal (List) -->
+    <div id="loadModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.2)] flex flex-col max-h-[85vh]">
+            <h3 class="text-xl font-bold text-yellow-400 mb-1 uppercase tracking-wide">Saved Routes</h3>
+            <p class="text-xs text-yellow-600 mb-4">Routes near you are shown at the top.</p>
+            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1"></div>
+            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 uppercase tracking-wide shadow-[0_0_15px_rgba(255,255,0,0.5)]">Close</button>
+        </div>
+    </div>
+
+    <!-- 4. Route Details & Notes Modal -->
+    <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-4 text-center">
+        <h2 id="detailName" class="text-2xl font-black text-yellow-400 mb-4 tracking-tight uppercase neon-glow font-digital">Route Details</h2>
+        
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 space-y-3 shadow-2xl text-left">
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Distance</span>
+                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-yellow-600 font-sans">Mi</span></span>
+            </div>
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Time</span>
+                <span id="detailTime" class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Avg Speed</span>
+                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-yellow-600 font-sans">MPH</span></span>
+            </div>
+            <div class="flex justify-between items-center pt-1">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-xs">Top Speed</span>
+                <span class="text-yellow-400 font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-yellow-600 font-sans">MPH</span></span>
             </div>
         </div>
 
-        <button id="closeFinishBtn" class="w-full max-w-sm py-4 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-lg transition-transform active:scale-95 text-lg">
-            Awesome!
-        </button>
-    </div>
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl">
+            <label class="block text-yellow-600 font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
+            <textarea id="detailNotesInput" class="w-full bg-black text-yellow-400 border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-yellow-500 h-24 resize-none text-sm font-digital placeholder-yellow-900"></textarea>
+            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-yellow-500 bg-zinc-900 border border-yellow-500/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Notes</button>
+        </div>
 
-    <!-- Alert Modal (replaces browser alerts) -->
-    <div id="alertModal" class="hidden absolute inset-0 bg-slate-900/60 z-[3000] flex items-center justify-center p-4">
-        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-slate-700 shadow-2xl">
-            <p id="alertText" class="text-white mb-6 font-medium"></p>
-            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-white bg-blue-600">OK</button>
+        <div class="w-full max-w-sm flex space-x-3">
+            <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
+            <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-yellow-600 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
+    <!-- 5. Race Finish Modal -->
+    <div id="finishModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
+        <div class="text-6xl mb-4 drop-shadow-[0_0_15px_rgba(255,255,0,0.8)]">🏆</div>
+        <h2 class="text-4xl font-black text-yellow-400 mb-2 tracking-tight uppercase neon-glow font-digital">Goal Reached!</h2>
+        <p id="finishSubtitle" class="text-yellow-300 font-bold text-xl mb-8 uppercase tracking-wide">Race Complete</p>
+        
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center pt-1">
+                <span class="text-yellow-600 font-bold uppercase tracking-wider text-sm">Prev Record</span>
+                <span id="finishRecord" class="text-yellow-400 font-digital font-black text-xl tabular-nums neon-glow">--:--</span>
+            </div>
+            <div class="text-zinc-500 text-xs mt-4 uppercase">Check "Summary" for full stats.</div>
+        </div>
+        <button id="closeFinishBtn" class="w-full max-w-sm py-4 rounded-xl font-bold text-black bg-yellow-500 hover:bg-yellow-400 shadow-[0_0_15px_rgba(255,255,0,0.5)] transition-transform active:scale-95 text-lg uppercase tracking-wide">Awesome!</button>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="hidden absolute inset-0 bg-black/80 z-[3000] flex items-center justify-center p-4">
+        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-yellow-500/30 shadow-[0_0_30px_rgba(255,255,0,0.3)]">
+            <p id="alertText" class="text-yellow-400 mb-6 font-medium font-digital text-lg"></p>
+            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-yellow-500 uppercase tracking-wide">OK</button>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- App Logic -->
     <script>
-        // --- Storage Keys ---
         const ROUTES_KEY = 'bikeTracker_routes_v1';
         const RECORDS_KEY = 'bikeTracker_records_v1';
 
+        // --- Carousel Logic ---
+        let currentViewIndex = 0;
+        const views = ['view-speed', 'view-distance', 'view-compass', 'view-goal'];
+        
+        function showView(index) {
+            views.forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (i === index) {
+                    el.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+                    el.classList.add('opacity-100', 'z-10');
+                } else {
+                    el.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+                    el.classList.remove('opacity-100', 'z-10');
+                }
+            });
+            document.querySelectorAll('.view-dot').forEach((dot, i) => {
+                dot.classList.toggle('bg-yellow-400', i === index);
+                dot.classList.toggle('shadow-[0_0_8px_#ffff00]', i === index);
+                dot.classList.toggle('bg-zinc-800', i !== index);
+            });
+        }
+        function nextView() { currentViewIndex = (currentViewIndex + 1) % views.length; showView(currentViewIndex); }
+        function prevView() { currentViewIndex = (currentViewIndex - 1 + views.length) % views.length; showView(currentViewIndex); }
+
+        // --- Dashboard Mode Toggle (Grid vs Carousel) ---
+        let isGridMode = false;
+        function toggleDashboardMode() {
+            isGridMode = !isGridMode;
+            const container = document.getElementById('dashboardContainer');
+            const indicators = document.getElementById('indicators');
+            const navLeft = document.getElementById('navLeft');
+            const navRight = document.getElementById('navRight');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (isGridMode) {
+                container.classList.replace('carousel-mode', 'grid-mode');
+                indicators.classList.add('opacity-0', 'pointer-events-none');
+                navLeft.classList.add('hidden');
+                navRight.classList.add('hidden');
+                // Switch to List/Carousel Icon
+                toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>`;
+            } else {
+                container.classList.replace('grid-mode', 'carousel-mode');
+                indicators.classList.remove('opacity-0', 'pointer-events-none');
+                navLeft.classList.remove('hidden');
+                navRight.classList.remove('hidden');
+                // Switch back to Grid Icon
+                toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>`;
+                
+                showView(currentViewIndex); // Refresh carousel view states
+            }
+        }
+
+        // --- Goal Selection Logic ---
+        let goalType = 'distance'; // 'distance' or 'time'
+        function setGoalType(type) {
+            goalType = type;
+            const btnDist = document.getElementById('btnGoalDistance');
+            const btnTime = document.getElementById('btnGoalTime');
+            const input = document.getElementById('goalInput');
+            const label = document.getElementById('goalUnitLabel');
+
+            if (type === 'distance') {
+                btnDist.classList.replace('text-yellow-600', 'text-black');
+                btnDist.classList.add('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                btnTime.classList.replace('text-black', 'text-yellow-600');
+                btnTime.classList.remove('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                label.innerText = 'Mi';
+                input.step = '0.1';
+                input.placeholder = '0.0';
+            } else {
+                btnTime.classList.replace('text-yellow-600', 'text-black');
+                btnTime.classList.add('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                btnDist.classList.replace('text-black', 'text-yellow-600');
+                btnDist.classList.remove('bg-yellow-500', 'shadow-[0_0_8px_#ffff00]');
+                label.innerText = 'Min';
+                input.step = '1';
+                input.placeholder = '0';
+            }
+        }
+
         // --- Map Setup (Leaflet) ---
         const map = L.map('map', { zoomControl: false }).setView([39.8283, -98.5795], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }).addTo(map);
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        let currentRoutePolyline = L.polyline([], {color: '#10b981', weight: 6, opacity: 0.9}).addTo(map); 
-        let compareRoutePolyline = L.polyline([], {color: '#64748b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
+        // Map Polylines - Neon Yellow for active, Dark gray for compare
+        let currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9}).addTo(map); 
+        let compareRoutePolyline = L.polyline([], {color: '#52525b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
         let currentMarker = null;
 
         // --- App State ---
         let watchId = null;
+        let uiTimer = null;
+        
+        // Ride Data
+        let rideSeconds = 0; 
         let totalDistanceMiles = 0;
         let lastPosition = null;
         let currentRouteCoords = []; 
         let isFirstFix = true;
-        
-        let raceGoalMiles = 0;
-        let startTime = null;
         let topSpeedMph = 0;
+        
+        // Goal Data
+        let raceGoalValue = 0;
         let isRaceFinished = false;
-
         let wakeLock = null;
 
         // --- DOM Elements ---
         const speedEl = document.getElementById('speed');
+        const avgSpeedEl = document.getElementById('avgSpeed');
+        const topSpeedEl = document.getElementById('topSpeed');
         const startBtn = document.getElementById('startBtn');
         const stopBtn = document.getElementById('stopBtn');
+        
         const saveRouteBtn = document.getElementById('saveRouteBtn');
+        const summaryBtn = document.getElementById('summaryBtn');
         const resetBtn = document.getElementById('resetBtn');
         const openRoutesBtn = document.getElementById('openRoutesBtn');
+        
         const statusText = document.getElementById('statusText');
         const statusDot = document.getElementById('statusDot');
         const goalInput = document.getElementById('goalInput');
-        
         const speedGauge = document.getElementById('speedGauge');
-        const odo1 = document.getElementById('odo1');
-        const odo2 = document.getElementById('odo2');
-        const odo3 = document.getElementById('odo3');
-        const odo4 = document.getElementById('odo4');
-        const odo5 = document.getElementById('odo5');
         const compassRose = document.getElementById('compassRose');
         const headingText = document.getElementById('headingText');
-
+        const headingDir = document.getElementById('headingDir');
+        
         const saveModal = document.getElementById('saveModal');
         const loadModal = document.getElementById('loadModal');
         const finishModal = document.getElementById('finishModal');
+        const summaryModal = document.getElementById('summaryModal');
+        const routeDetailModal = document.getElementById('routeDetailModal');
         const alertModal = document.getElementById('alertModal');
         const alertText = document.getElementById('alertText');
 
         // --- Utility Functions ---
         function updateStatus(text, dotColor, pulse = false) {
             statusText.innerText = text;
-            statusDot.className = `w-2 h-2 rounded-full mr-2 ${dotColor} ${pulse ? 'animate-pulse' : ''}`;
+            statusDot.className = `w-2 h-2 rounded-full mr-2 ${dotColor} ${pulse ? 'animate-pulse shadow-[0_0_8px_#ffff00]' : ''}`;
         }
 
         function showAlert(message) {
@@ -294,11 +529,16 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
             return R * c; 
         }
+
+        function getDirection(heading) {
+            const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            return dirs[Math.round(heading / 45) % 8];
+        }
         
-        function formatTime(totalSeconds) {
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = Math.floor(totalSeconds % 60);
+        function formatTime(totalSecs) {
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+            const s = Math.floor(totalSecs % 60);
             if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
@@ -306,108 +546,115 @@
         // --- Wake Lock ---
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
-                try {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Screen Wake Lock active');
-                } catch (err) {
-                    console.warn(`Wake Lock error: ${err.message}`);
-                }
+                try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
             }
         }
-
         function releaseWakeLock() {
-            if (wakeLock !== null) {
-                wakeLock.release().then(() => wakeLock = null);
-            }
+            if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
         }
-
         document.addEventListener('visibilitychange', async () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                await requestWakeLock();
-            }
+            if (wakeLock !== null && document.visibilityState === 'visible') await requestWakeLock();
         });
+
+        // --- UI Interval Timer ---
+        function startUiTimer() {
+            if (uiTimer) clearInterval(uiTimer);
+            uiTimer = setInterval(() => {
+                if (watchId === null || isRaceFinished) return; 
+                
+                rideSeconds++;
+                const elapsedHours = rideSeconds / 3600;
+                
+                if (elapsedHours > 0) {
+                    const avgMph = totalDistanceMiles / elapsedHours;
+                    avgSpeedEl.innerText = avgMph.toFixed(1);
+                }
+
+                if (goalType === 'time' && raceGoalValue > 0) {
+                    if (rideSeconds >= raceGoalValue * 60) {
+                        triggerRaceFinish();
+                    }
+                }
+            }, 1000);
+        }
 
         // --- Tracking Logic ---
         function startTracking() {
-            if (!navigator.geolocation) {
-                showAlert("GPS is not supported by your browser.");
-                return;
-            }
-
+            if (!navigator.geolocation) return showAlert("GPS not supported.");
             requestWakeLock();
 
-            // Only clear data if starting a fresh ride (not resuming)
-            if (startBtn.innerText === "Start Ride") {
-                raceGoalMiles = parseFloat(goalInput.value) || 0;
+            if (startBtn.innerText === "START RIDE") {
+                raceGoalValue = parseFloat(goalInput.value) || 0;
+                rideSeconds = 0;
                 totalDistanceMiles = 0;
                 lastPosition = null;
                 currentRouteCoords = [];
                 currentRoutePolyline.setLatLngs([]);
                 updateOdometer(0);
                 isFirstFix = true;
-                startTime = Date.now();
                 topSpeedMph = 0;
                 isRaceFinished = false;
+                avgSpeedEl.innerText = "0.0";
+                topSpeedEl.innerText = "0.0";
                 
-                if (currentMarker) {
-                    map.removeLayer(currentMarker);
-                    currentMarker = null;
-                }
+                if (currentMarker) { map.removeLayer(currentMarker); currentMarker = null; }
             }
 
             goalInput.disabled = true;
             goalInput.classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('btnGoalDistance').disabled = true;
+            document.getElementById('btnGoalTime').disabled = true;
 
             speedEl.innerText = "00";
             speedGauge.style.strokeDashoffset = 75;
+            
             saveRouteBtn.classList.add('hidden');
+            summaryBtn.classList.add('hidden');
             resetBtn.classList.add('hidden');
             openRoutesBtn.classList.add('hidden');
 
-            updateStatus("Locating GPS...", "bg-yellow-500", true);
+            updateStatus("Locating GPS...", "bg-yellow-400", true);
             
             startBtn.disabled = true;
-            startBtn.className = "flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl border border-slate-700 cursor-not-allowed text-xl";
-            
+            startBtn.className = "flex-1 bg-zinc-950 text-zinc-600 font-black py-3 rounded-xl border border-zinc-900 cursor-not-allowed text-lg uppercase tracking-wide";
             stopBtn.disabled = false;
-            stopBtn.className = "flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl";
+            stopBtn.className = "flex-1 bg-red-600 hover:bg-red-500 text-white font-black py-3 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.8)] transition-transform active:scale-95 text-lg uppercase tracking-wide border border-red-700";
 
             const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 };
             watchId = navigator.geolocation.watchPosition(updatePosition, handleError, options);
+            startUiTimer();
         }
 
         function stopTracking() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            
+            if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
             releaseWakeLock();
 
-            updateStatus("Ride Paused", "bg-slate-500");
+            updateStatus("Ride Paused", "bg-zinc-500");
             speedEl.innerText = "00";
             speedGauge.style.strokeDashoffset = 75;
 
             goalInput.disabled = false;
             goalInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('btnGoalDistance').disabled = false;
+            document.getElementById('btnGoalTime').disabled = false;
 
             startBtn.disabled = false;
-            startBtn.innerText = "Resume";
-            startBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-transform active:scale-95 text-xl";
-
+            startBtn.innerText = "RESUME";
+            startBtn.className = "flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-3 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-transform active:scale-95 text-lg uppercase tracking-wide";
             stopBtn.disabled = true;
-            stopBtn.className = "flex-1 bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl border border-slate-700 cursor-not-allowed text-xl";
+            stopBtn.className = "flex-1 bg-zinc-950 text-zinc-600 font-black py-3 rounded-xl border border-zinc-900 cursor-not-allowed text-lg uppercase tracking-wide";
 
-            if (currentRouteCoords.length > 2) {
+            if (currentRouteCoords.length > 2 || rideSeconds > 5) {
                 saveRouteBtn.classList.remove('hidden');
+                summaryBtn.classList.remove('hidden');
                 resetBtn.classList.remove('hidden');
-                openRoutesBtn.classList.add('hidden');
             } else {
                 openRoutesBtn.classList.remove('hidden');
             }
         }
 
         function resetRide() {
+            rideSeconds = 0;
             totalDistanceMiles = 0;
             lastPosition = null;
             currentRouteCoords = [];
@@ -417,28 +664,28 @@
             speedGauge.style.strokeDashoffset = 75;
             isFirstFix = true;
             
-            startTime = null;
             topSpeedMph = 0;
             isRaceFinished = false;
+            avgSpeedEl.innerText = "0.0";
+            topSpeedEl.innerText = "0.0";
 
-            updateStatus("Ready to ride", "bg-yellow-500");
-            
-            startBtn.innerText = "Start Ride";
+            updateStatus("Ready to ride", "bg-yellow-400");
+            startBtn.innerText = "START RIDE";
             
             saveRouteBtn.classList.add('hidden');
+            summaryBtn.classList.add('hidden');
             resetBtn.classList.add('hidden');
             openRoutesBtn.classList.remove('hidden');
             
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-                currentMarker = null;
-            }
+            if (currentMarker) { map.removeLayer(currentMarker); currentMarker = null; }
             headingText.innerText = "--";
+            headingDir.innerText = "--";
             compassRose.style.transform = `rotate(0deg)`;
+            showView(0); 
         }
 
         function updatePosition(position) {
-            updateStatus("Tracking active", "bg-emerald-500", true);
+            updateStatus("Tracking active", "bg-yellow-400", true);
 
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
@@ -448,12 +695,14 @@
             if (currentSpeedMps !== null && currentSpeedMps > 0) {
                 currentSpeedMph = currentSpeedMps * 2.23694;
                 speedEl.innerText = Math.round(currentSpeedMph).toString().padStart(2, '0');
-                if (currentSpeedMph > topSpeedMph) topSpeedMph = currentSpeedMph;
+                if (currentSpeedMph > topSpeedMph) {
+                    topSpeedMph = currentSpeedMph;
+                    topSpeedEl.innerText = topSpeedMph.toFixed(1);
+                }
             } else {
                 speedEl.innerText = "00";
             }
 
-            // Visual max set to 50 MPH (competitive road bike max)
             const speedPercent = Math.min(currentSpeedMph / 50, 1);
             speedGauge.style.strokeDashoffset = 75 - (75 * speedPercent);
 
@@ -461,18 +710,19 @@
             if (heading !== null && !isNaN(heading)) {
                 compassRose.style.transform = `rotate(${-heading}deg)`;
                 headingText.innerText = Math.round(heading);
+                headingDir.innerText = getDirection(heading);
             } else {
                 headingText.innerText = "--";
+                headingDir.innerText = "--";
             }
 
             const latLng = [lat, lng];
             currentRouteCoords.push(latLng);
             currentRoutePolyline.setLatLngs(currentRouteCoords);
 
+            // User marker: Neon yellow dot with black border
             if (!currentMarker) {
-                currentMarker = L.circleMarker(latLng, {
-                    radius: 8, fillColor: '#3b82f6', color: '#ffffff', weight: 3, opacity: 1, fillOpacity: 1
-                }).addTo(map);
+                currentMarker = L.circleMarker(latLng, { radius: 8, fillColor: '#ffff00', color: '#000000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map);
             } else {
                 currentMarker.setLatLng(latLng);
             }
@@ -480,37 +730,41 @@
             if (isFirstFix) {
                 map.setView(latLng, 16);
                 isFirstFix = false;
-            } else {
-                map.panTo(latLng, {animate: true, duration: 0.5});
+            } else if (currentRouteCoords.length > 1) {
+                let maxDLat = 0.001, maxDLng = 0.001;
+                currentRouteCoords.forEach(coord => {
+                    maxDLat = Math.max(maxDLat, Math.abs(coord[0] - lat));
+                    maxDLng = Math.max(maxDLng, Math.abs(coord[1] - lng));
+                });
+                const sw = [lat - (maxDLat * 1.1), lng - (maxDLng * 1.1)];
+                const ne = [lat + (maxDLat * 1.1), lng + (maxDLng * 1.1)];
+                map.fitBounds(L.latLngBounds(sw, ne), { maxZoom: 16 });
             }
 
             if (lastPosition) {
-                const distMiles = calculateDistance(
-                    lastPosition.coords.latitude, lastPosition.coords.longitude,
-                    lat, lng
-                );
+                const distMiles = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                 if (distMiles > 0.0005) { 
                     totalDistanceMiles += distMiles;
                     updateOdometer(totalDistanceMiles);
                 }
             }
 
-            if (raceGoalMiles > 0 && totalDistanceMiles >= raceGoalMiles && !isRaceFinished) {
+            if (goalType === 'distance' && raceGoalValue > 0 && totalDistanceMiles >= raceGoalValue && !isRaceFinished) {
                 triggerRaceFinish();
             }
 
-            lastPosition = position;
+            lastPosition = position; 
         }
 
         function updateOdometer(miles) {
             const formatted = miles.toFixed(2).padStart(6, '0'); 
             const parts = formatted.replace('.', '').split('');
             if (parts.length >= 5) {
-                odo1.innerText = parts[parts.length - 5];
-                odo2.innerText = parts[parts.length - 4];
-                odo3.innerText = parts[parts.length - 3];
-                odo4.innerText = parts[parts.length - 2];
-                odo5.innerText = parts[parts.length - 1];
+                document.getElementById('odo1').innerText = parts[parts.length - 5];
+                document.getElementById('odo2').innerText = parts[parts.length - 4];
+                document.getElementById('odo3').innerText = parts[parts.length - 3];
+                document.getElementById('odo4').innerText = parts[parts.length - 2];
+                document.getElementById('odo5').innerText = parts[parts.length - 1];
             }
         }
         
@@ -518,149 +772,189 @@
             isRaceFinished = true;
             stopTracking(); 
 
-            const endTime = Date.now();
-            const elapsedSeconds = (endTime - startTime) / 1000;
-            const elapsedHours = elapsedSeconds / 3600;
-            const avgMph = raceGoalMiles / elapsedHours;
-
-            document.getElementById('finishDistance').innerText = raceGoalMiles;
-            document.getElementById('finishTime').innerText = formatTime(elapsedSeconds);
-            document.getElementById('finishAvgSpeed').innerText = avgMph.toFixed(1);
-            document.getElementById('finishTopSpeed').innerText = topSpeedMph.toFixed(1);
+            document.getElementById('finishSubtitle').innerHTML = goalType === 'distance' ? `${raceGoalValue} Mile Race Complete` : `${raceGoalValue} Minute Race Complete`;
             
             let prevRecordText = "No previous record";
 
             try {
-                // Read from Local Storage
                 const records = JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}');
-                const goalStr = String(raceGoalMiles);
+                const goalKey = `${goalType}_${raceGoalValue}`; 
                 
-                if (records[goalStr]) {
-                    const prevBestSeconds = records[goalStr];
-                    prevRecordText = formatTime(prevBestSeconds);
-
-                    if (elapsedSeconds < prevBestSeconds) {
-                        records[goalStr] = elapsedSeconds;
-                        localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-                        prevRecordText += " (NEW RECORD!)";
+                if (records[goalKey]) {
+                    const prevBestVal = records[goalKey];
+                    
+                    if (goalType === 'distance') {
+                        prevRecordText = formatTime(prevBestVal);
+                        if (rideSeconds < prevBestVal) {
+                            records[goalKey] = rideSeconds;
+                            localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+                            prevRecordText += " (NEW RECORD!)";
+                        }
+                    } else {
+                        prevRecordText = `${prevBestVal} Mi`;
+                        if (totalDistanceMiles > prevBestVal) {
+                            records[goalKey] = totalDistanceMiles.toFixed(2);
+                            localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+                            prevRecordText += " (NEW RECORD!)";
+                        }
                     }
                 } else {
-                    records[goalStr] = elapsedSeconds;
+                    records[goalKey] = goalType === 'distance' ? rideSeconds : totalDistanceMiles.toFixed(2);
                     localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
                     prevRecordText = "First time (Record set!)";
                 }
-            } catch (err) {
-                console.error("Storage error:", err);
-                prevRecordText = "Storage error";
-            }
+            } catch (err) { prevRecordText = "Storage error"; }
 
             document.getElementById('finishRecord').innerText = prevRecordText;
             finishModal.classList.remove('hidden');
         }
 
-        document.getElementById('closeFinishBtn').addEventListener('click', () => {
-            finishModal.classList.add('hidden');
+        document.getElementById('closeFinishBtn').addEventListener('click', () => finishModal.classList.add('hidden'));
+        function handleError(error) { updateStatus("GPS Error", "bg-red-500"); }
+
+        // --- Summary Modal System ---
+        summaryBtn.addEventListener('click', () => {
+            document.getElementById('sumDistance').innerText = totalDistanceMiles.toFixed(2);
+            document.getElementById('sumTime').innerText = formatTime(rideSeconds);
+            const elapsedHours = rideSeconds / 3600;
+            document.getElementById('sumAvgSpeed').innerText = elapsedHours > 0 ? (totalDistanceMiles / elapsedHours).toFixed(1) : "0.0";
+            document.getElementById('sumTopSpeed').innerText = topSpeedMph.toFixed(1);
+            
+            summaryModal.classList.remove('hidden');
         });
+        document.getElementById('closeSummaryBtn').addEventListener('click', () => summaryModal.classList.add('hidden'));
 
-        function handleError(error) {
-            console.warn(`GPS Error: ${error.message}`);
-            updateStatus("GPS Error", "bg-red-500");
-        }
 
-        // --- Local Storage: Save Route ---
+        // --- Save Route Modal & System ---
         saveRouteBtn.addEventListener('click', () => {
             document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
             document.getElementById('routeNameInput').value = "";
+            document.getElementById('routeNotesInput').value = "";
             saveModal.classList.remove('hidden');
         });
-
         document.getElementById('cancelSaveBtn').addEventListener('click', () => saveModal.classList.add('hidden'));
         
         document.getElementById('confirmSaveBtn').addEventListener('click', () => {
             const name = document.getElementById('routeNameInput').value.trim() || "Untitled Ride";
-            
+            const notes = document.getElementById('routeNotesInput').value.trim();
+            const elapsedHours = rideSeconds / 3600;
+            const avgMph = elapsedHours > 0 ? (totalDistanceMiles / elapsedHours).toFixed(1) : "0.0";
+
             try {
                 const existingRoutes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 existingRoutes.push({
-                    id: Date.now().toString(),
-                    name: name,
-                    distance: totalDistanceMiles.toFixed(2),
-                    points: JSON.stringify(currentRouteCoords),
+                    id: Date.now().toString(), 
+                    name: name, 
+                    distance: totalDistanceMiles.toFixed(2), 
+                    timeSec: rideSeconds,
+                    avgSpeed: avgMph,
+                    topSpeed: topSpeedMph.toFixed(1),
+                    notes: notes,
+                    points: JSON.stringify(currentRouteCoords), 
                     timestamp: Date.now()
                 });
-                
                 localStorage.setItem(ROUTES_KEY, JSON.stringify(existingRoutes));
-                
                 saveModal.classList.add('hidden');
                 showAlert("Route saved successfully to device!");
-                
-                // Clear the map and prep for a new ride after saving
                 resetRide(); 
-            } catch (err) {
-                console.error("Save error", err);
-                // Usually means local storage quota is full (over ~5MB)
-                showAlert("Failed to save route. Device storage might be full.");
-            }
+            } catch (err) { showAlert("Failed to save route. Device storage might be full."); }
         });
 
-        // --- Local Storage: Load/Compare Routes ---
+        // --- Load Routes Modal & Nearby Feature ---
         openRoutesBtn.addEventListener('click', () => {
             loadModal.classList.remove('hidden');
             const listEl = document.getElementById('routesList');
-            
             try {
                 const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                routes.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-                if (routes.length === 0) {
-                    listEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No saved routes found on this device.</p>';
-                    return;
-                }
-
-                listEl.innerHTML = '';
+                
                 routes.forEach(route => {
-                    const dateStr = new Date(route.timestamp).toLocaleDateString();
-                    const btn = document.createElement('button');
-                    btn.className = "w-full text-left bg-slate-900 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl transition-colors";
-                    btn.innerHTML = `
-                        <div class="font-bold text-white">${route.name}</div>
-                        <div class="text-xs text-slate-400 mt-1 flex justify-between">
-                            <span>${route.distance} miles</span>
-                            <span>${dateStr}</span>
-                        </div>
-                    `;
-                    
-                    btn.addEventListener('click', () => loadRouteToMap(route));
-                    listEl.appendChild(btn);
+                    route._distAway = null;
+                    if (lastPosition && route.points) {
+                        const pts = JSON.parse(route.points);
+                        if (pts.length > 0) {
+                            route._distAway = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, pts[0][0], pts[0][1]);
+                        }
+                    }
                 });
 
-            } catch (err) {
-                console.error("Load error", err);
-                listEl.innerHTML = '<p class="text-red-400 text-sm text-center py-4">Error loading routes from memory.</p>';
-            }
+                routes.sort((a, b) => {
+                    if (a._distAway !== null && b._distAway !== null) return a._distAway - b._distAway; 
+                    return (b.timestamp || 0) - (a.timestamp || 0); 
+                });
+
+                if (routes.length === 0) return listEl.innerHTML = '<p class="text-yellow-600 text-sm text-center py-4 uppercase">No saved routes found on this device.</p>';
+                
+                listEl.innerHTML = '';
+                routes.forEach(route => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-4 rounded-xl transition-colors font-digital";
+                    
+                    let locationBadge = route._distAway !== null 
+                        ? `<span class="text-yellow-400 font-bold neon-glow">${route._distAway.toFixed(1)} mi away</span>` 
+                        : `<span class="text-yellow-700">${new Date(route.timestamp).toLocaleDateString()}</span>`;
+
+                    btn.innerHTML = `<div class="font-bold text-yellow-400 text-lg uppercase tracking-wide">${route.name}</div><div class="text-xs text-yellow-600 mt-1 flex justify-between"><span>${route.distance} miles</span>${locationBadge}</div>`;
+                    
+                    btn.addEventListener('click', () => openRouteDetails(route));
+                    listEl.appendChild(btn);
+                });
+            } catch (err) { listEl.innerHTML = '<p class="text-red-500 text-sm text-center py-4">Error loading routes.</p>'; }
         });
 
         document.getElementById('closeLoadBtn').addEventListener('click', () => loadModal.classList.add('hidden'));
 
-        function loadRouteToMap(routeData) {
-            try {
-                const points = JSON.parse(routeData.points);
+        // --- Detailed Route View System ---
+        let currentlyViewingRouteId = null;
+        function openRouteDetails(route) {
+            loadModal.classList.add('hidden');
+            currentlyViewingRouteId = route.id;
+            
+            document.getElementById('detailName').innerText = route.name;
+            document.getElementById('detailDistance').innerText = route.distance;
+            document.getElementById('detailTime').innerText = route.timeSec ? formatTime(route.timeSec) : "--:--";
+            document.getElementById('detailAvgSpeed').innerText = route.avgSpeed || "--";
+            document.getElementById('detailTopSpeed').innerText = route.topSpeed || "--";
+            document.getElementById('detailNotesInput').value = route.notes || "";
+            
+            document.getElementById('btnLoadMap').onclick = () => {
+                const points = JSON.parse(route.points);
                 if (points && points.length > 0) {
                     compareRoutePolyline.setLatLngs(points);
                     map.fitBounds(compareRoutePolyline.getBounds(), { padding: [50, 50] });
-                    
-                    loadModal.classList.add('hidden');
-                    showAlert(`Loaded "${routeData.name}". Try to beat ${routeData.distance} miles!`);
-                } else {
-                    showAlert("Route data is empty.");
+                    routeDetailModal.classList.add('hidden');
+                    showAlert(`Loaded "${route.name}". Go crush it!`);
                 }
-            } catch (e) {
-                console.error("Failed to parse route points", e);
-                showAlert("Error displaying route.");
-            }
+            };
+            
+            routeDetailModal.classList.remove('hidden');
         }
 
-        // --- Attach Main Button Events ---
+        document.getElementById('btnCloseDetails').addEventListener('click', () => routeDetailModal.classList.add('hidden'));
+        
+        document.getElementById('btnSaveNotes').addEventListener('click', () => {
+            const newNotes = document.getElementById('detailNotesInput').value;
+            try {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                const routeIndex = routes.findIndex(r => r.id === currentlyViewingRouteId);
+                if (routeIndex > -1) {
+                    routes[routeIndex].notes = newNotes;
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
+                    
+                    const btn = document.getElementById('btnSaveNotes');
+                    const originalText = btn.innerText;
+                    btn.innerText = "SAVED!";
+                    btn.classList.replace('text-yellow-500', 'text-black');
+                    btn.classList.replace('bg-zinc-900', 'bg-yellow-500');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.replace('text-black', 'text-yellow-500');
+                        btn.classList.replace('bg-yellow-500', 'bg-zinc-900');
+                    }, 2000);
+                }
+            } catch (e) { console.error(e); }
+        });
+
+        // --- Master Button Events ---
         startBtn.addEventListener('click', startTracking);
         stopBtn.addEventListener('click', stopTracking);
         resetBtn.addEventListener('click', resetRide);
