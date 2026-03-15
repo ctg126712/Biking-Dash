@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Pitch Black Background -->
+  <rect width="512" height="512" fill="#000000"/>
+  
+  <!-- Neon Glow Filter -->
+  <defs>
+    <filter id="neon" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur1" />
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#neon)">
+    <!-- Segmented Speedometer Gauge Arc -->
+    <path d="M 116 416 A 212 212 0 1 1 396 416" fill="none" stroke="#ffff00" stroke-width="42" stroke-linecap="butt" stroke-dasharray="24 12" />
+    
+    <!-- Stylized Geometric Bicycle -->
+    <g stroke="#ffff00" fill="none" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Back Wheel -->
+      <circle cx="180" cy="280" r="45" />
+      <!-- Front Wheel -->
+      <circle cx="332" cy="280" r="45" />
+      <!-- Main Frame -->
+      <path d="M 180 280 L 230 200 L 300 200 L 332 280" />
+      <!-- Seat Post -->
+      <path d="M 230 200 L 200 150" />
+      <!-- Handlebars -->
+      <path d="M 300 200 L 280 130 L 310 130" />
+      <!-- Chainstay -->
+      <path d="M 180 280 L 250 280 L 230 200" />
+    </g>
+  </g>
+</svg>
