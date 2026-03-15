@@ -125,6 +125,13 @@
         </div>
     </div>
 
+    <!-- Live Ride Timer (Upper Right) -->
+    <div class="absolute top-6 right-4 z-[1000] pointer-events-none">
+        <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.8)]">
+            <span id="liveTimerText" class="font-digital text-yellow-400 text-2xl neon-glow tracking-widest tabular-nums">00:00</span>
+        </div>
+    </div>
+
     <!-- Bottom Dashboard UI -->
     <div class="absolute bottom-0 w-full bg-black/95 backdrop-blur-xl border-t border-zinc-900 rounded-t-[2.5rem] p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] transition-transform duration-300">
         
@@ -507,6 +514,7 @@
         const compassRose = document.getElementById('compassRose');
         const headingText = document.getElementById('headingText');
         const headingDir = document.getElementById('headingDir');
+        const liveTimerText = document.getElementById('liveTimerText');
         
         const saveModal = document.getElementById('saveModal');
         const loadModal = document.getElementById('loadModal');
@@ -573,6 +581,9 @@
                 rideSeconds++;
                 const elapsedHours = rideSeconds / 3600;
                 
+                // Update Live Timer
+                liveTimerText.innerText = formatTime(rideSeconds);
+                
                 if (elapsedHours > 0) {
                     const avgMph = totalDistanceMiles / elapsedHours;
                     avgSpeedEl.innerText = avgMph.toFixed(1);
@@ -604,6 +615,7 @@
                 isRaceFinished = false;
                 avgSpeedEl.innerText = "0.0";
                 topSpeedEl.innerText = "0.0";
+                liveTimerText.innerText = "00:00";
                 
                 if (currentMarker) { map.removeLayer(currentMarker); currentMarker = null; }
             }
@@ -676,6 +688,7 @@
             isRaceFinished = false;
             avgSpeedEl.innerText = "0.0";
             topSpeedEl.innerText = "0.0";
+            liveTimerText.innerText = "00:00";
 
             updateStatus("Ready to ride", "bg-yellow-400");
             startBtn.innerText = "START RIDE";
