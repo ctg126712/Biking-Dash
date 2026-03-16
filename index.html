@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bike Computer - Neon Edition</title>
+    <title>Bike Neon</title>
     
     <!-- iOS / Android Home Screen App Icons & Native Theme -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NEON BIKE">
+    <meta name="apple-mobile-web-app-title" content="Bike Neon">
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.svg">
@@ -440,7 +440,9 @@
         </div>
     </div>
 
+    <!-- Map Leaflet Script & Polyline Offset Plugin -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-polylineoffset@1.1.1/leaflet.polylineoffset.min.js"></script>
 
     <script>
         const ROUTES_KEY = 'bikeTracker_routes_v1';
@@ -449,7 +451,7 @@
         // --- Global Map Variables ---
         let map = null;
         let currentRoutePolyline = null;
-        let compareRouteGroup = null; // Replaced compareRoutePolyline to support multi-color segments
+        let compareRouteGroup = null; 
         let loadedCompareRoutePoints = null;
         let currentMarker = null;
 
@@ -501,9 +503,18 @@
             const lightColor = shadeColor(baseColor, 0.6); // 60% Lighter for DOWN hills
             
             if (points && points.length > 0) {
+                // Outbound vs Inbound offset geometry options
+                const polyOptions = { weight: 6, dashArray: '10, 10', opacity: 0.9, offset: 6, lineCap: 'round', lineJoin: 'round' };
+
+                // Draw Start (Green) and Finish (Red)
+                L.circleMarker(points[0], { radius: 6, fillColor: '#22c55e', color: '#000000', weight: 2, opacity: 1, fillOpacity: 1, zIndexOffset: 100 }).addTo(compareRouteGroup);
+                if (points.length > 1) {
+                    L.circleMarker(points[points.length - 1], { radius: 6, fillColor: '#ef4444', color: '#000000', weight: 2, opacity: 1, fillOpacity: 1, zIndexOffset: 100 }).addTo(compareRouteGroup);
+                }
+
                 if (points[0].length < 3) {
-                    // Old route without altitude data (draw standard dashed line)
-                    L.polyline(points, {color: baseColor, weight: 5, dashArray: '10, 10', opacity: 0.9}).addTo(compareRouteGroup);
+                    // Old route without altitude data
+                    L.polyline(points, {color: baseColor, ...polyOptions}).addTo(compareRouteGroup);
                 } else {
                     // Topographic Route drawing
                     let segmentCoords = [points[0]];
@@ -512,7 +523,7 @@
                     for (let i = 1; i < points.length; i++) {
                         const p1 = points[i-1];
                         const p2 = points[i];
-                        const dAlt = p2[2] - p1[2]; // Change in altitude in meters
+                        const dAlt = p2[2] - p1[2]; 
                         
                         let pointType = 0;
                         if (dAlt > 0.4) pointType = 1;      // Going up
@@ -523,7 +534,7 @@
                             if (currentSegType === 1) color = darkColor;
                             else if (currentSegType === -1) color = lightColor;
                             
-                            L.polyline(segmentCoords, {color: color, weight: 5, dashArray: '10, 10', opacity: 0.9}).addTo(compareRouteGroup);
+                            L.polyline(segmentCoords, {color: color, ...polyOptions}).addTo(compareRouteGroup);
                             segmentCoords = [p1]; 
                         }
                         currentSegType = pointType;
@@ -533,7 +544,7 @@
                         let color = baseColor;
                         if (currentSegType === 1) color = darkColor;
                         else if (currentSegType === -1) color = lightColor;
-                        L.polyline(segmentCoords, {color: color, weight: 5, dashArray: '10, 10', opacity: 0.9}).addTo(compareRouteGroup);
+                        L.polyline(segmentCoords, {color: color, ...polyOptions}).addTo(compareRouteGroup);
                     }
                 }
             }
@@ -705,9 +716,9 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }).addTo(map);
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // Map Polylines (Color dynamically updated by Theme Engine)
-        currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9}).addTo(map); 
-        compareRouteGroup = L.layerGroup().addTo(map); // Stores dynamic colored segments
+        // Map Polylines (Color dynamically updated by Theme Engine). Offset 6px so out/back lines don't overlap!
+        currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9, offset: 6, lineCap: 'round', lineJoin: 'round'}).addTo(map); 
+        compareRouteGroup = L.layerGroup().addTo(map); 
 
         // Apply theme to map on startup
         applyThemeToMap();
