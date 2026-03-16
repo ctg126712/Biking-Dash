@@ -39,6 +39,7 @@
                     },
                     dropShadow: {
                         'neon': '0 0 8px var(--neon-main)',
+                        'neon-gauge': '0 0 8px var(--neon-gauge)',
                     }
                 }
             }
@@ -105,15 +106,18 @@
         /* Dashboard Modes */
         #dashboardContainer { transition: all 0.3s ease; }
         
-        .dash-expanded { height: 60vh !important; }
-        .dash-collapsed { height: 40vh !important; }
+        .dash-expanded { height: 60dvh !important; }
+        .dash-collapsed { height: 40dvh !important; }
+        .dash-full { height: 100dvh !important; border-radius: 0 !important; border-top: none !important; }
 
         #dashboardContainer.grid-mode {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-rows: repeat(2, minmax(0, 1fr));
             gap: 0.75rem;
-            height: auto !important;
-            flex: none;
+            height: 100% !important;
+            flex: 1;
+            margin-top: 3.5rem;
             margin-bottom: 1rem;
         }
         
@@ -122,19 +126,29 @@
             opacity: 1 !important;
             pointer-events: auto !important;
             z-index: 10 !important;
-            aspect-ratio: 1 / 1;
-            padding: 0.5rem !important;
-            border-radius: 1rem !important;
+            aspect-ratio: auto !important;
+            padding: 0 !important;
+            border-radius: 1.25rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        
+        #dashboardContainer.grid-mode > .dash-view:active {
+            transform: scale(0.96);
         }
 
         /* Grid Mode Internal Shrink Scaling */
         #dashboardContainer.grid-mode #speedExtra { display: none !important; }
-        #dashboardContainer.grid-mode #speedGaugeContainer { width: 100px; height: 100px; margin: 0 auto; border-width: 4px; }
-        #dashboardContainer.grid-mode #speed { font-size: 2.5rem !important; line-height: 2.5rem !important; }
-        #dashboardContainer.grid-mode #speedUnit { font-size: 0.6rem !important; margin-top: 0px !important; }
-        #dashboardContainer.grid-mode #odoScale { transform: scale(0.5); transform-origin: center center; }
-        #dashboardContainer.grid-mode #compassScale { transform: scale(0.55); transform-origin: center center; margin-top: -1rem; }
-        #dashboardContainer.grid-mode #goalScale { transform: scale(0.55); transform-origin: center center; }
+        #dashboardContainer.grid-mode #speedGaugeContainer { width: 150px; height: 150px; margin: 0 auto; border-width: 6px; }
+        #dashboardContainer.grid-mode #speed { font-size: 4.5rem !important; line-height: 1 !important; }
+        #dashboardContainer.grid-mode #speedUnit { font-size: 0.8rem !important; margin-top: 0px !important; }
+        #dashboardContainer.grid-mode #odoScale { transform: scale(0.85); transform-origin: center center; }
+        #dashboardContainer.grid-mode #compassScale { transform: scale(1.1); transform-origin: center center; margin-top: 0; }
+        #dashboardContainer.grid-mode #goalScale { transform: scale(0.85); transform-origin: center center; margin-top: 0; }
     </style>
 </head>
 <body class="flex flex-col h-full w-full no-select relative bg-black">
@@ -143,7 +157,7 @@
     <div id="map"></div>
 
     <!-- Theme Toggle (Upper Left) -->
-    <div class="absolute top-6 left-4 z-[1000] pointer-events-auto">
+    <div class="absolute top-6 left-4 z-[1010] pointer-events-auto">
         <button onclick="cycleTheme()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
@@ -153,7 +167,7 @@
     </div>
 
     <!-- Header / Status -->
-    <div class="absolute top-6 w-full px-4 z-[999] flex justify-center pointer-events-none">
+    <div class="absolute top-6 w-full px-4 z-[1010] flex justify-center pointer-events-none">
         <div id="statusIndicator" class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-black/90 backdrop-blur-md text-neon-main text-sm font-bold shadow-lg pointer-events-auto transition-colors border border-neon-bg/30">
             <span id="statusDot" class="w-2 h-2 rounded-full bg-neon-main mr-2 animate-pulse shadow-neon-sm"></span>
             <span id="statusText" class="font-digital tracking-wide text-lg">Ready to ride</span>
@@ -161,7 +175,7 @@
     </div>
 
     <!-- Live Ride Timer (Upper Right) -->
-    <div class="absolute top-6 right-4 z-[1000] pointer-events-none">
+    <div class="absolute top-6 right-4 z-[1010] pointer-events-none">
         <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-[0_0_15px_var(--neon-gauge)]">
             <span id="liveTimerText" class="font-digital text-neon-gauge text-3xl neon-gauge-glow tracking-widest tabular-nums">00:00</span>
         </div>
@@ -236,9 +250,9 @@
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-[2rem] border border-zinc-900 shadow-inner p-4">
                 <div id="odoScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
                     <div class="text-lg text-neon-dark font-bold uppercase tracking-wider mb-6">Total Distance</div>
-                    <div class="flex space-x-[3px] font-digital text-6xl items-baseline bg-black p-3 rounded-lg shadow-inner border border-zinc-900">
-                        <div id="odo1" class="bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
-                        <div id="odo2" class="bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                    <div class="flex justify-center space-x-[3px] font-digital text-6xl items-baseline bg-black p-3 rounded-lg shadow-inner border border-zinc-900 mx-auto transition-all duration-300">
+                        <div id="odo1" class="hidden bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
+                        <div id="odo2" class="hidden bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
                         <div id="odo3" class="bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
                         <div class="text-neon-dark font-black text-4xl px-1 pb-1">.</div>
                         <div id="odo4" class="bg-zinc-900 text-neon-gauge px-3 py-2 rounded-sm shadow-sm border border-zinc-700 neon-gauge-glow">0</div>
@@ -261,7 +275,7 @@
                              <span class="absolute right-3 text-xs font-bold text-neon-dim">E</span>
                              <span class="absolute bottom-3 text-xs font-bold text-neon-dim">S</span>
                              <span class="absolute left-3 text-xs font-bold text-neon-dim">W</span>
-                             <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[28px] border-b-neon-main absolute top-5 drop-shadow-neon"></div>
+                             <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-b-[28px] border-b-neon-gauge absolute top-5 drop-shadow-neon-gauge"></div>
                         </div>
                         <div class="absolute inset-0 m-auto w-5 h-5 bg-zinc-950 rounded-full border-2 border-zinc-800 z-10"></div>
                     </div>
@@ -531,9 +545,20 @@
             }
         }, {passive: true});
 
-        // Expand dashboard when user interacts with carousel
+        // Expand dashboard or tap into specific view from grid mode
         dashboardContainer.addEventListener('click', (e) => {
-            if(!isGridMode && !isDashExpanded && !e.target.closest('button')) {
+            if (isGridMode) {
+                // If in grid mode, clicking a card zooms into it via carousel mode
+                const clickedView = e.target.closest('.dash-view');
+                if (clickedView) {
+                    const index = views.indexOf(clickedView.id);
+                    if (index > -1) {
+                        currentViewIndex = index;
+                        toggleDashboardMode(); 
+                    }
+                }
+            } else if (!isDashExpanded && !e.target.closest('button') && e.target.tagName !== 'INPUT') {
+                // Expand dashboard when user interacts with carousel
                 setDashState(true);
             }
         });
@@ -542,6 +567,8 @@
         let isGridMode = false;
         function toggleDashboardMode() {
             isGridMode = !isGridMode;
+            const container = document.getElementById('dashboardContainer');
+            const bottomDashboard = document.getElementById('bottomDashboard');
             const indicators = document.getElementById('indicators');
             const navLeft = document.getElementById('navLeft');
             const navRight = document.getElementById('navRight');
@@ -549,20 +576,20 @@
 
             if (isGridMode) {
                 // Switch to Grid Mode
-                bottomDashboard.classList.remove('dash-expanded', 'dash-collapsed');
-                bottomDashboard.classList.add('h-auto');
+                bottomDashboard.classList.remove('dash-expanded', 'dash-collapsed', 'h-auto');
+                bottomDashboard.classList.add('dash-full');
                 
-                dashboardContainer.classList.replace('carousel-mode', 'grid-mode');
+                container.classList.replace('carousel-mode', 'grid-mode');
                 indicators.classList.add('opacity-0', 'pointer-events-none');
                 navLeft.classList.add('hidden');
                 navRight.classList.add('hidden');
                 toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>`;
             } else {
                 // Switch to Carousel Mode
-                bottomDashboard.classList.remove('h-auto');
+                bottomDashboard.classList.remove('dash-full', 'h-auto');
                 bottomDashboard.classList.add(isDashExpanded ? 'dash-expanded' : 'dash-collapsed');
 
-                dashboardContainer.classList.replace('grid-mode', 'carousel-mode');
+                container.classList.replace('grid-mode', 'carousel-mode');
                 indicators.classList.remove('opacity-0', 'pointer-events-none');
                 navLeft.classList.remove('hidden');
                 navRight.classList.remove('hidden');
@@ -969,14 +996,32 @@
         }
 
         function updateOdometer(miles) {
-            const formatted = miles.toFixed(2).padStart(6, '0'); 
-            const parts = formatted.replace('.', '').split('');
-            if (parts.length >= 5) {
-                document.getElementById('odo1').innerText = parts[parts.length - 5];
-                document.getElementById('odo2').innerText = parts[parts.length - 4];
-                document.getElementById('odo3').innerText = parts[parts.length - 3];
-                document.getElementById('odo4').innerText = parts[parts.length - 2];
-                document.getElementById('odo5').innerText = parts[parts.length - 1];
+            const parts = miles.toFixed(2).split('.');
+            const intPart = parts[0];
+            const fracPart = parts[1];
+
+            document.getElementById('odo4').innerText = fracPart[0];
+            document.getElementById('odo5').innerText = fracPart[1];
+
+            const odo1 = document.getElementById('odo1');
+            const odo2 = document.getElementById('odo2');
+            const odo3 = document.getElementById('odo3');
+
+            if (intPart.length >= 3) {
+                odo1.classList.remove('hidden');
+                odo2.classList.remove('hidden');
+                odo1.innerText = intPart[intPart.length - 3];
+                odo2.innerText = intPart[intPart.length - 2];
+                odo3.innerText = intPart[intPart.length - 1];
+            } else if (intPart.length === 2) {
+                odo1.classList.add('hidden');
+                odo2.classList.remove('hidden');
+                odo2.innerText = intPart[0];
+                odo3.innerText = intPart[1];
+            } else {
+                odo1.classList.add('hidden');
+                odo2.classList.add('hidden');
+                odo3.innerText = intPart[0];
             }
         }
         
