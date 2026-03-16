@@ -100,6 +100,9 @@
         /* Dashboard Modes */
         #dashboardContainer { transition: all 0.3s ease; }
         
+        .dash-expanded { height: 60vh !important; }
+        .dash-collapsed { height: 40vh !important; }
+
         #dashboardContainer.grid-mode {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -160,7 +163,7 @@
     </div>
 
     <!-- Bottom Dashboard UI -->
-    <div id="bottomDashboard" class="absolute bottom-0 w-full h-[65vh] bg-black/95 backdrop-blur-xl border-t border-zinc-900 rounded-t-[2.5rem] p-5 sm:p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] transition-all duration-300 flex flex-col">
+    <div id="bottomDashboard" class="absolute bottom-0 w-full dash-expanded bg-black/95 backdrop-blur-xl border-t border-zinc-900 rounded-t-[2.5rem] p-5 sm:p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] transition-all duration-500 flex flex-col">
         
         <!-- View Controls (Indicators + Toggle) -->
         <div class="flex justify-between items-center mb-4 w-full max-w-sm mx-auto px-2 shrink-0">
@@ -185,12 +188,12 @@
         <!-- Carousel / Grid Container -->
         <div id="dashboardContainer" class="carousel-mode relative w-full flex-1 max-w-sm mx-auto mb-4">
             
-            <!-- Cycle Navigation Buttons -->
-            <button id="navLeft" onclick="prevView()" class="absolute -left-2 sm:-left-6 top-1/2 -translate-y-1/2 p-4 sm:p-6 z-30 text-zinc-600 hover:text-neon-main active:text-neon-main transition-colors touch-manipulation outline-none">
-                <svg class="w-12 h-12 sm:w-16 sm:h-16 drop-shadow-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            <!-- Cycle Navigation Buttons (Smaller & Dimmer) -->
+            <button id="navLeft" onclick="prevView()" class="absolute left-0 top-1/2 -translate-y-1/2 p-2 sm:p-4 z-20 text-zinc-800 opacity-40 hover:opacity-100 hover:text-neon-main active:text-neon-main transition-all touch-manipulation outline-none">
+                <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-            <button id="navRight" onclick="nextView()" class="absolute -right-2 sm:-right-6 top-1/2 -translate-y-1/2 p-4 sm:p-6 z-30 text-zinc-600 hover:text-neon-main active:text-neon-main transition-colors touch-manipulation outline-none">
-                <svg class="w-12 h-12 sm:w-16 sm:h-16 drop-shadow-neon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+            <button id="navRight" onclick="nextView()" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 sm:p-4 z-20 text-zinc-800 opacity-40 hover:opacity-100 hover:text-neon-main active:text-neon-main transition-all touch-manipulation outline-none">
+                <svg class="w-8 h-8 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
             </button>
 
             <!-- 1. Speed Gauge (View 0) -->
@@ -280,7 +283,7 @@
 
         </div>
 
-        <!-- Primary Controls (Colors explicitly preserved) -->
+        <!-- Primary Controls -->
         <div class="flex space-x-3 mb-3 w-full max-w-sm mx-auto shrink-0">
             <button id="startBtn" class="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-4 rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-transform active:scale-95 text-xl uppercase tracking-wide">
                 Start Ride
@@ -351,7 +354,8 @@
 
     <!-- 4. Route Details & Notes Modal -->
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-4 text-center">
-        <h2 id="detailName" class="text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital">Route Details</h2>
+        <!-- Editable Title -->
+        <input type="text" id="detailNameInput" class="w-full max-w-sm bg-transparent text-center text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
         
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 space-y-3 shadow-2xl text-left">
             <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
@@ -375,7 +379,7 @@
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl">
             <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
             <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
-            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Notes</button>
+            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Updates</button>
         </div>
 
         <div class="w-full max-w-sm flex space-x-3">
@@ -458,11 +462,25 @@
             if (activeThemeIndex < -1) activeThemeIndex = -1;
             cycleTheme();
         } else {
-            // Default to Yellow (index 1)
-            activeThemeIndex = 0; // Starts cycle at 1
+            activeThemeIndex = 0; 
             cycleTheme();
         }
 
+        // --- Layout Size Logic (60% Map vs 60% Dashboard) ---
+        let isDashExpanded = true;
+        const bottomDashboard = document.getElementById('bottomDashboard');
+
+        function setDashState(expand) {
+            if (isGridMode) return; // Grid mode is always auto-height
+            isDashExpanded = expand;
+            if (expand) {
+                bottomDashboard.classList.remove('dash-collapsed');
+                bottomDashboard.classList.add('dash-expanded');
+            } else {
+                bottomDashboard.classList.remove('dash-expanded');
+                bottomDashboard.classList.add('dash-collapsed');
+            }
+        }
 
         // --- Carousel Logic ---
         let currentViewIndex = 0;
@@ -499,18 +517,23 @@
 
         dashboardContainer.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            if (!isGridMode) { // Only allow swiping when in carousel mode
-                if (touchEndX < touchStartX - 50) nextView(); // Swipe Left -> Next View
-                if (touchEndX > touchStartX + 50) prevView(); // Swipe Right -> Prev View
+            if (!isGridMode) { 
+                if (touchStartX - touchEndX > 40) nextView(); // Swipe Left
+                if (touchEndX - touchStartX > 40) prevView(); // Swipe Right
             }
         }, {passive: true});
+
+        // Expand dashboard when user interacts with carousel
+        dashboardContainer.addEventListener('click', (e) => {
+            if(!isGridMode && !isDashExpanded && !e.target.closest('button')) {
+                setDashState(true);
+            }
+        });
 
         // --- Dashboard Mode Toggle (Grid vs Carousel) ---
         let isGridMode = false;
         function toggleDashboardMode() {
             isGridMode = !isGridMode;
-            const container = document.getElementById('dashboardContainer');
-            const bottomDashboard = document.getElementById('bottomDashboard');
             const indicators = document.getElementById('indicators');
             const navLeft = document.getElementById('navLeft');
             const navRight = document.getElementById('navRight');
@@ -518,10 +541,10 @@
 
             if (isGridMode) {
                 // Switch to Grid Mode
-                bottomDashboard.classList.remove('h-[65vh]');
+                bottomDashboard.classList.remove('dash-expanded', 'dash-collapsed');
                 bottomDashboard.classList.add('h-auto');
                 
-                container.classList.replace('carousel-mode', 'grid-mode');
+                dashboardContainer.classList.replace('carousel-mode', 'grid-mode');
                 indicators.classList.add('opacity-0', 'pointer-events-none');
                 navLeft.classList.add('hidden');
                 navRight.classList.add('hidden');
@@ -529,9 +552,9 @@
             } else {
                 // Switch to Carousel Mode
                 bottomDashboard.classList.remove('h-auto');
-                bottomDashboard.classList.add('h-[65vh]');
+                bottomDashboard.classList.add(isDashExpanded ? 'dash-expanded' : 'dash-collapsed');
 
-                container.classList.replace('grid-mode', 'carousel-mode');
+                dashboardContainer.classList.replace('grid-mode', 'carousel-mode');
                 indicators.classList.remove('opacity-0', 'pointer-events-none');
                 navLeft.classList.remove('hidden');
                 navRight.classList.remove('hidden');
@@ -579,6 +602,11 @@
 
         // Apply theme to map on startup
         applyThemeToMap();
+
+        // Shrink dashboard when tapping map
+        map.on('click', () => {
+            if(isDashExpanded) setDashState(false);
+        });
 
         // --- App State ---
         let watchId = null;
@@ -657,6 +685,29 @@
             const s = Math.floor(totalSecs % 60);
             if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- Reverse Geocoding for Auto-Naming Routes ---
+        async function fetchRouteName(lat, lng) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await res.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const location = addr.park || addr.leisure || addr.nature_reserve || addr.road || addr.pedestrian || addr.cycleway;
+                    const city = addr.city || addr.town || addr.village || addr.neighbourhood;
+                    
+                    if (location && city) return `${location}, ${city}`;
+                    if (location) return `${location} Ride`;
+                    if (city) return `${city} Ride`;
+                }
+            } catch (e) { console.warn("Geocoding failed", e); }
+            
+            // Fallback to time-based name
+            const hour = new Date().getHours();
+            if (hour < 12) return "Morning Ride";
+            if (hour < 17) return "Afternoon Ride";
+            return "Evening Ride";
         }
 
         // --- Wake Lock ---
@@ -948,11 +999,25 @@
 
 
         // --- Save Route Modal & System ---
-        saveRouteBtn.addEventListener('click', () => {
-            document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
-            document.getElementById('routeNameInput').value = "";
-            document.getElementById('routeNotesInput').value = "";
+        saveRouteBtn.addEventListener('click', async () => {
             saveModal.classList.remove('hidden');
+            const nameInput = document.getElementById('routeNameInput');
+            nameInput.value = "Locating nearest road/park...";
+            document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
+            document.getElementById('routeNotesInput').value = "";
+            
+            let lat = lastPosition ? lastPosition.coords.latitude : 0;
+            let lng = lastPosition ? lastPosition.coords.longitude : 0;
+            if (currentRouteCoords.length > 0) {
+                lat = currentRouteCoords[0][0]; // Start Point
+                lng = currentRouteCoords[0][1];
+            }
+
+            if (lat !== 0) {
+                nameInput.value = await fetchRouteName(lat, lng);
+            } else {
+                nameInput.value = "My Route";
+            }
         });
         document.getElementById('cancelSaveBtn').addEventListener('click', () => saveModal.classList.add('hidden'));
         
@@ -983,8 +1048,7 @@
         });
 
         // --- Load Routes Modal & Nearby Feature ---
-        openRoutesBtn.addEventListener('click', () => {
-            loadModal.classList.remove('hidden');
+        function loadRoutesList() {
             const listEl = document.getElementById('routesList');
             try {
                 const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
@@ -1015,12 +1079,17 @@
                         ? `<span class="text-neon-main font-bold neon-glow">${route._distAway.toFixed(1)} mi away</span>` 
                         : `<span class="text-neon-dim">${new Date(route.timestamp).toLocaleDateString()}</span>`;
 
-                    btn.innerHTML = `<div class="font-bold text-neon-main text-lg uppercase tracking-wide">${route.name}</div><div class="text-xs text-neon-dark mt-1 flex justify-between"><span>${route.distance} miles</span>${locationBadge}</div>`;
+                    btn.innerHTML = `<div class="font-bold text-neon-main text-lg uppercase tracking-wide truncate">${route.name}</div><div class="text-xs text-neon-dark mt-1 flex justify-between"><span>${route.distance} miles</span>${locationBadge}</div>`;
                     
                     btn.addEventListener('click', () => openRouteDetails(route));
                     listEl.appendChild(btn);
                 });
             } catch (err) { listEl.innerHTML = '<p class="text-red-500 text-sm text-center py-4">Error loading routes.</p>'; }
+        }
+
+        openRoutesBtn.addEventListener('click', () => {
+            loadModal.classList.remove('hidden');
+            loadRoutesList();
         });
 
         document.getElementById('closeLoadBtn').addEventListener('click', () => loadModal.classList.add('hidden'));
@@ -1031,7 +1100,7 @@
             loadModal.classList.add('hidden');
             currentlyViewingRouteId = route.id;
             
-            document.getElementById('detailName').innerText = route.name;
+            document.getElementById('detailNameInput').value = route.name;
             document.getElementById('detailDistance').innerText = route.distance;
             document.getElementById('detailTime').innerText = route.timeSec ? formatTime(route.timeSec) : "--:--";
             document.getElementById('detailAvgSpeed').innerText = route.avgSpeed || "--";
@@ -1055,11 +1124,14 @@
         
         document.getElementById('btnSaveNotes').addEventListener('click', () => {
             const newNotes = document.getElementById('detailNotesInput').value;
+            const newName = document.getElementById('detailNameInput').value.trim() || "Untitled Ride";
+
             try {
                 const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 const routeIndex = routes.findIndex(r => r.id === currentlyViewingRouteId);
                 if (routeIndex > -1) {
                     routes[routeIndex].notes = newNotes;
+                    routes[routeIndex].name = newName;
                     localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
                     
                     const btn = document.getElementById('btnSaveNotes');
