@@ -303,7 +303,7 @@
             <button id="saveRouteBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-3 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Save</button>
             <button id="summaryBtn" class="hidden flex-1 min-w-[80px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-3 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Summary</button>
             <button id="resetBtn" class="hidden flex-1 min-w-[80px] bg-red-950 hover:bg-red-900 text-red-500 border border-red-900 font-bold py-3 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Discard</button>
-            <button id="openRoutesBtn" class="flex-1 min-w-[120px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-3 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Compare Routes</button>
+            <button id="openRoutesBtn" class="flex-1 min-w-[120px] bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-neon-main font-bold py-3 rounded-lg transition-all active:scale-95 text-xs uppercase tracking-wide">Routes</button>
         </div>
     </div>
 
@@ -384,7 +384,8 @@
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl">
             <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
             <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
-            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide">Save Updates</button>
+            <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide transition-colors">Save Updates</button>
+            <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase tracking-wide mt-3 transition-colors">Delete Route</button>
         </div>
 
         <div class="w-full max-w-sm flex space-x-3">
@@ -446,6 +447,7 @@
             if (!currentRoutePolyline) return;
             const t = themes[activeThemeIndex];
             currentRoutePolyline.setStyle({ color: t.vars.main });
+            if (compareRoutePolyline) compareRoutePolyline.setStyle({ color: t.vars.gauge });
             if (currentMarker) currentMarker.setStyle({ fillColor: t.vars.main });
         }
 
@@ -604,7 +606,7 @@
 
         // Map Polylines (Color dynamically updated by Theme Engine)
         currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9}).addTo(map); 
-        compareRoutePolyline = L.polyline([], {color: '#52525b', weight: 4, dashArray: '8, 8', opacity: 0.8}).addTo(map); 
+        compareRoutePolyline = L.polyline([], {color: '#0088ff', weight: 5, dashArray: '10, 10', opacity: 0.9}).addTo(map); 
 
         // Apply theme to map on startup
         applyThemeToMap();
@@ -691,6 +693,36 @@
             const s = Math.floor(totalSecs % 60);
             if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- Nearby Route Detection ---
+        function checkNearbyRoutes(lat, lng) {
+            try {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let isNear = false;
+                for (let route of routes) {
+                    if (route.points) {
+                        const pts = JSON.parse(route.points);
+                        if (pts.length > 0) {
+                            const dist = calculateDistance(lat, lng, pts[0][0], pts[0][1]);
+                            if (dist < 0.05) { // ~260 ft radius
+                                isNear = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                const btn = document.getElementById('openRoutesBtn');
+                if (isNear) {
+                    btn.innerText = '📍 ROUTE NEARBY';
+                    btn.classList.add('bg-neon-gauge', 'text-black', 'animate-pulse');
+                    btn.classList.remove('bg-zinc-900', 'text-neon-main');
+                } else {
+                    btn.innerText = 'ROUTES';
+                    btn.classList.remove('bg-neon-gauge', 'text-black', 'animate-pulse');
+                    btn.classList.add('bg-zinc-900', 'text-neon-main');
+                }
+            } catch(e) {}
         }
 
         // --- Reverse Geocoding for Auto-Naming Routes ---
@@ -933,6 +965,7 @@
             }
 
             lastPosition = position; 
+            checkNearbyRoutes(lat, lng);
         }
 
         function updateOdometer(miles) {
@@ -1113,6 +1146,10 @@
             document.getElementById('detailTopSpeed').innerText = route.topSpeed || "--";
             document.getElementById('detailNotesInput').value = route.notes || "";
             
+            const delBtn = document.getElementById('btnDeleteRoute');
+            delBtn.innerText = "DELETE ROUTE";
+            delBtn.className = "w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase tracking-wide mt-3 transition-colors";
+
             document.getElementById('btnLoadMap').onclick = () => {
                 const points = JSON.parse(route.points);
                 if (points && points.length > 0) {
@@ -1153,6 +1190,49 @@
                 }
             } catch (e) { console.error(e); }
         });
+
+        document.getElementById('btnDeleteRoute').addEventListener('click', (e) => {
+            const btn = e.target;
+            if (btn.innerText === "DELETE ROUTE") {
+                btn.innerText = "TAP TO CONFIRM DELETION";
+                btn.classList.replace('bg-zinc-900', 'bg-red-900');
+                btn.classList.replace('text-red-500', 'text-white');
+                setTimeout(() => {
+                    if (btn.innerText === "TAP TO CONFIRM DELETION") {
+                        btn.innerText = "DELETE ROUTE";
+                        btn.classList.replace('bg-red-900', 'bg-zinc-900');
+                        btn.classList.replace('text-white', 'text-red-500');
+                    }
+                }, 3000);
+            } else {
+                try {
+                    let routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                    routes = routes.filter(r => r.id !== currentlyViewingRouteId);
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
+                    routeDetailModal.classList.add('hidden');
+                    compareRoutePolyline.setLatLngs([]);
+                    showAlert("Route deleted.");
+                    if (lastPosition) checkNearbyRoutes(lastPosition.coords.latitude, lastPosition.coords.longitude);
+                } catch(err) { console.error(err); }
+                
+                btn.innerText = "DELETE ROUTE";
+                btn.classList.replace('bg-red-900', 'bg-zinc-900');
+                btn.classList.replace('text-white', 'text-red-500');
+            }
+        });
+
+        // --- Initial GPS Fetch for Nearby Routes ---
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                if (!lastPosition && isFirstFix) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 14);
+                    checkNearbyRoutes(lat, lng);
+                    lastPosition = position;
+                }
+            }, () => {}, { enableHighAccuracy: true });
+        }
 
         // --- Master Button Events ---
         startBtn.addEventListener('click', startTracking);
