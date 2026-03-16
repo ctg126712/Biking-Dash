@@ -156,8 +156,13 @@
     <!-- Leaflet Map Background -->
     <div id="map"></div>
 
-    <!-- Theme Toggle (Upper Left) -->
-    <div class="absolute top-6 left-4 z-[1010] pointer-events-auto">
+    <!-- Top Left Controls -->
+    <div class="absolute top-6 left-4 z-[1010] pointer-events-auto flex space-x-2">
+        <button onclick="location.reload()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors" title="Reload App">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+        </button>
         <button onclick="cycleTheme()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
@@ -503,13 +508,28 @@
             const lightColor = shadeColor(baseColor, 0.6); // 60% Lighter for DOWN hills
             
             if (points && points.length > 0) {
-                // Outbound vs Inbound offset geometry options
-                const polyOptions = { weight: 6, dashArray: '10, 10', opacity: 0.9, offset: 6, lineCap: 'round', lineJoin: 'round' };
+                // Outbound vs Inbound offset geometry options (thin solid line)
+                const polyOptions = { weight: 3, opacity: 0.9, offset: 6, lineCap: 'round', lineJoin: 'round' };
 
-                // Draw Start (Green) and Finish (Red)
-                L.circleMarker(points[0], { radius: 6, fillColor: '#22c55e', color: '#000000', weight: 2, opacity: 1, fillOpacity: 1, zIndexOffset: 100 }).addTo(compareRouteGroup);
+                // Custom Flag Icons
+                const startIcon = L.divIcon({
+                    html: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="#000" stroke-width="2" fill="#22c55e" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`,
+                    className: 'bg-transparent',
+                    iconSize: [28, 28],
+                    iconAnchor: [4, 28] // Anchor point at bottom of flagpole
+                });
+                
+                const finishIcon = L.divIcon({
+                    html: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="#000" stroke-width="2" fill="#ef4444" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`,
+                    className: 'bg-transparent',
+                    iconSize: [28, 28],
+                    iconAnchor: [4, 28] // Anchor point at bottom of flagpole
+                });
+
+                // Draw Start (Green Flag) and Finish (Red Flag)
+                L.marker(points[0], { icon: startIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
                 if (points.length > 1) {
-                    L.circleMarker(points[points.length - 1], { radius: 6, fillColor: '#ef4444', color: '#000000', weight: 2, opacity: 1, fillOpacity: 1, zIndexOffset: 100 }).addTo(compareRouteGroup);
+                    L.marker(points[points.length - 1], { icon: finishIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
                 }
 
                 if (points[0].length < 3) {
