@@ -28,6 +28,7 @@
                             bg: 'var(--neon-bg)',
                             dark: 'var(--neon-dark)',
                             dim: 'var(--neon-dim)',
+                            gauge: 'var(--neon-gauge)',
                         }
                     },
                     boxShadow: {
@@ -56,6 +57,7 @@
             --neon-bg: #eab308;
             --neon-dark: #ca8a04;
             --neon-dim: #854d0e;
+            --neon-gauge: #0088ff; /* Inverted meter fallback */
         }
 
         body, html {
@@ -96,6 +98,9 @@
         .neon-glow {
             text-shadow: 0 0 10px var(--neon-main), 0 0 20px var(--neon-dark);
         }
+        .neon-gauge-glow {
+            text-shadow: 0 0 10px var(--neon-gauge), 0 0 20px var(--neon-gauge);
+        }
 
         /* Dashboard Modes */
         #dashboardContainer { transition: all 0.3s ease; }
@@ -125,7 +130,7 @@
         /* Grid Mode Internal Shrink Scaling */
         #dashboardContainer.grid-mode #speedExtra { display: none !important; }
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 100px; height: 100px; margin: 0 auto; border-width: 4px; }
-        #dashboardContainer.grid-mode #speed { font-size: 2.2rem !important; line-height: 2.2rem !important; }
+        #dashboardContainer.grid-mode #speed { font-size: 2.5rem !important; line-height: 2.5rem !important; }
         #dashboardContainer.grid-mode #speedUnit { font-size: 0.6rem !important; margin-top: 0px !important; }
         #dashboardContainer.grid-mode #odoScale { transform: scale(0.5); transform-origin: center center; }
         #dashboardContainer.grid-mode #compassScale { transform: scale(0.55); transform-origin: center center; margin-top: -1rem; }
@@ -157,8 +162,8 @@
 
     <!-- Live Ride Timer (Upper Right) -->
     <div class="absolute top-6 right-4 z-[1000] pointer-events-none">
-        <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-md">
-            <span id="liveTimerText" class="font-digital text-neon-main text-2xl neon-glow tracking-widest tabular-nums">00:00</span>
+        <div class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-[0_0_15px_var(--neon-gauge)]">
+            <span id="liveTimerText" class="font-digital text-neon-gauge text-3xl neon-gauge-glow tracking-widest tabular-nums">00:00</span>
         </div>
     </div>
 
@@ -207,10 +212,10 @@
                         </defs>
                         <circle cx="50" cy="50" r="40" fill="none" stroke="#18181b" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
                         <!-- Neon Stroke -->
-                        <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="var(--neon-main)" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px var(--neon-main));" />
+                        <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="var(--neon-gauge)" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px var(--neon-gauge));" />
                     </svg>
                     <div class="absolute flex flex-col items-center justify-center font-digital mt-4">
-                        <div id="speed" class="text-7xl sm:text-8xl text-neon-main tracking-tighter transition-all neon-glow leading-none">00</div>
+                        <div id="speed" class="text-[5.2rem] sm:text-[6.9rem] text-neon-main tracking-tighter transition-all neon-glow leading-none">00</div>
                         <div id="speedUnit" class="text-xs text-neon-dark tracking-widest mt-1 uppercase font-sans font-bold transition-all">MPH</div>
                     </div>
                 </div>
@@ -236,8 +241,8 @@
                         <div id="odo2" class="bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
                         <div id="odo3" class="bg-zinc-950 text-neon-main px-3 py-2 rounded-sm shadow-sm border border-zinc-800 neon-glow">0</div>
                         <div class="text-neon-dark font-black text-4xl px-1 pb-1">.</div>
-                        <div id="odo4" class="bg-zinc-900 text-neon-bg px-3 py-2 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
-                        <div id="odo5" class="bg-zinc-900 text-neon-bg px-3 py-2 rounded-sm shadow-sm border border-zinc-700 neon-glow">0</div>
+                        <div id="odo4" class="bg-zinc-900 text-neon-gauge px-3 py-2 rounded-sm shadow-sm border border-zinc-700 neon-gauge-glow">0</div>
+                        <div id="odo5" class="bg-zinc-900 text-neon-gauge px-3 py-2 rounded-sm shadow-sm border border-zinc-700 neon-gauge-glow">0</div>
                     </div>
                     <div class="text-lg text-neon-dark font-bold uppercase tracking-wider mt-6">Miles</div>
                 </div>
@@ -426,13 +431,13 @@
 
         // --- Dynamic Theme Engine ---
         const themes = [
-            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b' } },
-            { name: 'yellow',  vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e' } },
-            { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63' } },
-            { name: 'green',   vars: { main: '#39ff14', bg: '#22c55e', dark: '#16a34a', dim: '#14532d' } },
-            { name: 'magenta', vars: { main: '#ff00ff', bg: '#d946ef', dark: '#c026d3', dim: '#701a75' } },
-            { name: 'orange',  vars: { main: '#ffaa00', bg: '#f97316', dark: '#ea580c', dim: '#9a3412' } },
-            { name: 'red',     vars: { main: '#ff3333', bg: '#ef4444', dark: '#dc2626', dim: '#7f1d1d' } }
+            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b', gauge: '#ff3333' } },
+            { name: 'yellow',  vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
+            { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63', gauge: '#ff3333' } },
+            { name: 'green',   vars: { main: '#39ff14', bg: '#22c55e', dark: '#16a34a', dim: '#14532d', gauge: '#ff00ff' } },
+            { name: 'magenta', vars: { main: '#ff00ff', bg: '#d946ef', dark: '#c026d3', dim: '#701a75', gauge: '#39ff14' } },
+            { name: 'orange',  vars: { main: '#ffaa00', bg: '#f97316', dark: '#ea580c', dim: '#9a3412', gauge: '#00ffff' } },
+            { name: 'red',     vars: { main: '#ff3333', bg: '#ef4444', dark: '#dc2626', dim: '#7f1d1d', gauge: '#00ffff' } }
         ];
         
         let activeThemeIndex = 0;
@@ -451,6 +456,7 @@
             document.documentElement.style.setProperty('--neon-bg', t.vars.bg);
             document.documentElement.style.setProperty('--neon-dark', t.vars.dark);
             document.documentElement.style.setProperty('--neon-dim', t.vars.dim);
+            document.documentElement.style.setProperty('--neon-gauge', t.vars.gauge);
             localStorage.setItem('bikeTracker_theme', activeThemeIndex);
             applyThemeToMap();
         }
