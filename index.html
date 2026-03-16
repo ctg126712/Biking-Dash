@@ -157,17 +157,17 @@
     <div id="map"></div>
 
     <!-- Top Left Controls -->
-    <div class="absolute top-6 left-4 z-[1010] pointer-events-auto flex space-x-2">
-        <button onclick="location.reload()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors" title="Reload App">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-        </button>
+    <div class="absolute top-6 left-4 z-[1010] pointer-events-auto flex flex-col space-y-2 items-start">
         <button onclick="cycleTheme()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
             </svg>
             <span class="font-digital text-sm uppercase tracking-wider mt-1">Color</span>
+        </button>
+        <button onclick="location.reload()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors" title="Reload App">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
         </button>
     </div>
 
@@ -462,13 +462,13 @@
 
         // --- Dynamic Theme Engine ---
         const themes = [
-            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b', gauge: '#ff3333' } },
+            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b', gauge: '#ff1493' } },
             { name: 'yellow',  vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
-            { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63', gauge: '#ff3333' } },
+            { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63', gauge: '#ff1493' } },
             { name: 'green',   vars: { main: '#39ff14', bg: '#22c55e', dark: '#16a34a', dim: '#14532d', gauge: '#ff00ff' } },
             { name: 'magenta', vars: { main: '#ff00ff', bg: '#d946ef', dark: '#c026d3', dim: '#701a75', gauge: '#39ff14' } },
             { name: 'orange',  vars: { main: '#ffaa00', bg: '#f97316', dark: '#ea580c', dim: '#9a3412', gauge: '#00ffff' } },
-            { name: 'red',     vars: { main: '#ff3333', bg: '#ef4444', dark: '#dc2626', dim: '#7f1d1d', gauge: '#00ffff' } }
+            { name: 'pink',    vars: { main: '#ff1493', bg: '#ec4899', dark: '#be185d', dim: '#831843', gauge: '#00ffff' } }
         ];
         
         let activeThemeIndex = 0;
@@ -520,13 +520,13 @@
                 });
                 
                 const finishIcon = L.divIcon({
-                    html: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="#000" stroke-width="2" fill="#ef4444" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`,
+                    html: `<svg viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><defs><pattern id="checkerPattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="2" height="2" fill="#ffffff" /><rect x="2" width="2" height="2" fill="#000000" /><rect y="2" width="2" height="2" fill="#000000" /><rect x="2" y="2" width="2" height="2" fill="#ffffff" /></pattern></defs><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="url(#checkerPattern)" stroke="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><line x1="4" y1="22" x2="4" y2="15" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></line></svg>`,
                     className: 'bg-transparent',
                     iconSize: [28, 28],
                     iconAnchor: [4, 28] // Anchor point at bottom of flagpole
                 });
 
-                // Draw Start (Green Flag) and Finish (Red Flag)
+                // Draw Start (Green Flag) and Finish (Checkered Flag)
                 L.marker(points[0], { icon: startIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
                 if (points.length > 1) {
                     L.marker(points[points.length - 1], { icon: finishIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
@@ -698,7 +698,7 @@
                 indicators.classList.remove('opacity-0', 'pointer-events-none');
                 navLeft.classList.remove('hidden');
                 navRight.classList.remove('hidden');
-                toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>`;
+                toggleIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>`;
                 showView(currentViewIndex);
             }
         }
