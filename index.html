@@ -1675,10 +1675,13 @@
                 routes.forEach(route => {
                     route._distAway = null;
                     if (lastPosition && route.points) {
-                        const pts = JSON.parse(route.points);
-                        if (pts.length > 0) {
-                            route._distAway = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, pts[0][0], pts[0][1]);
-                        }
+                        // Added Try/Catch so a single corrupted route doesn't break the whole list
+                        try {
+                            const pts = JSON.parse(route.points);
+                            if (pts.length > 0) {
+                                route._distAway = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, pts[0][0], pts[0][1]);
+                            }
+                        } catch(e) {}
                     }
                 });
 
@@ -1743,7 +1746,9 @@
             delBtn.className = "w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase tracking-wide mt-3 transition-colors";
 
             document.getElementById('btnLoadMap').onclick = () => {
-                const points = JSON.parse(route.points);
+                let points = [];
+                try { points = JSON.parse(route.points || '[]'); } catch(e) {}
+                
                 if (points && points.length > 0) {
                     loadedCompareRoutePoints = points;
                     drawCompareRoute(loadedCompareRoutePoints);
@@ -1753,7 +1758,16 @@
                     map.fitBounds(tempLine.getBounds(), { padding: [50, 50] });
                     
                     routeDetailModal.classList.add('hidden');
+                    
+                    // IMPORTANT FIX: Force the UI to switch to the Map View so the user can actually see it!
+                    currentViewIndex = 4;
+                    layoutMode = 0; 
+                    applyLayoutMode();
+                    showView(currentViewIndex);
+                    
                     showAlert(`Loaded "${route.name}". Go crush it!`);
+                } else {
+                    showAlert("Unable to load map. This route has no GPS data.");
                 }
             };
             
@@ -1761,7 +1775,9 @@
             
             // Draw Canvas Chart after modal displays
             setTimeout(() => {
-                drawElevationProfile(JSON.parse(route.points));
+                let pts = [];
+                try { pts = JSON.parse(route.points || '[]'); } catch(e) {}
+                drawElevationProfile(pts);
             }, 50);
         }
 
