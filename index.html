@@ -460,6 +460,23 @@
             </div>
 
             <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl shrink-0">
+                <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
+                <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
+                <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide transition-colors">Save Updates</button>
+                <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-pink-500 bg-zinc-900 border border-pink-900 hover:bg-pink-950 text-sm uppercase tracking-wide mt-3 transition-colors">Delete Route</button>
+            </div>
+
+            <div class="w-full flex space-x-3 mb-8">
+                <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
+                <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Race Finish Modal -->
+    <div id="finishModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
+        <div class="text-6xl mb-4 drop-shadow-neon">🏆</div>
+        <h2 class="text-4xl font-black text-neon-main mb-2 tracking-tight uppercase neon-glow font-digital">Goal Reached!</h2>
         <p id="finishSubtitle" class="text-neon-main font-bold text-xl mb-8 uppercase tracking-wide">Race Complete</p>
         
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
