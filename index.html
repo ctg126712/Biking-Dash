@@ -298,14 +298,25 @@
                 <div id="goalScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
                     <h3 class="text-neon-dark font-bold uppercase tracking-wider mb-6 text-lg">Race Goal</h3>
                     
-                    <div class="flex space-x-2 bg-black p-2 rounded-xl mb-8 w-full max-w-[250px] border border-zinc-900">
+                    <div class="flex space-x-2 bg-black p-2 rounded-xl mb-6 w-full max-w-[250px] border border-zinc-900">
                         <button id="btnGoalDistance" onclick="setGoalType('distance')" class="flex-1 py-2 text-sm font-bold rounded-lg bg-neon-bg text-black shadow-neon-sm transition-colors">Miles</button>
                         <button id="btnGoalTime" onclick="setGoalType('time')" class="flex-1 py-2 text-sm font-bold rounded-lg text-neon-dark hover:text-neon-main transition-colors">Minutes</button>
                     </div>
 
-                    <div class="flex items-center space-x-3 bg-black p-4 rounded-2xl border border-zinc-900 w-full max-w-[250px] justify-center shadow-inner">
+                    <div class="flex items-center space-x-3 bg-black p-4 rounded-2xl border border-zinc-900 w-full max-w-[250px] justify-center shadow-inner mb-6">
                         <input type="number" id="goalInput" class="w-28 sm:w-32 bg-transparent text-neon-main text-center focus:outline-none font-digital text-6xl tabular-nums placeholder-neon-dim neon-glow" placeholder="0.0" min="0.1" step="0.1">
                         <span id="goalUnitLabel" class="text-neon-dark font-bold text-xl uppercase pr-3">Mi</span>
+                    </div>
+
+                    <!-- Split Settings -->
+                    <div class="border-t border-zinc-800 w-full pt-4 flex flex-col items-center">
+                        <h3 class="text-neon-dark font-bold uppercase tracking-wider mb-2 text-xs">Split Audio & Tracking</h3>
+                        <select id="splitSelect" class="bg-black text-neon-main border border-zinc-900 rounded-xl p-2 w-full max-w-[250px] text-center focus:outline-none focus:border-neon-bg font-digital text-xl shadow-inner cursor-pointer">
+                            <option value="0.125">1/8 Mile</option>
+                            <option value="0.25">1/4 Mile</option>
+                            <option value="0.5">1/2 Mile</option>
+                            <!-- 1 to 20 options populated by JS -->
+                        </select>
                     </div>
                 </div>
             </div>
@@ -376,7 +387,7 @@
             
             <!-- Splits Section -->
             <div class="pt-4">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm block mb-3 text-left">1/8 Mi Splits</span>
+                <span id="sumSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-sm block mb-3 text-left">Splits</span>
                 <div id="sumSplitsList" class="space-y-2 text-left"></div>
             </div>
         </div>
@@ -454,7 +465,7 @@
                 
                 <!-- Splits Section -->
                 <div class="pt-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">1/8 Mi Splits</span>
+                    <span id="detailSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">Splits</span>
                     <div id="detailSplitsList" class="space-y-2 text-left"></div>
                 </div>
             </div>
@@ -998,6 +1009,7 @@
         const headingText = document.getElementById('headingText');
         const headingDir = document.getElementById('headingDir');
         const liveTimerText = document.getElementById('liveTimerText');
+        const splitSelect = document.getElementById('splitSelect');
         
         const saveModal = document.getElementById('saveModal');
         const loadModal = document.getElementById('loadModal');
@@ -1108,6 +1120,30 @@
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
         
+        // --- Setup Split Options ---
+        for (let i = 1; i <= 20; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.innerText = `${i} Mile${i > 1 ? 's' : ''}`;
+            splitSelect.appendChild(opt);
+        }
+        
+        const savedSplit = localStorage.getItem('bikeTracker_split');
+        if (savedSplit) splitSelect.value = savedSplit;
+        let currentSplitInterval = parseFloat(splitSelect.value) || 0.125;
+
+        splitSelect.addEventListener('change', (e) => {
+            currentSplitInterval = parseFloat(e.target.value);
+            localStorage.setItem('bikeTracker_split', e.target.value);
+        });
+
+        function getSplitLabel(val) {
+            if (val === 0.125) return "1/8 Mi";
+            if (val === 0.25) return "1/4 Mi";
+            if (val === 0.5) return "1/2 Mi";
+            return `${val} Mi`;
+        }
+
         // Render Splits List to DOM
         function renderSplitsList(splitsData, containerId) {
             const container = document.getElementById(containerId);
@@ -1264,6 +1300,8 @@
             goalInput.classList.add('opacity-50', 'cursor-not-allowed');
             document.getElementById('btnGoalDistance').disabled = true;
             document.getElementById('btnGoalTime').disabled = true;
+            splitSelect.disabled = true;
+            splitSelect.classList.add('opacity-50', 'cursor-not-allowed');
 
             speedEl.innerText = "00";
             speedGauge.style.strokeDashoffset = 75;
@@ -1349,6 +1387,9 @@
 
             updateStatus("Ready to ride", "bg-neon-main");
             startBtn.innerText = "START RIDE";
+
+            splitSelect.disabled = false;
+            splitSelect.classList.remove('opacity-50', 'cursor-not-allowed');
             
             saveRouteBtn.classList.add('hidden');
             summaryBtn.classList.add('hidden');
@@ -1488,8 +1529,8 @@
                     }
                 }
                 
-                // 1/8 Mile Splits Logic
-                if (totalDistanceMiles - lastSplitDist >= 0.125) {
+                // Dynamic Split Tracking Logic
+                if (totalDistanceMiles - lastSplitDist >= currentSplitInterval) {
                     const splitDist = totalDistanceMiles - lastSplitDist;
                     const splitTime = rideSeconds - lastSplitTime;
                     const splitAvgSpeed = splitTime > 0 ? (splitDist / (splitTime / 3600)) : 0;
@@ -1605,6 +1646,7 @@
             // New Advanced Metrics
             document.getElementById('sumFlatTopSpeed').innerText = flatUpTopSpeedMph.toFixed(1);
             document.getElementById('sumConsistentTime').innerText = formatTime(longestConsistentSec);
+            document.getElementById('sumSplitsTitle').innerText = `${getSplitLabel(currentSplitInterval)} Splits`;
             renderSplitsList(splits, 'sumSplitsList');
             
             summaryModal.classList.remove('hidden');
@@ -1654,6 +1696,7 @@
                     downHills: downHillCount,
                     flatUpTopSpeed: flatUpTopSpeedMph.toFixed(1),
                     maxConsistentSec: longestConsistentSec,
+                    splitInterval: currentSplitInterval,
                     splits: JSON.stringify(splits),
                     notes: notes,
                     points: JSON.stringify(currentRouteCoords), 
@@ -1735,6 +1778,9 @@
             document.getElementById('detailFlatTopSpeed').innerText = route.flatUpTopSpeed || "0.0";
             document.getElementById('detailConsistentTime').innerText = route.maxConsistentSec ? formatTime(route.maxConsistentSec) : "00:00";
             
+            const savedSplit = route.splitInterval || 0.125;
+            document.getElementById('detailSplitsTitle').innerText = `${getSplitLabel(savedSplit)} Splits`;
+
             let loadedSplits = [];
             if (route.splits) {
                 try { loadedSplits = JSON.parse(route.splits); } catch(e){}
