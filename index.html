@@ -352,43 +352,49 @@
     <!-- 1. Current Ride Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
         <h2 class="text-3xl font-black text-neon-main mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
-        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 shadow-2xl max-h-[65vh] overflow-y-auto">
-            <div class="space-y-4">
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
-                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Time</span>
-                    <span id="sumTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
-                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Hills (Up/Dn)</span>
-                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumUpHills">0</span> <span class="text-sm text-neon-dark font-sans mx-1">/</span> <span id="sumDownHills">0</span></span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
-                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
-                </div>
-                <!-- New Advanced Metrics -->
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Flat/Up Max Spd</span>
-                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumFlatTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Max Consistent</span>
-                    <span id="sumConsistentTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
-                </div>
-            </div>
+        
+        <div class="w-full max-w-sm relative bg-zinc-950 border border-zinc-900 rounded-2xl mb-8 shadow-2xl overflow-hidden">
+            <!-- Background Canvas Chart -->
+            <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-25 pointer-events-none z-0"></canvas>
             
-            <!-- Splits Section -->
-            <div class="pt-4">
-                <span id="sumSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-sm block mb-3 text-left">Splits</span>
-                <div id="sumSplitsList" class="space-y-2 text-left"></div>
+            <div class="p-6 max-h-[65vh] overflow-y-auto relative z-10">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Time</span>
+                        <span id="sumTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Hills (Up/Dn)</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumUpHills">0</span> <span class="text-sm text-neon-dark font-sans mx-1">/</span> <span id="sumDownHills">0</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <!-- New Advanced Metrics -->
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Flat/Up Max Spd</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumFlatTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Max Consistent</span>
+                        <span id="sumConsistentTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
+                    </div>
+                </div>
+                
+                <!-- Splits Section -->
+                <div class="pt-4">
+                    <span id="sumSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-sm block mb-3 text-left">Splits</span>
+                    <div id="sumSplitsList" class="space-y-2 text-left"></div>
+                </div>
             </div>
         </div>
         <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide shrink-0">Close</button>
@@ -424,53 +430,52 @@
             <!-- Editable Title -->
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
             
-            <!-- Canvas Elevation Profile Chart -->
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-3 mb-4 shadow-2xl relative h-32 flex flex-col shrink-0">
-                <div class="text-[0.65rem] text-neon-dark font-bold uppercase tracking-wider absolute top-3 left-4 z-10">Elevation Profile</div>
-                <canvas id="elevationCanvas" class="w-full flex-1 mt-4"></canvas>
-            </div>
-
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 shadow-2xl text-left max-h-[40vh] overflow-y-auto">
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
-                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Time</span>
-                        <span id="detailTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Avg Speed</span>
-                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Hills (Up/Dn)</span>
-                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailUpHills">0</span> <span class="text-xs text-neon-dark font-sans mx-1">/</span> <span id="detailDownHills">0</span></span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
-                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
-                    </div>
-                    <!-- New Advanced Metrics -->
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Flat/Up Max Spd</span>
-                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailFlatTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Max Consistent</span>
-                        <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
-                    </div>
-                </div>
+            <div class="w-full relative bg-zinc-950 border border-zinc-900 rounded-2xl mb-4 shadow-2xl overflow-hidden">
+                <!-- Background Canvas Chart -->
+                <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-25 pointer-events-none z-0"></canvas>
                 
-                <!-- Splits Section -->
-                <div class="pt-3">
-                    <span id="detailSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">Splits</span>
-                    <div id="detailSplitsList" class="space-y-2 text-left"></div>
+                <div class="p-5 text-left max-h-[45vh] overflow-y-auto relative z-10">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Time</span>
+                            <span id="detailTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Avg Speed</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Hills (Up/Dn)</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailUpHills">0</span> <span class="text-xs text-neon-dark font-sans mx-1">/</span> <span id="detailDownHills">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                        </div>
+                        <!-- New Advanced Metrics -->
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Flat/Up Max Spd</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailFlatTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Max Consistent</span>
+                            <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Splits Section -->
+                    <div class="pt-3">
+                        <span id="detailSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">Splits</span>
+                        <div id="detailSplitsList" class="space-y-2 text-left"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl shrink-0">
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl shrink-0 relative z-10">
                 <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
                 <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
                 <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide transition-colors">Save Updates</button>
@@ -548,8 +553,9 @@
         }
 
         // --- Elevation Profile Canvas Drawer ---
-        function drawElevationProfile(points) {
-            const canvas = document.getElementById('elevationCanvas');
+        function drawElevationProfile(points, canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             
             // Handle retina display scaling
@@ -563,11 +569,7 @@
             ctx.clearRect(0, 0, w, h);
 
             if (!points || points.length < 2 || points[0].length < 3) {
-                ctx.fillStyle = '#ca8a04'; // neon-dark
-                ctx.font = '12px "DS-Digital", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText("NO ELEVATION DATA", w/2, h/2);
-                return;
+                return; // Leave transparent if no data available
             }
 
             // Extract altitudes and distances
@@ -587,15 +589,15 @@
             ctx.moveTo(0, h);
             for (let i = 0; i < points.length; i++) {
                 let x = (dists[i] / totalDist) * w;
-                // Pad chart by 15% on top and bottom so lines don't hit the absolute edges
-                let y = h - ((alts[i] - minAlt) / altRange) * (h * 0.7) - (h * 0.15);
+                // Pad chart to take up the bottom 60% of the canvas height
+                let y = h - ((alts[i] - minAlt) / altRange) * (h * 0.5) - (h * 0.1);
                 ctx.lineTo(x, y);
             }
             ctx.lineTo(w, h);
             ctx.closePath();
 
-            // Styling
-            const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--neon-main').trim();
+            // Styling (Use Inverted Gauge Color)
+            const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--neon-gauge').trim();
             let gradient = ctx.createLinearGradient(0, 0, 0, h);
             gradient.addColorStop(0, themeColor);
             gradient.addColorStop(1, 'transparent');
@@ -833,23 +835,43 @@
         // --- Swipe Gesture Support ---
         let touchStartX = 0;
         let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
         const dashboardContainer = document.getElementById('dashboardContainer');
 
         dashboardContainer.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
         }, {passive: true});
 
         dashboardContainer.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            if (!isGridMode) { 
-                if (touchStartX - touchEndX > 40) nextView(); // Swipe Left
-                if (touchEndX - touchStartX > 40) prevView(); // Swipe Right
+            touchEndY = e.changedTouches[0].screenY;
+            
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // Horizontal Swipe (Change View)
+                if (!isGridMode) { 
+                    if (diffX > 40) nextView(); // Swipe Left
+                    if (diffX < -40) prevView(); // Swipe Right
+                }
+            } else {
+                // Vertical Swipe (Change Layout Mode)
+                if (diffY > 40) { // Swipe Up (Expand)
+                    if (layoutMode === 0) { layoutMode = 1; applyLayoutMode(); }
+                    else if (layoutMode === 1) { layoutMode = 2; applyLayoutMode(); }
+                } else if (diffY < -40) { // Swipe Down (Collapse)
+                    if (layoutMode === 2) { layoutMode = 1; applyLayoutMode(); }
+                    else if (layoutMode === 1) { layoutMode = 0; applyLayoutMode(); }
+                }
             }
         }, {passive: true});
 
         // Expand dashboard or tap into specific view from grid mode
         dashboardContainer.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.tagName === 'INPUT') return;
+            if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
 
             if (isGridMode) {
                 // If in grid mode, clicking a card zooms into it via 100% carousel mode
@@ -862,11 +884,6 @@
                         applyLayoutMode(); 
                     }
                 }
-            } else {
-                // If clicking the 60% carousel or 100% carousel, cycle the mode automatically
-                if (layoutMode === 0) layoutMode = 1;      // 60% Carousel -> 100% Carousel
-                else if (layoutMode === 1) layoutMode = 2; // 100% Carousel -> 100% Grid
-                applyLayoutMode();
             }
         });
 
@@ -1650,6 +1667,10 @@
             renderSplitsList(splits, 'sumSplitsList');
             
             summaryModal.classList.remove('hidden');
+
+            setTimeout(() => {
+                drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
+            }, 50);
         });
         document.getElementById('closeSummaryBtn').addEventListener('click', () => summaryModal.classList.add('hidden'));
 
@@ -1823,7 +1844,7 @@
             setTimeout(() => {
                 let pts = [];
                 try { pts = JSON.parse(route.points || '[]'); } catch(e) {}
-                drawElevationProfile(pts);
+                drawElevationProfile(pts, 'detailElevationCanvas');
             }, 50);
         }
 
