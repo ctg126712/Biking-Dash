@@ -341,29 +341,46 @@
     <!-- 1. Current Ride Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
         <h2 class="text-3xl font-black text-neon-main mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
-        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
-                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 shadow-2xl max-h-[65vh] overflow-y-auto">
+            <div class="space-y-4">
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
+                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Time</span>
+                    <span id="sumTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
+                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Hills (Up/Dn)</span>
+                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumUpHills">0</span> <span class="text-sm text-neon-dark font-sans mx-1">/</span> <span id="sumDownHills">0</span></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                </div>
+                <!-- New Advanced Metrics -->
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Flat/Up Max Spd</span>
+                    <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumFlatTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                </div>
+                <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Max Consistent</span>
+                    <span id="sumConsistentTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
+                </div>
             </div>
-            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Time</span>
-                <span id="sumTime" class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow">00:00</span>
-            </div>
-            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
-                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Hills (Up/Dn)</span>
-                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumUpHills">0</span> <span class="text-sm text-neon-dark font-sans mx-1">/</span> <span id="sumDownHills">0</span></span>
-            </div>
-            <div class="flex justify-between items-center pt-1">
-                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
-                <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+            
+            <!-- Splits Section -->
+            <div class="pt-4">
+                <span class="text-neon-dark font-bold uppercase tracking-wider text-sm block mb-3 text-left">1/8 Mi Splits</span>
+                <div id="sumSplitsList" class="space-y-2 text-left"></div>
             </div>
         </div>
-        <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide">Close</button>
+        <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide shrink-0">Close</button>
     </div>
 
     <!-- 2. Save Route Modal -->
@@ -397,52 +414,52 @@
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
             
             <!-- Canvas Elevation Profile Chart -->
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-3 mb-4 shadow-2xl relative h-32 flex flex-col">
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-3 mb-4 shadow-2xl relative h-32 flex flex-col shrink-0">
                 <div class="text-[0.65rem] text-neon-dark font-bold uppercase tracking-wider absolute top-3 left-4 z-10">Elevation Profile</div>
                 <canvas id="elevationCanvas" class="w-full flex-1 mt-4"></canvas>
             </div>
 
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 space-y-3 shadow-2xl text-left">
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
-                    <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-5 mb-4 shadow-2xl text-left max-h-[40vh] overflow-y-auto">
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
+                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Time</span>
+                        <span id="detailTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Avg Speed</span>
+                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Hills (Up/Dn)</span>
+                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailUpHills">0</span> <span class="text-xs text-neon-dark font-sans mx-1">/</span> <span id="detailDownHills">0</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
+                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <!-- New Advanced Metrics -->
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Flat/Up Max Spd</span>
+                        <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailFlatTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Max Consistent</span>
+                        <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
+                    </div>
                 </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Time</span>
-                    <span id="detailTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow">00:00</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Avg Speed</span>
-                    <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAvgSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
-                </div>
-                <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Hills (Up/Dn)</span>
-                    <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailUpHills">0</span> <span class="text-xs text-neon-dark font-sans mx-1">/</span> <span id="detailDownHills">0</span></span>
-                </div>
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
-                    <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
+                
+                <!-- Splits Section -->
+                <div class="pt-3">
+                    <span class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">1/8 Mi Splits</span>
+                    <div id="detailSplitsList" class="space-y-2 text-left"></div>
                 </div>
             </div>
 
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl">
-                <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
-                <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
-                <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide transition-colors">Save Updates</button>
-                <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-pink-500 bg-zinc-900 border border-pink-900 hover:bg-pink-950 text-sm uppercase tracking-wide mt-3 transition-colors">Delete Route</button>
-            </div>
-
-            <div class="w-full flex space-x-3 mb-8">
-                <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
-                <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. Race Finish Modal -->
-    <div id="finishModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
-        <div class="text-6xl mb-4 drop-shadow-neon">🏆</div>
-        <h2 class="text-4xl font-black text-neon-main mb-2 tracking-tight uppercase neon-glow font-digital">Goal Reached!</h2>
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl shrink-0">
         <p id="finishSubtitle" class="text-neon-main font-bold text-xl mb-8 uppercase tracking-wide">Race Complete</p>
         
         <div class="w-full max-w-sm bg-zinc-950 border border-zinc-900 rounded-2xl p-6 mb-8 space-y-4 shadow-2xl">
@@ -629,16 +646,16 @@
                                 const isUp = grade > 0;
                                 const color = isUp ? '#ff1493' : '#39ff14'; // Neon Pink for Up, Neon Green for Down
                                 const iconHtml = `
-                                    <div class="flex flex-col items-center justify-center font-bold font-sans" style="color: ${color}; text-shadow: 0 0 4px #000, 0 0 8px ${color}; background: rgba(0,0,0,0.8); padding: 2px 5px; border-radius: 6px; border: 1.5px solid ${color}; transform: translateY(-50%);">
-                                        <span class="text-[14px] leading-none mb-[1px]">${isUp ? '▲' : '▼'}</span>
-                                        <span class="text-[11px] leading-none">${Math.abs(grade).toFixed(1)}%</span>
+                                    <div class="flex flex-col items-center justify-center w-full h-full font-bold font-sans" style="color: ${color}; text-shadow: 0 0 4px #000, 0 0 8px ${color}; background: rgba(0,0,0,0.9); border-radius: 8px; border: 2px solid ${color}; box-shadow: 0 0 12px ${color};">
+                                        <span class="text-xl leading-none mb-1">${isUp ? '▲' : '▼'}</span>
+                                        <span class="text-sm leading-none">${Math.abs(grade).toFixed(1)}%</span>
                                     </div>
                                 `;
                                 const hillIcon = L.divIcon({
                                     html: iconHtml,
                                     className: 'bg-transparent',
-                                    iconSize: [40, 36],
-                                    iconAnchor: [20, 18] // Center of chunk
+                                    iconSize: [56, 50],
+                                    iconAnchor: [28, 25] // Perfectly center over the GPS coordinate
                                 });
                                 L.marker([midP[0], midP[1]], { icon: hillIcon, zIndexOffset: 50 }).addTo(compareRouteGroup);
                             }
@@ -884,6 +901,18 @@
         let isFirstFix = true;
         let topSpeedMph = 0;
 
+        // Advanced Metrics State
+        let flatUpTopSpeedMph = 0;
+        let longestConsistentSec = 0;
+        let currentConsistentSec = 0;
+        let consistentSpeedRef = 0;
+        let lastGpsTimestamp = 0;
+        
+        // Splits State
+        let splits = [];
+        let lastSplitDist = 0;
+        let lastSplitTime = 0;
+
         // Hill Tracking State
         let upHillCount = 0;
         let downHillCount = 0;
@@ -894,6 +923,43 @@
         let raceGoalValue = 0;
         let isRaceFinished = false;
         let wakeLock = null;
+
+        // --- Audio Synthesizer Engine ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        
+        function playTone(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'goal') {
+                // Triumphant Chord Arpeggio
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+                osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.15); // C#5
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.3); // E5
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.45); // A5
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1.5);
+            } else if (type === 'split') {
+                // Double Beep
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(1108.73, audioCtx.currentTime + 0.1); 
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
 
         // --- DOM Elements ---
         const speedEl = document.getElementById('speed');
@@ -1024,6 +1090,27 @@
             if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
+        
+        // Render Splits List to DOM
+        function renderSplitsList(splitsData, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!splitsData || splitsData.length === 0) {
+                container.innerHTML = '<div class="text-zinc-500 text-xs uppercase font-sans">No splits recorded yet.</div>';
+                return;
+            }
+            splitsData.forEach((split, idx) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-black p-2.5 rounded-lg border border-zinc-900 shadow-inner">
+                        <span class="text-neon-dim font-bold text-[0.65rem]">#${idx + 1} (${split.dist.toFixed(3)}mi)</span>
+                        <div class="flex space-x-4">
+                            <span class="text-neon-main font-digital text-lg">${formatTime(split.time)}</span>
+                            <span class="text-neon-main font-digital text-lg">${split.avg.toFixed(1)}<span class="text-[0.6rem] text-neon-dark ml-1">MPH</span></span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
         // --- Nearby Route Detection ---
         function checkNearbyRoutes(lat, lng) {
@@ -1119,6 +1206,7 @@
         function startTracking() {
             if (!navigator.geolocation) return showAlert("GPS not supported.");
             requestWakeLock();
+            initAudio(); // Initialize Web Audio API on user interaction
 
             if (startBtn.innerText === "START RIDE") {
                 raceGoalValue = parseFloat(goalInput.value) || 0;
@@ -1131,6 +1219,16 @@
                 isFirstFix = true;
                 topSpeedMph = 0;
                 isRaceFinished = false;
+                
+                flatUpTopSpeedMph = 0;
+                longestConsistentSec = 0;
+                currentConsistentSec = 0;
+                consistentSpeedRef = 0;
+                lastGpsTimestamp = 0;
+                
+                splits = [];
+                lastSplitDist = 0;
+                lastSplitTime = 0;
                 
                 upHillCount = 0;
                 downHillCount = 0;
@@ -1211,6 +1309,16 @@
             
             topSpeedMph = 0;
             isRaceFinished = false;
+            
+            flatUpTopSpeedMph = 0;
+            longestConsistentSec = 0;
+            currentConsistentSec = 0;
+            consistentSpeedRef = 0;
+            lastGpsTimestamp = 0;
+            
+            splits = [];
+            lastSplitDist = 0;
+            lastSplitTime = 0;
             
             upHillCount = 0;
             downHillCount = 0;
@@ -1300,6 +1408,8 @@
                 map.fitBounds(L.latLngBounds(sw, ne), { maxZoom: 16 });
             }
 
+            const now = Date.now();
+
             if (lastPosition) {
                 // Distance Calc
                 const distMiles = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
@@ -1308,7 +1418,7 @@
                     updateOdometer(totalDistanceMiles);
                 }
 
-                // Elevation Calc
+                // Elevation Calc & Hill Detection
                 const lastAlt = lastPosition.coords.altitude || 0;
                 const deltaAlt = alt - lastAlt;
 
@@ -1335,15 +1445,59 @@
                         countedCurrentSlope = true;
                     }
                 }
+                
+                // --- Advanced Metrics Logic ---
+                
+                // Flat/Up Top Speed
+                if (currentSlopeDir !== -1 && currentSpeedMph > flatUpTopSpeedMph) {
+                    flatUpTopSpeedMph = currentSpeedMph;
+                }
+                
+                // Max Consistent Pace (Steady speed over 4mph)
+                if (lastGpsTimestamp > 0) {
+                    const deltaSec = (now - lastGpsTimestamp) / 1000;
+                    if (currentSpeedMph >= 4.0) {
+                        // 1.5 mph tolerance window
+                        if (Math.abs(currentSpeedMph - consistentSpeedRef) <= 1.5) {
+                            currentConsistentSec += deltaSec;
+                            if (currentConsistentSec > longestConsistentSec) longestConsistentSec = currentConsistentSec;
+                        } else {
+                            consistentSpeedRef = currentSpeedMph;
+                            currentConsistentSec = 0;
+                        }
+                    } else {
+                        currentConsistentSec = 0;
+                        consistentSpeedRef = 0;
+                    }
+                }
+                
+                // 1/8 Mile Splits Logic
+                if (totalDistanceMiles - lastSplitDist >= 0.125) {
+                    const splitDist = totalDistanceMiles - lastSplitDist;
+                    const splitTime = rideSeconds - lastSplitTime;
+                    const splitAvgSpeed = splitTime > 0 ? (splitDist / (splitTime / 3600)) : 0;
+                    
+                    splits.push({
+                        dist: totalDistanceMiles,
+                        time: splitTime,
+                        avg: splitAvgSpeed
+                    });
+                    
+                    lastSplitDist = totalDistanceMiles;
+                    lastSplitTime = rideSeconds;
+                    playTone('split');
+                }
             }
+
+            lastGpsTimestamp = now;
+            lastPosition = position; 
 
             if (goalType === 'distance' && raceGoalValue > 0 && totalDistanceMiles >= raceGoalValue && !isRaceFinished) {
                 triggerRaceFinish();
             }
 
-            lastPosition = position; 
             checkNearbyRoutes(lat, lng);
-            updateUpcomingHill(lat, lng); // Trigger the upcoming hill indicator
+            updateUpcomingHill(lat, lng); 
         }
 
         function updateOdometer(miles) {
@@ -1379,6 +1533,7 @@
         function triggerRaceFinish() {
             isRaceFinished = true;
             stopTracking(); 
+            playTone('goal'); // Play Goal Notification Sound
 
             document.getElementById('finishSubtitle').innerHTML = goalType === 'distance' ? `${raceGoalValue} Mile Race Complete` : `${raceGoalValue} Minute Race Complete`;
             
@@ -1430,6 +1585,11 @@
             document.getElementById('sumUpHills').innerText = upHillCount;
             document.getElementById('sumDownHills').innerText = downHillCount;
             
+            // New Advanced Metrics
+            document.getElementById('sumFlatTopSpeed').innerText = flatUpTopSpeedMph.toFixed(1);
+            document.getElementById('sumConsistentTime').innerText = formatTime(longestConsistentSec);
+            renderSplitsList(splits, 'sumSplitsList');
+            
             summaryModal.classList.remove('hidden');
         });
         document.getElementById('closeSummaryBtn').addEventListener('click', () => summaryModal.classList.add('hidden'));
@@ -1475,6 +1635,9 @@
                     topSpeed: topSpeedMph.toFixed(1),
                     upHills: upHillCount,
                     downHills: downHillCount,
+                    flatUpTopSpeed: flatUpTopSpeedMph.toFixed(1),
+                    maxConsistentSec: longestConsistentSec,
+                    splits: JSON.stringify(splits),
                     notes: notes,
                     points: JSON.stringify(currentRouteCoords), 
                     timestamp: Date.now()
@@ -1547,6 +1710,16 @@
             document.getElementById('detailUpHills').innerText = route.upHills || "0";
             document.getElementById('detailDownHills').innerText = route.downHills || "0";
             document.getElementById('detailNotesInput').value = route.notes || "";
+            
+            // New Advanced Metrics (Fallback to 0/empty for older routes)
+            document.getElementById('detailFlatTopSpeed').innerText = route.flatUpTopSpeed || "0.0";
+            document.getElementById('detailConsistentTime').innerText = route.maxConsistentSec ? formatTime(route.maxConsistentSec) : "00:00";
+            
+            let loadedSplits = [];
+            if (route.splits) {
+                try { loadedSplits = JSON.parse(route.splits); } catch(e){}
+            }
+            renderSplitsList(loadedSplits, 'detailSplitsList');
             
             const delBtn = document.getElementById('btnDeleteRoute');
             delBtn.innerText = "DELETE ROUTE";
