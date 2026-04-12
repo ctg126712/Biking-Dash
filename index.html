@@ -30,17 +30,16 @@
                         }
                     },
                     boxShadow: {
-                        'neon-sm': '0 0 8px var(--neon-main)',
-                        'neon-md': '0 0 15px var(--neon-main)',
+                        'neon-sm': '0 0 var(--box-glow-sm) var(--neon-main)',
+                        'neon-md': '0 0 var(--box-glow-md) var(--neon-main)',
                         'neon-lg': '0 0 30px var(--neon-main)',
-                        'neon-glow': '0 0 10px var(--neon-main)',
+                        'neon-glow': '0 0 var(--glow-spread-1) var(--neon-main)',
                     }
                 }
             }
         }
     </script>
     
-    <!-- Leaflet Map CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
     <style>
@@ -52,7 +51,11 @@
             --neon-dark: #ca8a04;
             --neon-dim: #854d0e;
             --neon-gauge: #0088ff; 
-            --dimmer-opacity: 0.5; /* Default to Darkest Setting */
+            
+            --glow-spread-1: 10px;
+            --glow-spread-2: 20px;
+            --box-glow-sm: 8px;
+            --box-glow-md: 15px;
         }
 
         body, html {
@@ -66,24 +69,12 @@
         }
 
         .no-select { user-select: none; -webkit-user-select: none; }
-        
         #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-        .leaflet-layer { filter: invert(100%) grayscale(100%) contrast(120%) brightness(80%); }
-
-        /* Dimmer Overlay for blur-free global dimming */
-        #dimmerOverlay {
-            position: fixed;
-            inset: 0;
-            background: black;
-            opacity: var(--dimmer-opacity);
-            pointer-events: none;
-            z-index: 5000;
-            transition: opacity 0.3s ease;
-        }
+        .leaflet-layer { filter: invert(100%) grayscale(100%) contrast(120%) brightness(80%); transition: filter 0.3s ease; }
 
         .font-digital { font-family: 'DS-Digital', sans-serif; }
-        .neon-glow { text-shadow: 0 0 10px var(--neon-main), 0 0 20px var(--neon-dark); }
-        .neon-gauge-glow { text-shadow: 0 0 10px var(--neon-gauge), 0 0 20px var(--neon-gauge); }
+        .neon-glow { text-shadow: 0 0 var(--glow-spread-1) var(--neon-main), 0 0 var(--glow-spread-2) var(--neon-dark); transition: text-shadow 0.3s ease; }
+        .neon-gauge-glow { text-shadow: 0 0 var(--glow-spread-1) var(--neon-gauge), 0 0 var(--glow-spread-2) var(--neon-gauge); transition: text-shadow 0.3s ease; }
 
         #dashboardContainer { transition: all 0.3s ease; }
         .dash-expanded { height: 60dvh !important; }
@@ -99,12 +90,30 @@
             color: #fff !important;
         }
 
-        /* Dashboard Look Match */
+        /* Outdoor Visibility Modes */
+        body.br-bright, body.br-bright #bottomDashboard, body.br-bright .bg-black { background-color: #111111 !important; transition: background-color 0.3s ease; }
+        body.br-bright #dashboardContainer.carousel-mode, body.br-bright .dash-view, body.br-bright .bg-\[\#0a0a0a\], body.br-bright .bg-\[\#050505\] { background-color: #1a1a1a !important; border-color: #333 !important; }
+        body.br-bright .bg-\[\#111\] { background-color: #222 !important; }
+        body.br-bright .leaflet-layer { filter: invert(100%) grayscale(100%) contrast(110%) brightness(120%) !important; }
+        body.br-bright { --glow-spread-1: 12px; --glow-spread-2: 22px; --box-glow-sm: 10px; --box-glow-md: 18px; }
+
+        body.br-max, body.br-max #bottomDashboard, body.br-max .bg-black { background-color: #1a1a1a !important; transition: background-color 0.3s ease; }
+        body.br-max #dashboardContainer.carousel-mode, body.br-max .dash-view, body.br-max .bg-\[\#0a0a0a\], body.br-max .bg-\[\#050505\] { background-color: #262626 !important; border-color: #444 !important; }
+        body.br-max .bg-\[\#111\] { background-color: #333 !important; }
+        body.br-max .leaflet-layer { filter: invert(100%) grayscale(100%) contrast(110%) brightness(140%) !important; }
+        body.br-max { --glow-spread-1: 16px; --glow-spread-2: 30px; --box-glow-sm: 12px; --box-glow-md: 22px; }
+
         #dashboardContainer.carousel-mode {
             background-color: #0a0a0a;
             border: 1px solid #27272a;
             border-radius: 1.5rem;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        
+        #dashboardContainer.map-view-active {
+            background-color: transparent !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
         }
 
         #dashboardContainer.grid-mode {
@@ -133,13 +142,10 @@
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 140px; height: 140px; }
         #dashboardContainer.grid-mode #speed { font-size: 4rem !important; }
         #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-map { display: none !important; }
-
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="flex flex-col h-full w-full no-select relative">
 
-    <div id="dimmerOverlay"></div>
     <div id="map"></div>
 
     <!-- Top Left Controls -->
@@ -150,7 +156,7 @@
         </button>
         <button id="brightnessBtn" class="px-3 py-2 rounded-lg bg-black border border-neon-main shadow-neon-sm flex items-center justify-center text-neon-main transition-all active:scale-95">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path></svg>
-            <span id="brightnessLabel" class="font-digital text-sm uppercase tracking-widest mt-0.5">Dark</span>
+            <span id="brightnessLabel" class="font-digital text-sm uppercase tracking-widest mt-0.5">Norm</span>
         </button>
         <button id="reloadBtn" class="px-3 py-2 rounded-lg bg-black border border-neon-main shadow-neon-sm flex items-center justify-center text-neon-main transition-all active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -165,26 +171,26 @@
         </div>
     </div>
 
-    <!-- Top Right Timer -->
+    <!-- Top Right Stats -->
     <div class="absolute top-6 right-4 z-[1010] pointer-events-none flex flex-col items-end space-y-2">
-        <div class="px-4 py-2 rounded-lg bg-black border border-neon-gauge shadow-[0_0_15px_var(--neon-gauge)]">
+        <div class="px-4 py-2 rounded-lg bg-black border border-neon-gauge shadow-[0_0_var(--box-glow-md)_var(--neon-gauge)] transition-all">
             <span id="liveTimerText" class="font-digital text-neon-gauge text-3xl neon-gauge-glow tracking-widest tabular-nums">00:00</span>
         </div>
+        <button id="autoPauseToggle" class="pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(239,68,68,0.3)]">Auto Pause: OFF</button>
         <div id="upcomingHillIndicator" class="hidden px-3 py-1 rounded-lg bg-black border border-zinc-800 transition-all duration-300">
             <span id="upcomingHillText" class="font-bold text-xs font-digital tracking-widest text-white"></span>
         </div>
     </div>
 
     <!-- Bottom Dashboard -->
-    <div id="bottomDashboard" class="absolute bottom-0 w-full dash-expanded bg-black border-t border-zinc-900 rounded-t-[2.5rem] p-4 sm:p-6 z-[1000] flex flex-col shadow-2xl">
-        
+    <div id="bottomDashboard" class="absolute bottom-0 w-full dash-expanded bg-black border-t border-zinc-900 rounded-t-[2.5rem] p-4 sm:p-6 z-[1000] flex flex-col shadow-2xl transition-all duration-500">
         <div class="flex justify-center items-center mb-5 w-full max-w-sm mx-auto px-2 relative">
             <div id="indicators" class="flex space-x-2.5">
                 <div class="view-dot w-2 h-2 rounded-full bg-neon-main shadow-neon-sm transition-colors"></div>
-                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800"></div>
-                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800"></div>
-                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800"></div>
-                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
             </div>
             <button id="toggleBtn" class="absolute right-0 text-zinc-500 hover:text-neon-main p-1 transition-colors">
                 <svg id="toggleIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
@@ -201,45 +207,34 @@
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
                         <defs>
                             <mask id="gaugeMask">
-                                <circle cx="50" cy="50" r="38" fill="none" stroke="white" stroke-width="14" stroke-dasharray="4 2" />
+                                <circle cx="50" cy="50" r="38" fill="none" stroke="white" stroke-width="14" stroke-dasharray="4 2" pathLength="100" />
                             </mask>
                         </defs>
-                        <!-- Dark segmented track -->
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#222" stroke-width="14" mask="url(#gaugeMask)" stroke-dasharray="75 100" stroke-linecap="butt" transform="rotate(135 50 50)" />
-                        <!-- Active neon fill -->
-                        <circle id="speedGauge" cx="50" cy="50" r="38" fill="none" stroke="var(--neon-main)" stroke-width="14" mask="url(#gaugeMask)" stroke-dasharray="75 100" stroke-dashoffset="75" stroke-linecap="butt" transform="rotate(135 50 50)" class="transition-all duration-300" style="filter: drop-shadow(0 0 6px var(--neon-main));" />
+                        <!-- Segments -->
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="#18181b" stroke-width="14" mask="url(#gaugeMask)" stroke-dasharray="75 100" pathLength="100" transform="rotate(135 50 50)" />
+                        <!-- Fill (Empty at 0) -->
+                        <circle id="speedGauge" cx="50" cy="50" r="38" fill="none" stroke="var(--neon-main)" stroke-width="14" mask="url(#gaugeMask)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" transform="rotate(135 50 50)" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px var(--neon-main));" />
                     </svg>
                     <div class="absolute flex flex-col items-center justify-center mt-2">
-                        <div id="speed" class="text-[4.5rem] sm:text-[5.5rem] font-digital neon-glow leading-none text-neon-main">00</div>
+                        <div id="speed" class="text-[5rem] sm:text-[6rem] font-digital neon-glow leading-none text-neon-main">00</div>
                         <div class="text-[0.65rem] font-digital uppercase tracking-widest text-neon-dark mt-1">MPH</div>
                     </div>
                 </div>
-                <div id="speedExtra" class="flex justify-between w-full px-6 pb-2">
-                    <div class="text-center">
-                        <div id="avgSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div>
-                        <small class="text-neon-dark font-digital uppercase tracking-widest text-[0.65rem]">AVG SPEED</small>
-                    </div>
-                    <div class="text-center">
-                        <div id="topSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div>
-                        <small class="text-neon-dark font-digital uppercase tracking-widest text-[0.65rem]">TOP SPEED</small>
-                    </div>
+                <div id="speedExtra" class="flex justify-between w-full px-8 pb-2">
+                    <div class="text-center"><div id="avgSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-neon-dark font-digital uppercase tracking-widest text-[0.6rem]">AVG SPEED</small></div>
+                    <div class="text-center"><div id="topSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-neon-dark font-digital uppercase tracking-widest text-[0.6rem]">TOP SPEED</small></div>
                 </div>
             </div>
 
-            <!-- 2. Distance -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="odoScale" class="flex flex-col items-center">
-                    <div class="text-xs text-neon-main font-digital uppercase tracking-widest mb-6 opacity-60">Total Distance</div>
-                    <div class="text-6xl font-digital bg-black p-4 rounded-xl border border-zinc-900 flex space-x-1 tabular-nums shadow-inner">
-                        <div id="odo1" class="hidden">0</div><div id="odo2" class="hidden">0</div><div id="odo3">0</div>
-                        <div class="text-neon-main">.</div>
-                        <div id="odo4" class="text-neon-gauge neon-gauge-glow">0</div><div id="odo5" class="text-neon-gauge neon-gauge-glow">0</div>
+                    <div class="text-6xl font-digital bg-black p-4 rounded-xl border border-zinc-900 flex space-x-1 shadow-inner">
+                        <div id="odo1" class="hidden">0</div><div id="odo2" class="hidden">0</div><div id="odo3">0</div><div class="text-neon-main">.</div><div id="odo4" class="text-neon-gauge">0</div><div id="odo5" class="text-neon-gauge">0</div>
                     </div>
                     <div class="text-lg font-digital uppercase tracking-widest mt-6 text-neon-main">Miles</div>
                 </div>
             </div>
 
-            <!-- 3. Compass -->
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="compassScale" class="flex flex-col items-center">
                     <div id="headingDir" class="text-5xl font-digital neon-glow mb-6 text-neon-main">--</div>
@@ -252,94 +247,88 @@
                 </div>
             </div>
 
-            <!-- 4. Goal -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6">
-                <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
+                <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-neon-bg text-black uppercase">Miles</button>
                     <button id="btnGoalTime" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg text-neon-dark uppercase">Minutes</button>
                 </div>
                 <div class="bg-black p-3 rounded-2xl border border-zinc-800 w-full max-w-[250px] flex items-center justify-center mb-6 shadow-inner">
-                    <input type="number" id="goalInput" class="w-24 bg-transparent text-neon-main text-center font-digital text-5xl outline-none neon-glow" placeholder="0.0">
+                    <input type="number" id="goalInput" class="w-24 bg-transparent text-neon-main text-center font-digital text-5xl outline-none" placeholder="0.0">
                     <span id="goalUnitLabel" class="text-neon-dark font-digital text-lg uppercase pr-2 tracking-widest">Mi</span>
                 </div>
-                <div class="grid grid-cols-2 gap-3 w-full">
-                    <div class="bg-black/40 p-2 rounded-xl border border-zinc-900 text-center">
+                <div class="w-full max-w-[250px]">
+                    <div class="bg-black/40 p-2 rounded-xl border border-zinc-900 text-center shadow-inner">
                         <small class="text-[0.6rem] text-neon-main font-digital tracking-widest block uppercase opacity-60">Splits</small>
-                        <select id="splitSelect" class="bg-transparent text-neon-main font-digital outline-none mt-1 text-center"></select>
-                    </div>
-                    <div class="bg-black/40 p-2 rounded-xl border border-zinc-900 text-center">
-                        <small class="text-[0.6rem] text-neon-main font-digital tracking-widest block uppercase opacity-60">Auto Pause</small>
-                        <button id="autoPauseToggle" class="text-neon-main font-digital uppercase mt-1">OFF</button>
+                        <select id="splitSelect" class="bg-transparent text-neon-main font-digital outline-none mt-1 text-center w-full cursor-pointer"></select>
                     </div>
                 </div>
             </div>
-
-            <!-- 5. Map Reveal Layer -->
-            <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0"></div>
+            
+            <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
+        <!-- Master Control Buttons -->
         <div class="flex space-x-3 mb-4 w-full max-w-sm mx-auto shrink-0">
-            <button id="startBtn" class="flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
-            <button id="stopBtn" disabled class="flex-1 bg-[#111] text-zinc-500 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop</button>
+            <button id="startBtn" class="flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-lg border border-[#2ecc71]">Start Ride</button>
+            <button id="stopBtn" disabled class="flex-1 bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase border border-zinc-800">Stop</button>
         </div>
 
         <div class="flex flex-wrap justify-center gap-2.5 w-full max-w-sm mx-auto">
             <button id="saveRouteBtn" class="hidden flex-1 bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all active:scale-95 shadow-neon-sm">Save</button>
             <button id="summaryBtn" class="hidden flex-1 bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all active:scale-95 shadow-neon-sm">Summary</button>
             <button id="resetBtn" class="hidden flex-1 bg-[#111] border border-zinc-800 text-zinc-500 font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all">Discard</button>
-            <button id="openRoutesBtn" class="flex-1 w-full bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest shadow-neon-sm transition-all active:scale-95">Routes</button>
+            <button id="openRoutesBtn" class="flex-1 w-full bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest shadow-neon-sm active:scale-95 transition-all">Routes</button>
         </div>
     </div>
 
-    <!-- Summary Modal -->
+    <!-- Modals -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-neon-main mb-8 tracking-widest uppercase neon-glow">Ride Summary</h2>
-        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-800 rounded-2xl mb-8 overflow-hidden shadow-2xl">
+        <div class="w-full max-w-sm relative bg-[#050505] border border-zinc-800 rounded-2xl mb-8 overflow-hidden shadow-2xl">
             <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-20 z-0"></canvas>
-            <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left">
-                <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="font-digital uppercase text-neon-main tracking-widest">Distance</span><span class="text-neon-main font-digital text-2xl"><span id="sumDistance">0.0</span> Mi</span></div>
+            <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left font-digital">
+                <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="uppercase text-neon-main tracking-widest">Distance</span><span class="text-neon-main text-2xl"><span id="sumDistance">0.0</span> Mi</span></div>
                 <div class="grid grid-cols-2 gap-4 border-b border-zinc-900 pb-3">
-                    <div><small class="text-neon-main font-digital uppercase tracking-widest block opacity-60 text-[0.6rem]">Total Ascent</small><span class="text-neon-main font-digital text-2xl"><span id="sumAscent">0</span> ft</span></div>
-                    <div class="text-right"><small class="text-neon-main font-digital uppercase tracking-widest block opacity-60 text-[0.6rem]">Total Descent</small><span class="text-neon-main font-digital text-2xl block text-right"><span id="sumDescent">0</span> ft</span></div>
+                    <div><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem]">Total Ascent</small><span class="text-neon-main text-2xl"><span id="sumAscent">0</span> ft</span></div>
+                    <div class="text-right"><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem] text-right">Total Descent</small><span class="text-neon-main text-2xl block text-right"><span id="sumDescent">0</span> ft</span></div>
                 </div>
-                <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="font-digital uppercase text-neon-main tracking-widest">Top Speed</span><span class="text-neon-main font-digital text-2xl"><span id="sumTopSpeed">0.0</span> MPH</span></div>
+                <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="uppercase text-neon-main tracking-widest">Top Speed</span><span class="text-neon-main text-2xl"><span id="sumTopSpeed">0.0</span> MPH</span></div>
                 <div class="border-b border-zinc-900 pb-3">
-                    <small class="text-neon-main font-digital uppercase tracking-widest block opacity-60 text-[0.6rem]">Max Consistent</small>
+                    <small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem]">Max Consistent</small>
                     <div class="flex justify-between items-end mt-1">
-                        <span id="sumConsistentTime" class="text-neon-main font-digital text-3xl">00:00</span>
-                        <span class="text-neon-main font-digital text-sm pb-1 opacity-80"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
+                        <span id="sumConsistentTime" class="text-neon-main text-3xl">00:00</span>
+                        <span class="text-neon-main text-sm pb-1 opacity-80"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
                     </div>
                 </div>
-                <div class="pt-2"><small id="sumSplitsTitle" class="text-neon-main font-digital uppercase tracking-widest block mb-3 opacity-60">Splits</small><div id="sumSplitsList" class="space-y-2"></div></div>
+                <div class="pt-2"><small id="sumSplitsTitle" class="text-neon-main uppercase tracking-widest block mb-3 opacity-60">Splits</small><div id="sumSplitsList" class="space-y-2"></div></div>
             </div>
         </div>
         <button id="closeSummaryBtn" class="w-full max-w-sm py-4 rounded-xl font-digital font-bold text-black bg-neon-bg uppercase tracking-widest text-lg shadow-neon-md">Close</button>
     </div>
 
-    <!-- Modals for saving and browsing routes included below -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-[#0a0a0a] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
+        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-neon-main mb-6 uppercase tracking-widest">Save Route</h3>
-            <p class="text-neon-dark text-xs mb-4 uppercase tracking-widest">Dist: <span id="saveDistancePreview" class="text-neon-main font-digital text-lg neon-glow"></span> mi</p>
+            <p class="text-neon-dark text-xs mb-4 uppercase tracking-widest font-digital">Dist: <span id="saveDistancePreview" class="text-neon-main text-lg neon-glow"></span> mi</p>
             <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main mb-4 outline-none font-digital text-lg tracking-widest">
             <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main h-24 mb-6 font-digital text-sm tracking-widest"></textarea>
             <div class="flex space-x-3">
                 <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg border border-zinc-800 text-zinc-500 uppercase font-digital tracking-widest">Cancel</button>
-                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-neon-bg text-black font-bold uppercase font-digital tracking-widest">Save Data</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-neon-bg text-black font-bold uppercase font-digital tracking-widest">Save</button>
             </div>
         </div>
     </div>
 
-    <div id="loadModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-[#0a0a0a] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm flex flex-col max-h-[85vh]">
+    <div id="loadModal" class="hidden absolute inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4">
+        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-3 mb-4">
                 <h3 class="text-xl font-digital text-neon-main uppercase tracking-widest">Routes</h3>
-                <div class="flex space-x-2">
+                <div class="flex space-x-1">
                     <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none"><option value="all">All</option><option value="25">Top 25</option></select>
                     <select id="routeSortSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
                 </div>
             </div>
-            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+            <div id="routesList" class="flex-1 overflow-y-auto space-y-3"></div>
             <button id="closeLoadBtn" class="mt-6 w-full py-3 rounded-lg bg-neon-bg text-black font-bold font-digital uppercase tracking-widest">Close</button>
         </div>
     </div>
@@ -347,19 +336,19 @@
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto backdrop-blur-md">
         <div class="mt-12 w-full max-w-sm">
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-digital text-neon-main mb-6 uppercase outline-none tracking-widest neon-glow" />
-            <div class="bg-[#0a0a0a] border border-zinc-800 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-2xl">
+            <div class="bg-[#050505] border border-zinc-800 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-2xl">
                 <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-20 pointer-events-none"></canvas>
-                <div class="space-y-4 relative z-10">
-                    <div class="flex justify-between border-b border-zinc-900 pb-2"><span class="font-digital uppercase tracking-widest text-neon-main opacity-70">Distance</span><span id="detailDistance" class="text-neon-main font-digital text-xl">0.0</span></div>
+                <div class="space-y-4 relative z-10 font-digital">
+                    <div class="flex justify-between border-b border-zinc-900 pb-2"><span class="uppercase tracking-widest text-neon-main opacity-70">Distance</span><span id="detailDistance" class="text-neon-main text-xl">0.0</span></div>
                     <div class="grid grid-cols-2 border-b border-zinc-900 pb-2">
-                        <div><small class="text-neon-main font-digital opacity-60 block uppercase tracking-widest text-[0.6rem]">Ascent</small><span id="detailAscent" class="text-neon-main font-digital text-xl">0</span> ft</div>
-                        <div class="text-right"><small class="text-neon-main font-digital opacity-60 block uppercase tracking-widest text-right text-[0.6rem]">Descent</small><span id="detailDescent" class="text-neon-main font-digital text-xl block text-right">0</span> ft</div>
+                        <div><small class="text-neon-main opacity-60 block uppercase tracking-widest text-[0.6rem]">Ascent</small><span id="detailAscent" class="text-neon-main text-xl">0</span> ft</div>
+                        <div class="text-right"><small class="text-neon-main opacity-60 block uppercase tracking-widest text-right text-[0.6rem]">Descent</small><span id="detailDescent" class="text-neon-main text-xl block text-right">0</span> ft</div>
                     </div>
-                    <div><small class="text-neon-main font-digital opacity-60 block uppercase tracking-widest text-[0.6rem]">Max Consistent</small><div class="flex justify-between items-end mt-1"><span id="detailConsistentTime" class="text-neon-main font-digital text-2xl">00:00</span><span class="text-neon-main font-digital text-[0.7rem] opacity-70"><span id="detailConsistentDist">0.0</span> Mi @ <span id="detailConsistentSpeed">0.0</span> MPH</span></div></div>
-                    <div class="pt-2"><small id="detailSplitsTitle" class="text-neon-main font-digital opacity-60 block mb-1 uppercase tracking-widest text-[0.6rem]">Splits</small><div id="detailSplitsList" class="space-y-1"></div></div>
+                    <div><small class="text-neon-main opacity-60 block uppercase tracking-widest text-[0.6rem]">Max Consistent</small><div class="flex justify-between items-end mt-1"><span id="detailConsistentTime" class="text-neon-main text-2xl">00:00</span><span class="text-neon-main text-[0.7rem] opacity-70"><span id="detailConsistentDist">0.0</span> Mi @ <span id="detailConsistentSpeed">0.0</span> MPH</span></div></div>
+                    <div class="pt-2"><small id="detailSplitsTitle" class="text-neon-main opacity-60 block mb-1 uppercase tracking-widest text-[0.6rem]">Splits</small><div id="detailSplitsList" class="space-y-1"></div></div>
                 </div>
             </div>
-            <div class="bg-[#0a0a0a] border border-zinc-800 p-5 rounded-2xl mb-8 text-left shadow-2xl">
+            <div class="bg-[#050505] border border-zinc-800 p-5 rounded-2xl mb-8 text-left shadow-2xl">
                 <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main h-24 mb-4 outline-none text-sm font-digital tracking-widest"></textarea>
                 <button id="btnSaveNotes" class="w-full py-2.5 bg-zinc-900 border border-neon-main text-neon-main rounded-lg font-digital uppercase tracking-widest text-sm mb-3">Save Updates</button>
                 <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm">Delete Route</button>
@@ -372,12 +361,12 @@
     </div>
 
     <div id="alertModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#0a0a0a] border border-neon-main shadow-neon-sm p-8 rounded-2xl max-w-xs text-center"><p id="alertText" class="text-neon-main mb-8 font-digital tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-neon-bg text-black font-bold font-digital tracking-widest uppercase rounded-lg">OK</button></div>
+        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-neon-main mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-neon-bg text-black font-bold tracking-widest uppercase rounded-lg">OK</button></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- 1. GLOBALS & STATE ---
+        // --- 1. GLOBALS & THEMES ---
         const ROUTES_KEY = 'bikeTracker_routes_v1', STATE_KEY = 'bikeTracker_activeRide_v1';
         const themes = [
             { name: 'yellow', vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
@@ -397,10 +386,9 @@
         let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0, isAutoPaused = false, isAutoPauseEnabled = false;
         let currentSplitInterval = 0.125, goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
 
-        // Helper
         const get = id => document.getElementById(id);
 
-        // --- 2. THEME & BRIGHTNESS ---
+        // --- 2. THEME & UI ENGINE ---
 
         function cycleTheme() {
             activeThemeIndex = (activeThemeIndex + 1) % themes.length;
@@ -419,21 +407,63 @@
 
         function cycleBrightness() {
             currentBrightnessLevel = (currentBrightnessLevel + 1) % 3;
-            const r = document.documentElement;
             const lbl = get('brightnessLabel');
-            if(currentBrightnessLevel === 0) {
-                lbl.innerText = "Dark";
-                r.style.setProperty('--dimmer-opacity', '0.5');
-            } else if(currentBrightnessLevel === 1) {
-                lbl.innerText = "Med";
-                r.style.setProperty('--dimmer-opacity', '0.25');
+            const body = document.body;
+            body.classList.remove('br-bright', 'br-max');
+            if(currentBrightnessLevel === 0) { lbl.innerText = "Norm"; }
+            else if(currentBrightnessLevel === 1) { lbl.innerText = "Bright"; body.classList.add('br-bright'); }
+            else { lbl.innerText = "Max"; body.classList.add('br-max'); }
+            localStorage.setItem('bikeTracker_brightness', currentBrightnessLevel);
+        }
+
+        function applyLayoutMode() {
+            isGridMode = (layoutMode === 2);
+            const b = get('bottomDashboard'), c = get('dashboardContainer');
+            b.classList.toggle('dash-expanded', layoutMode === 0);
+            b.classList.toggle('dash-full', layoutMode !== 0);
+            c.className = isGridMode ? "grid-mode relative flex-1 max-w-sm mx-auto mb-4 w-full" : "carousel-mode relative flex-1 max-w-sm mx-auto mb-6 w-full shadow-lg";
+            showView(currentViewIndex); 
+            setTimeout(() => { if(map) map.invalidateSize(); }, 400);
+        }
+
+        function toggleDashboardMode() { layoutMode = (layoutMode + 1) % 3; applyLayoutMode(); }
+
+        function showView(index) {
+            const viewsIds = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
+            viewsIds.forEach((id, i) => {
+                const el = get(id);
+                if (el) {
+                    el.classList.toggle('opacity-100', i === index);
+                    el.classList.toggle('z-10', i === index);
+                    el.classList.toggle('opacity-0', i !== index);
+                    el.classList.toggle('z-0', i !== index);
+                    el.classList.toggle('pointer-events-none', i !== index);
+                }
+            });
+            document.querySelectorAll('.view-dot').forEach((dot, i) => {
+                dot.classList.toggle('bg-neon-main', i === index);
+                dot.classList.toggle('shadow-neon-sm', i === index);
+                dot.classList.toggle('bg-zinc-800', i !== index);
+            });
+            const b = get('bottomDashboard'), dc = get('dashboardContainer');
+            if (viewsIds[index] === 'view-map' && !isGridMode) {
+                b.classList.add('bg-transparent', 'border-transparent', 'shadow-none');
+                dc.classList.add('map-view-active');
+                b.style.pointerEvents = 'none';
+                document.querySelectorAll('#bottomDashboard button').forEach(bt => bt.style.pointerEvents = 'auto');
+                dc.style.pointerEvents = 'none';
             } else {
-                lbl.innerText = "High";
-                r.style.setProperty('--dimmer-opacity', '0');
+                b.classList.remove('bg-transparent', 'border-transparent', 'shadow-none');
+                dc.classList.remove('map-view-active');
+                b.style.pointerEvents = 'auto';
+                dc.style.pointerEvents = 'auto';
             }
         }
 
-        // --- 3. CORE LOGIC ---
+        function nextView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex + 1) % v.length; showView(currentViewIndex); }
+        function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
+
+        // --- 3. TRACKING ENGINE ---
 
         function formatTime(s) { 
             const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); 
@@ -443,40 +473,6 @@
         function calculateDistance(l1, o1, l2, o2) { 
             const R = 3958.8, dLat = (l2-l1)*Math.PI/180, dLon = (o2-o1)*Math.PI/180, a = Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; 
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-        }
-
-        function saveRideState(active) {
-            try { localStorage.setItem(STATE_KEY, JSON.stringify({ rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: currentRouteCoords })); } catch(e) {}
-        }
-
-        function restoreRideState() {
-            try {
-                const s = localStorage.getItem(STATE_KEY);
-                if(s) {
-                    const st = JSON.parse(s);
-                    if(st.rideSeconds > 2) {
-                        rideSeconds=st.rideSeconds; totalDistanceMiles=st.totalDistanceMiles; currentRouteCoords=st.coords;
-                        updateOdometer(totalDistanceMiles); get('liveTimerText').innerText = formatTime(rideSeconds);
-                        if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
-                        get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
-                        updateStatus("Recovered", "bg-zinc-500");
-                        get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden');
-                    }
-                }
-            } catch(e){}
-        }
-
-        function startTracking() {
-            isAutoPaused = false; get('startBtn').disabled = true; get('stopBtn').disabled = false;
-            watchId = navigator.geolocation.watchPosition(updatePosition, ()=>{}, {enableHighAccuracy: true});
-            if(!uiTimer) uiTimer = setInterval(()=>{ if(!isAutoPaused && watchId){ rideSeconds++; get('liveTimerText').innerText = formatTime(rideSeconds); saveRideState(true); }}, 1000);
-        }
-
-        function stopTracking() {
-            if(watchId) navigator.geolocation.clearWatch(watchId); watchId = null;
-            get('startBtn').disabled = false; get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
-            saveRideState(false);
-            if(currentRouteCoords.length > 2) { get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden'); }
         }
 
         function updatePosition(pos) {
@@ -511,43 +507,60 @@
             }
             lastGpsTimestamp = now; lastPosition = pos;
             checkNearbyRoutes(lat, lng);
+            updateUpcomingHill(lat, lng);
         }
 
-        function updateOdometer(m) {
-            const s = m.toFixed(2).split('.'), i = s[0], o1=get('odo1'), o2=get('odo2'), o3=get('odo3');
-            get('odo4').innerText = s[1][0]; get('odo5').innerText = s[1][1];
-            if (i.length>=3) { o1.classList.remove('hidden'); o2.classList.remove('hidden'); o1.innerText=i[i.length-3]; o2.innerText=i[i.length-2]; o3.innerText=i[i.length-1]; }
-            else if (i.length===2) { o1.classList.add('hidden'); o2.classList.remove('hidden'); o2.innerText=i[0]; o3.innerText=i[1]; }
-            else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
+        function startTracking() {
+            if (!navigator.geolocation) return showAlert("GPS not supported.");
+            isAutoPaused = false; get('startBtn').disabled = true; get('stopBtn').disabled = false;
+            watchId = navigator.geolocation.watchPosition(updatePosition, ()=>{}, {enableHighAccuracy: true});
+            if(!uiTimer) uiTimer = setInterval(()=>{ if(!isAutoPaused && watchId){ rideSeconds++; get('liveTimerText').innerText = formatTime(rideSeconds); saveRideState(true); }}, 1000);
         }
 
-        function drawElevationProfile(points, canvasId) {
-            const canvas = document.getElementById(canvasId); if (!canvas) return;
-            const ctx = canvas.getContext('2d'); const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio; canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-            if (!points || points.length < 2) return;
-            const alts = points.map(p => p[2] || 0), minAlt = Math.min(...alts), maxAlt = Math.max(...alts), range = Math.max(maxAlt - minAlt, 1);
-            ctx.beginPath(); ctx.moveTo(0, rect.height);
-            for(let i=0; i<points.length; i++) {
-                const x = (i / (points.length - 1)) * rect.width, y = rect.height - ((alts[i] - minAlt) / range) * (rect.height * 0.6);
-                ctx.lineTo(x, y);
+        function stopTracking() {
+            if(watchId) navigator.geolocation.clearWatch(watchId); watchId = null;
+            get('startBtn').disabled = false; get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
+            saveRideState(false);
+            if(currentRouteCoords.length > 2) { get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden'); }
+        }
+
+        function saveRideState(active) {
+            try { localStorage.setItem(STATE_KEY, JSON.stringify({ rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: currentRouteCoords })); } catch(e) {}
+        }
+
+        function restoreRideState() {
+            try {
+                const s = localStorage.getItem(STATE_KEY);
+                if(s) {
+                    const st = JSON.parse(s);
+                    if(st.rideSeconds > 2) {
+                        rideSeconds=st.rideSeconds; totalDistanceMiles=st.totalDistanceMiles; currentRouteCoords=st.coords;
+                        updateOdometer(totalDistanceMiles); get('liveTimerText').innerText = formatTime(rideSeconds);
+                        if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
+                        get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
+                        updateStatus("Recovered", "bg-zinc-500");
+                        get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden');
+                    }
+                }
+            } catch(e){}
+        }
+
+        // --- 4. UI & DATA ACTIONS ---
+
+        function resetRide() {
+            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; longestConsistentSec = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; get('speed').innerText="00"; updateStatus("Ready to ride", "bg-neon-main");
+        }
+
+        function toggleAutoPause() { 
+            isAutoPauseEnabled = !isAutoPauseEnabled; 
+            const btn = get('autoPauseToggle');
+            if (isAutoPauseEnabled) {
+                btn.innerText = "Auto Pause: ON";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-green-500 text-green-500 font-digital text-[0.7rem] uppercase tracking-widest shadow-[0_0_8px_rgba(34,197,94,0.4)]";
+            } else {
+                btn.innerText = "Auto Pause: OFF";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest shadow-[0_0_8px_rgba(239,68,68,0.4)]";
             }
-            ctx.lineTo(rect.width, rect.height); ctx.closePath();
-            const color = getComputedStyle(document.documentElement).getPropertyValue('--neon-gauge').trim();
-            ctx.fillStyle = color + '44'; ctx.fill(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
-        }
-
-        function drawCompareRoute(points) {
-            compareRouteGroup.clearLayers();
-            L.polyline(points, {color: themes[activeThemeIndex].vars.gauge, weight: 3, opacity: 0.9}).addTo(compareRouteGroup);
-        }
-
-        function saveRide() {
-            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: (totalDistanceMiles/(rideSeconds/3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
-            localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-            localStorage.removeItem(STATE_KEY); location.reload();
         }
 
         function showSummary() {
@@ -564,26 +577,45 @@
             drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
         }
 
+        function saveRide() {
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: (totalDistanceMiles/(rideSeconds/3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
+            localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+            localStorage.removeItem(STATE_KEY); location.reload();
+        }
+
         function loadRoutes() {
             const list = get('routesList'), sort = get('routeSortSelect').value, lim = get('routeLimitSelect').value;
             const lat = lastPosition?.coords.latitude, lng = lastPosition?.coords.longitude;
             let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            
+            const maxD = rts.length ? Math.max(...rts.map(r => parseFloat(r.distance) || 0)) : 0;
+            const maxT = rts.length ? Math.max(...rts.map(r => parseFloat(r.timeSec) || 0)) : 0;
+            const maxS = rts.length ? Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0)) : 0;
+
             rts.forEach(r => {
                 r._dist = Infinity;
                 if(lat && r.points) { try { const p = JSON.parse(r.points); if(p.length) r._dist = calculateDistance(lat, lng, p[0][0], p[0][1]); } catch(e){} }
-                r._d = parseFloat(r.distance); r._t = parseFloat(r.timeSec); r._s = parseFloat(r.avgSpeed);
+                r._d = parseFloat(r.distance) || 0; r._t = parseFloat(r.timeSec) || 0; r._s = parseFloat(r.avgSpeed) || 0;
             });
+
             rts.sort((a,b) => {
                 if(sort === 'proximity') return a._dist - b._dist;
                 if(sort === 'performance') return (b._d - a._d) || (b._t - a._t) || (b._s - a._s);
                 return b.timestamp - a.timestamp;
             });
+
             if(lim === '25') rts = rts.slice(0, 25);
-            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital tracking-widest mt-4">No routes found.</p>';
+            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital mt-4 text-white">No routes found.</p>';
+            
             rts.forEach(r => {
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left bg-black border border-neon-main shadow-neon-sm p-4 rounded-xl mb-3 font-digital";
-                btn.innerHTML = `<div class="flex justify-between"><b>${r.name}</b><small class="text-zinc-500">${new Date(r.timestamp).toLocaleDateString()}</small></div><div class="text-sm mt-1 flex justify-between"><span class="text-neon-main">${r.distance} mi</span> <span class="text-neon-dark">${r._dist!==Infinity ? r._dist.toFixed(1)+' mi away' : ''}</span></div>`;
+                let badge = "";
+                if (maxD > 0 && r._d === maxD) badge += `<span class="bg-neon-main text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1">🏆 DISTANCE</span>`;
+                if (maxT > 0 && r._t === maxT) badge += `<span class="bg-neon-gauge text-white px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1">⏳ ENDURANCE</span>`;
+                if (maxS > 0 && r._s === maxS) badge += `<span class="bg-[#ff00ff] text-white px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1">⚡ SPEED</span>`;
+                btn.innerHTML = `<div class="flex justify-between items-start"><div class="truncate pr-2"><b class="text-lg uppercase">${r.name}</b><div class="flex mt-1">${badge}</div></div><small class="text-zinc-500">${new Date(r.timestamp).toLocaleDateString()}</small></div><div class="text-sm mt-2 flex justify-between items-end border-t border-zinc-900 pt-2"><span><span class="text-neon-main">${r.distance}</span> mi @ <span class="text-neon-main">${r.avgSpeed || '0.0'}</span> mph</span><span class="text-neon-dark text-[0.7rem]">${r._dist!==Infinity ? r._dist.toFixed(1)+' mi away' : ''}</span></div>`;
                 btn.onclick = () => openRouteDetails(r);
                 list.appendChild(btn);
             });
@@ -598,7 +630,7 @@
             get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
             get('detailNotesInput').value = r.notes || "";
             const dl = get('detailSplitsList'); dl.innerHTML = '';
-            JSON.parse(r.splits||'[]').forEach((s,i) => dl.innerHTML += `<div class="flex justify-between bg-black border border-zinc-900 p-2 rounded mb-1 font-digital text-sm"><span>#${i+1}</span><span class="text-neon-main">${formatTime(s.time)}</span><span class="text-neon-main">${s.avg.toFixed(1)} MPH</span></div>`);
+            JSON.parse(r.splits||'[]').forEach((s,i) => dl.innerHTML += `<div class="flex justify-between bg-black p-2 rounded mb-1 font-digital text-sm"><span>#${i+1}</span><span class="text-neon-main">${formatTime(s.time)}</span><span class="text-neon-main">${s.avg.toFixed(1)} MPH</span></div>`);
             drawElevationProfile(JSON.parse(r.points||'[]'), 'detailElevationCanvas');
             get('btnLoadMap').onclick = () => {
                 const pts = JSON.parse(r.points); loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
@@ -611,113 +643,112 @@
             };
         }
 
-        function applyLayoutMode() {
-            isGridMode = (layoutMode === 2);
-            const b = get('bottomDashboard'), c = get('dashboardContainer');
-            b.classList.toggle('dash-expanded', layoutMode === 0);
-            b.classList.toggle('dash-full', layoutMode !== 0);
-            c.className = isGridMode ? "grid-mode relative flex-1 max-w-sm mx-auto mb-4 w-full" : "carousel-mode relative flex-1 max-w-sm mx-auto mb-5 w-full";
-            showView(currentViewIndex); setTimeout(() => { if(map) map.invalidateSize(); }, 400);
+        function updateOdometer(m) {
+            const s = m.toFixed(2).split('.'), i = s[0], o1=get('odo1'), o2=get('odo2'), o3=get('odo3');
+            get('odo4').innerText = s[1][0]; get('odo5').innerText = s[1][1];
+            if (i.length>=3) { o1.classList.remove('hidden'); o2.classList.remove('hidden'); o1.innerText=i[i.length-3]; o2.innerText=i[i.length-2]; o3.innerText=i[i.length-1]; }
+            else if (i.length===2) { o1.classList.add('hidden'); o2.classList.remove('hidden'); o2.innerText=i[0]; o3.innerText=i[1]; }
+            else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
         }
 
-        function toggleDashboardMode() {
-            layoutMode = (layoutMode + 1) % 3;
-            applyLayoutMode();
-        }
-
-        function showView(index) {
-            const viewsIds = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
-            viewsIds.forEach((id, i) => {
-                const el = get(id);
-                if (el) {
-                    el.classList.toggle('opacity-100', i === index);
-                    el.classList.toggle('z-10', i === index);
-                    el.classList.toggle('opacity-0', i !== index);
-                    el.classList.toggle('z-0', i !== index);
-                    el.classList.toggle('pointer-events-none', i !== index);
-                }
-            });
-            document.querySelectorAll('.view-dot').forEach((dot, i) => {
-                dot.classList.toggle('bg-neon-main', i === index);
-                dot.classList.toggle('shadow-neon-sm', i === index);
-                dot.classList.toggle('bg-zinc-800', i !== index);
-            });
-            const b = get('bottomDashboard'), dc = get('dashboardContainer');
-            if (viewsIds[index] === 'view-map' && !isGridMode) {
-                b.classList.add('bg-transparent', 'border-transparent', 'shadow-none');
-                b.style.pointerEvents = 'none';
-                document.querySelectorAll('#bottomDashboard button').forEach(bt => bt.style.pointerEvents = 'auto');
-                dc.style.pointerEvents = 'none';
-            } else {
-                b.classList.remove('bg-transparent', 'border-transparent', 'shadow-none');
-                b.style.pointerEvents = 'auto';
-                dc.style.pointerEvents = 'auto';
+        function updateUpcomingHill(lat, lng) {
+            const hInd = get('upcomingHillIndicator'), hText = get('upcomingHillText');
+            if (!loadedCompareRoutePoints || loadedCompareRoutePoints.length < 5) { hInd.classList.add('hidden'); return; }
+            let closestIdx = 0, minDist = Infinity;
+            for(let i=0; i<loadedCompareRoutePoints.length; i++) {
+                const d = calculateDistance(lat, lng, loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1]);
+                if(d < minDist) { minDist = d; closestIdx = i; }
             }
+            if (minDist > 0.05) { hInd.classList.add('hidden'); return; }
+            let lookDist = 0, lookIdx = closestIdx;
+            for(let i=closestIdx; i<loadedCompareRoutePoints.length-1; i++) {
+                lookDist += calculateDistance(loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1], loadedCompareRoutePoints[i+1][0], loadedCompareRoutePoints[i+1][1]);
+                lookIdx = i+1; if(lookDist >= 0.062) break;
+            }
+            const g = ((loadedCompareRoutePoints[lookIdx][2] - loadedCompareRoutePoints[closestIdx][2]) / (lookDist * 1609.34)) * 100;
+            if (Math.abs(g) >= 2.5) {
+                hInd.classList.remove('hidden'); hInd.style.boxShadow = `0 0 10px ${g > 0 ? '#ff1493' : '#39ff14'}`;
+                hText.innerHTML = `<span style="color:${g > 0 ? '#ff1493' : '#39ff14'}">${g > 0 ? '▲ UP' : '▼ DN'} ${Math.abs(g).toFixed(1)}%</span>`;
+            } else hInd.classList.add('hidden');
         }
 
-        function nextView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex + 1) % v.length; showView(currentViewIndex); }
-        function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
+        function updateStatus(t, c) { get('statusText').innerText = t; get('statusDot').className = `w-2 h-2 rounded-full mr-3 animate-pulse ${c}`; }
 
-        function resetRide() {
-            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; longestConsistentSec = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; updateStatus("Ready to ride", "bg-neon-main");
+        function checkNearbyRoutes(lat, lng) {
+            try {
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let near = false;
+                for(let r of rts) {
+                    const pts = JSON.parse(r.points || '[]');
+                    if(pts.length > 0 && calculateDistance(lat, lng, pts[0][0], pts[0][1]) < 0.05) { near = true; break; }
+                }
+                const btn = get('openRoutesBtn');
+                if(near) { btn.classList.add('nearby-pulse'); btn.innerText = "📍 NEARBY"; }
+                else { btn.classList.remove('nearby-pulse'); btn.innerText = "ROUTES"; }
+            } catch(e){}
         }
 
-        function toggleAutoPause() { isAutoPauseEnabled = !isAutoPauseEnabled; get('autoPauseToggle').innerText = isAutoPauseEnabled ? "ON" : "OFF"; }
-        function setGoalType(t) { goalType = t; [get('btnGoalDistance'), get('btnGoalTime')].forEach(b => b.classList.remove('bg-neon-bg', 'text-black')); get(t === 'distance' ? 'btnGoalDistance' : 'btnGoalTime').classList.add('bg-neon-bg', 'text-black'); get('goalUnitLabel').innerText = t === 'distance' ? 'Mi' : 'Min'; }
+        function drawCompareRoute(pts) {
+            compareRouteGroup.clearLayers();
+            L.polyline(pts, {color: themes[activeThemeIndex].vars.gauge, weight: 3, opacity: 0.9}).addTo(compareRouteGroup);
+        }
 
-        // --- 6. INIT ---
+        // --- 5. INITIALIZATION ---
 
         window.onload = () => {
-            map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
-            compareRouteGroup = L.layerGroup().addTo(map);
+            const dc = get('dashboardContainer');
+            let tSX = 0, tSY = 0;
+            dc.addEventListener('touchstart', e => { tSX = e.changedTouches[0].screenX; tSY = e.changedTouches[0].screenY; }, {passive: true});
+            dc.addEventListener('touchend', e => {
+                const dx = tSX - e.changedTouches[0].screenX, dy = tSY - e.changedTouches[0].screenY;
+                if(Math.abs(dx) > Math.abs(dy)) { if(!isGridMode && Math.abs(dx) > 40) { if(dx > 40) nextView(); else prevView(); } }
+                else { if(Math.abs(dy) > 40) { if(dy > 40) { if(layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if(layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
+            }, {passive: true});
+            dc.onclick = e => {
+                if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+                const vs = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
+                if(isGridMode) { const cv = e.target.closest('.dash-view'); if(cv) { currentViewIndex = vs.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
+            };
 
-            get('themeBtn').addEventListener('click', cycleTheme);
-            get('brightnessBtn').addEventListener('click', cycleBrightness);
-            get('reloadBtn').addEventListener('click', () => location.reload());
-            get('toggleBtn').addEventListener('click', toggleDashboardMode);
-            get('navLeft').addEventListener('click', prevView);
-            get('navRight').addEventListener('click', nextView);
-            get('startBtn').addEventListener('click', () => { if(rideSeconds === 0) resetRide(); startTracking(); });
-            get('stopBtn').addEventListener('click', stopTracking);
-            get('resetBtn').addEventListener('click', () => { localStorage.removeItem(STATE_KEY); location.reload(); });
-            get('openRoutesBtn').addEventListener('click', () => { get('loadModal').classList.remove('hidden'); loadRoutes(); });
-            get('closeLoadBtn').addEventListener('click', () => get('loadModal').classList.add('hidden'));
-            get('closeSummaryBtn').addEventListener('click', () => get('summaryModal').classList.add('hidden'));
-            get('btnCloseDetails').addEventListener('click', () => get('routeDetailModal').classList.add('hidden'));
-            get('cancelSaveBtn').addEventListener('click', () => get('saveModal').classList.add('hidden'));
-            get('confirmSaveBtn').addEventListener('click', saveRide);
-            get('btnSaveNotes').addEventListener('click', () => {
+            get('themeBtn').onclick = cycleTheme;
+            get('brightnessBtn').onclick = cycleBrightness;
+            get('reloadBtn').onclick = () => location.reload();
+            get('toggleBtn').onclick = toggleDashboardMode;
+            get('navLeft').onclick = prevView;
+            get('navRight').onclick = nextView;
+            get('startBtn').onclick = () => { if(rideSeconds === 0) resetRide(); startTracking(); };
+            get('stopBtn').onclick = stopTracking;
+            get('resetBtn').onclick = () => { localStorage.removeItem(STATE_KEY); location.reload(); };
+            get('openRoutesBtn').onclick = () => { get('loadModal').classList.remove('hidden'); loadRoutes(); };
+            get('closeLoadBtn').onclick = () => get('loadModal').classList.add('hidden');
+            get('closeSummaryBtn').onclick = () => get('summaryModal').classList.add('hidden');
+            get('btnCloseDetails').onclick = () => get('routeDetailModal').classList.add('hidden');
+            get('cancelSaveBtn').onclick = () => get('saveModal').classList.add('hidden');
+            get('confirmSaveBtn').onclick = saveRide;
+            get('summaryBtn').onclick = showSummary;
+            get('saveRouteBtn').onclick = () => { get('saveModal').classList.remove('hidden'); get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2); };
+            get('routeLimitSelect').onchange = loadRoutes;
+            get('routeSortSelect').onchange = loadRoutes;
+            get('autoPauseToggle').onclick = toggleAutoPause;
+            get('btnSaveNotes').onclick = () => {
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 const idx = rts.findIndex(rx => rx.id === currentlyViewingRouteId);
                 if(idx > -1) { rts[idx].notes = get('detailNotesInput').value; rts[idx].name = get('detailNameInput').value; localStorage.setItem(ROUTES_KEY, JSON.stringify(rts)); showAlert("Updated!"); }
-            });
-            get('closeAlertBtn').addEventListener('click', () => get('alertModal').classList.add('hidden'));
-            get('summaryBtn').addEventListener('click', showSummary);
-            get('autoPauseToggle').addEventListener('click', toggleAutoPause);
+            };
 
             const splitSel = get('splitSelect');
             [0.125, 0.25, 0.5, 1, 2, 5, 10].forEach(v => { const o = document.createElement('option'); o.value = v; o.innerText = v < 1 ? (v===0.125?"1/8":v===0.25?"1/4":"1/2")+" Mi" : v+" Mi"; splitSel.appendChild(o); });
             splitSel.onchange = (e) => { currentSplitInterval = parseFloat(e.target.value); localStorage.setItem('bikeTracker_split', e.target.value); };
 
-            const dc = get('dashboardContainer');
-            let tSX = 0, tSY = 0;
-            dc.ontouchstart = e => { tSX = e.changedTouches[0].screenX; tSY = e.changedTouches[0].screenY; };
-            dc.ontouchend = e => {
-                const dx = tSX - e.changedTouches[0].screenX, dy = tSY - e.changedTouches[0].screenY;
-                if(Math.abs(dx) > Math.abs(dy)) { if(!isGridMode && Math.abs(dx) > 40) { if(dx > 40) nextView(); else prevView(); } }
-                else { if(Math.abs(dy) > 40) { if(dy > 40) { if(layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if(layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
-            };
-            dc.onclick = e => {
-                if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-                const viewsIds = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
-                if (isGridMode) { const cv = e.target.closest('.dash-view'); if (cv) { currentViewIndex = viewsIds.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
-            };
+            map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
+            compareRouteGroup = L.layerGroup().addTo(map);
 
             restoreRideState();
-            const savedTheme = localStorage.getItem('bikeTracker_theme');
-            if(savedTheme) { activeThemeIndex = parseInt(savedTheme)-1; cycleTheme(); } else cycleTheme();
+            currentBrightnessLevel = -1; cycleBrightness();
+            const st = localStorage.getItem('bikeTracker_theme');
+            if(st) { activeThemeIndex = parseInt(st)-1; cycleTheme(); } else cycleTheme();
             applyLayoutMode();
             navigator.geolocation.getCurrentPosition(p => { lastPosition = p; map.setView([p.coords.latitude, p.coords.longitude], 14); checkNearbyRoutes(p.coords.latitude, p.coords.longitude); });
         };
