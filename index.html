@@ -364,11 +364,12 @@
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
         <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg">
             <h3 class="text-xl font-bold text-neon-main mb-2 uppercase tracking-wide">Save Your Route</h3>
-            <input type="text" id="routeNameInput" placeholder="Morning Ride" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg font-digital">
-            <textarea id="routeNotesInput" placeholder="Notes..." class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-6 focus:outline-none focus:border-neon-bg h-24 resize-none font-digital"></textarea>
+            <p class="text-neon-dark text-sm mb-4">Distance: <span id="saveDistancePreview" class="text-neon-main font-digital font-bold text-lg neon-glow"></span> miles</p>
+            <input type="text" id="routeNameInput" placeholder="e.g. Morning Lake Loop" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg font-digital">
+            <textarea id="routeNotesInput" placeholder="How did you feel? Weather? Hazards?" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-6 focus:outline-none focus:border-neon-bg h-24 resize-none font-digital placeholder-neon-dim"></textarea>
             <div class="flex space-x-3">
-                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-neon-dark bg-zinc-900 border border-zinc-800 uppercase text-sm">Cancel</button>
-                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase text-sm">Save</button>
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 uppercase tracking-wide text-sm">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase tracking-wide text-sm">Save Data</button>
             </div>
         </div>
     </div>
@@ -377,41 +378,50 @@
         <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-2 mb-3 shrink-0">
                 <h3 class="text-xl font-bold text-neon-main uppercase tracking-wide">Saved Routes</h3>
-                <select id="routeSortSelect" class="bg-zinc-900 text-neon-main border border-zinc-700 rounded p-1 text-xs font-sans"><option value="date">Newest</option><option value="proximity">Closest</option></select>
+                <select id="routeSortSelect" class="bg-zinc-900 text-neon-main border border-zinc-700 rounded p-1 text-xs outline-none cursor-pointer font-sans">
+                    <option value="date">Newest First</option>
+                    <option value="proximity">Closest First</option>
+                </select>
             </div>
             <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1"></div>
-            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-neon-bg uppercase shrink-0">Close</button>
+            <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase tracking-wide shrink-0">Close</button>
         </div>
     </div>
 
     <!-- Route Details Modal -->
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto">
         <div class="mt-8 w-full max-w-sm">
-            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-black text-neon-main mb-4 uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
+            <!-- Editable Title -->
+            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
+            
             <div class="w-full relative bg-zinc-950 border border-zinc-900 rounded-2xl mb-4 shadow-2xl overflow-hidden">
+                <!-- Background Canvas Chart -->
                 <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-25 pointer-events-none z-0"></canvas>
+                
                 <div class="p-5 text-left max-h-[45vh] overflow-y-auto relative z-10">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
-                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> Mi</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> <span class="text-xs text-neon-dark font-sans">Mi</span></span>
                         </div>
                         <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Elev Gain/Loss</span>
-                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAscent">0</span><span class="text-[0.6rem] mr-2">ft</span> <span id="detailDescent">0</span><span class="text-[0.6rem]">ft</span></span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAscent">0</span><span class="text-xs mr-2">ft</span> <span id="detailDescent">0</span><span class="text-xs">ft</span></span>
                         </div>
                         <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Top Speed</span>
-                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> MPH</span>
+                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailTopSpeed">0.0</span> <span class="text-xs text-neon-dark font-sans">MPH</span></span>
                         </div>
                         <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Max Consistent</span>
                             <div class="text-right flex flex-col items-end justify-center">
-                                <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg leading-none">00:00</span>
+                                <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow leading-none">00:00</span>
                                 <span class="text-neon-gauge font-digital text-[0.7rem] tabular-nums mt-1 tracking-wide"><span id="detailConsistentDist">0.0</span> MI @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Splits Section -->
                     <div class="pt-3">
                         <span id="detailSplitsTitle" class="text-neon-dark font-bold uppercase tracking-wider text-xs block mb-2 text-left">Splits</span>
                         <div id="detailSplitsList" class="space-y-2 text-left"></div>
@@ -419,15 +429,16 @@
                 </div>
             </div>
 
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl relative z-10">
-                <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 h-24 resize-none text-sm font-digital"></textarea>
-                <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase transition-colors">Save Updates</button>
-                <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase mt-3 transition-colors">Delete Route</button>
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl shrink-0 relative z-10">
+                <label class="block text-neon-dark font-bold uppercase tracking-wider text-xs text-left mb-2">My Notes</label>
+                <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital placeholder-neon-dim"></textarea>
+                <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase tracking-wide transition-colors">Save Updates</button>
+                <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase tracking-wide mt-3 transition-colors">Delete Route</button>
             </div>
 
             <div class="w-full flex space-x-3 mb-8">
-                <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md text-md uppercase">Load Map</button>
-                <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-neon-dark bg-zinc-900 border border-zinc-800 text-md uppercase">Close</button>
+                <button id="btnLoadMap" class="flex-1 py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-md uppercase tracking-wide">Load Map</button>
+                <button id="btnCloseDetails" class="flex-1 py-3 rounded-xl font-bold text-neon-dark bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-transform active:scale-95 text-md uppercase tracking-wide">Close</button>
             </div>
         </div>
     </div>
@@ -436,7 +447,7 @@
     <div id="alertModal" class="hidden absolute inset-0 bg-black/80 z-[3000] flex items-center justify-center p-4">
         <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-neon-bg/30 shadow-neon-lg">
             <p id="alertText" class="text-neon-main mb-6 font-medium font-digital text-lg"></p>
-            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-neon-bg uppercase">OK</button>
+            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-neon-bg uppercase tracking-wide">OK</button>
         </div>
     </div>
 
@@ -619,8 +630,15 @@
                 if (saved) {
                     const state = JSON.parse(saved);
                     if (state.rideSeconds > 2) {
-                        Object.assign(window, state); // Simpler restore
+                        rideSeconds = state.rideSeconds || 0; totalDistanceMiles = state.totalDistanceMiles || 0;
                         totalAscentMeters = state.ascent || 0; totalDescentMeters = state.descent || 0;
+                        topSpeedMph = state.topSpeedMph || 0; flatUpTopSpeedMph = state.flatUpTopSpeedMph || 0;
+                        longestConsistentSec = state.longestConsistentSec || 0; longestConsistentDist = state.longestConsistentDist || 0; longestConsistentSpeed = state.longestConsistentSpeed || 0;
+                        splits = state.splits || []; lastSplitDist = state.lastSplitDist || 0; lastSplitTime = state.lastSplitTime || 0;
+                        upHillCount = state.upHillCount || 0; downHillCount = state.downHillCount || 0;
+                        raceGoalValue = state.raceGoalValue || 0; goalType = state.goalType || 'distance';
+                        currentRouteCoords = state.coords || [];
+
                         updateOdometer(totalDistanceMiles); liveTimerText.innerText = formatTime(rideSeconds);
                         avgSpeedEl.innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
                         topSpeedEl.innerText = topSpeedMph.toFixed(1);
@@ -630,6 +648,7 @@
                             currentMarker = L.circleMarker(last, { radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map);
                         }
                         startBtn.innerText = "RESUME"; stopBtn.disabled = true; updateStatus("Ride Recovered (Paused)", "bg-zinc-500");
+                        saveRouteBtn.classList.remove('hidden'); summaryBtn.classList.remove('hidden'); resetBtn.classList.remove('hidden'); openRoutesBtn.classList.add('hidden');
                     }
                 }
             } catch (e) {}
@@ -648,27 +667,32 @@
 
         const startBtn = document.getElementById('startBtn'), stopBtn = document.getElementById('stopBtn'), liveTimerText = document.getElementById('liveTimerText');
         const avgSpeedEl = document.getElementById('avgSpeed'), topSpeedEl = document.getElementById('topSpeed'), speedEl = document.getElementById('speed');
+        const saveRouteBtn = document.getElementById('saveRouteBtn'), summaryBtn = document.getElementById('summaryBtn'), resetBtn = document.getElementById('resetBtn'), openRoutesBtn = document.getElementById('openRoutesBtn');
+        const saveModal = document.getElementById('saveModal'), loadModal = document.getElementById('loadModal'), routeDetailModal = document.getElementById('routeDetailModal');
 
         function startTracking() {
             initAudio(); if (!navigator.geolocation) return showAlert("GPS not supported.");
             if (startBtn.innerText === "START RIDE") { resetRide(); }
             isAutoPaused = false;
-            startBtn.disabled = true; startBtn.innerText = "START RIDE"; stopBtn.disabled = false;
+            startBtn.disabled = true; stopBtn.disabled = false;
             watchId = navigator.geolocation.watchPosition(updatePosition, () => updateStatus("GPS Error", "bg-red-500"), { enableHighAccuracy: true });
             if (!uiTimer) uiTimer = setInterval(() => { if (!isAutoPaused && watchId) { rideSeconds++; liveTimerText.innerText = formatTime(rideSeconds); saveRideState(true); } }, 1000);
+            saveRouteBtn.classList.add('hidden'); summaryBtn.classList.add('hidden'); resetBtn.classList.add('hidden'); openRoutesBtn.classList.add('hidden');
         }
 
         function stopTracking() {
             if (watchId) navigator.geolocation.clearWatch(watchId); watchId = null;
             startBtn.disabled = false; startBtn.innerText = "RESUME"; stopBtn.disabled = true;
             updateStatus("Ride Paused", "bg-zinc-500"); saveRideState(false);
+            if (currentRouteCoords.length > 2) { saveRouteBtn.classList.remove('hidden'); summaryBtn.classList.remove('hidden'); resetBtn.classList.remove('hidden'); }
+            else { openRoutesBtn.classList.remove('hidden'); }
         }
 
         function updatePosition(position) {
             const lat = position.coords.latitude, lng = position.coords.longitude, speedMps = position.coords.speed || 0, alt = position.coords.altitude || 0;
             const currentSpeedMph = speedMps * 2.23694;
+            const now = Date.now();
             
-            // Auto-Pause Logic
             if (isAutoPauseEnabled) {
                 if (!isAutoPaused && currentSpeedMph < 1.0) { isAutoPaused = true; updateStatus("Auto-Paused", "bg-orange-500", true); }
                 else if (isAutoPaused && currentSpeedMph > 1.5) { isAutoPaused = false; playTone('split'); updateStatus("Auto-Resumed", "bg-neon-main", true); }
@@ -692,18 +716,33 @@
                     totalDistanceMiles += dist; updateOdometer(totalDistanceMiles);
                     const dAlt = alt - (lastPosition.coords.altitude || 0);
                     if (dAlt > 0) totalAscentMeters += dAlt; else totalDescentMeters += Math.abs(dAlt);
+                    
+                    // Consistent Speed Logic
+                    if (lastGpsTimestamp > 0) {
+                        const deltaSec = (now - lastGpsTimestamp) / 1000;
+                        if (currentSpeedMph >= 4.0) {
+                            if (Math.abs(currentSpeedMph - consistentSpeedRef) <= 1.5) {
+                                currentConsistentSec += deltaSec; currentConsistentDist += dist;
+                                if (currentConsistentSec > longestConsistentSec) {
+                                    longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef;
+                                }
+                            } else { consistentSpeedRef = currentSpeedMph; currentConsistentSec = 0; currentConsistentDist = 0; }
+                        } else { currentConsistentSec = 0; currentConsistentDist = 0; consistentSpeedRef = 0; }
+                    }
                 }
-                // Splits & Consistent Logic...
                 if (totalDistanceMiles - lastSplitDist >= currentSplitInterval) { 
                     splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
                     lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds; playTone('split');
                 }
             }
-            lastPosition = position; updateUpcomingHill(lat, lng);
+            lastGpsTimestamp = now; lastPosition = position; updateUpcomingHill(lat, lng);
         }
 
         function resetRide() {
-            rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; splits = []; lastSplitDist = 0; lastSplitTime = 0;
+            localStorage.removeItem(STATE_KEY);
+            rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0;
+            longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0;
+            splits = []; lastSplitDist = 0; lastSplitTime = 0;
             currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null;
         }
 
@@ -712,21 +751,200 @@
             document.getElementById('sumAscent').innerText = Math.round(totalAscentMeters * 3.28084);
             document.getElementById('sumDescent').innerText = Math.round(totalDescentMeters * 3.28084);
             document.getElementById('sumTopSpeed').innerText = topSpeedMph.toFixed(1);
+            document.getElementById('sumConsistentTime').innerText = formatTime(longestConsistentSec);
+            document.getElementById('sumConsistentDist').innerText = longestConsistentDist.toFixed(1);
+            document.getElementById('sumConsistentSpeed').innerText = longestConsistentSpeed.toFixed(1);
             renderSplitsList(splits, 'sumSplitsList');
             summaryModal.classList.remove('hidden'); drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
         });
         document.getElementById('closeSummaryBtn').addEventListener('click', () => summaryModal.classList.add('hidden'));
 
-        startBtn.addEventListener('click', startTracking);
-        stopBtn.addEventListener('click', stopTracking);
+        // --- Setup Split Options ---
+        let currentSplitInterval = 0.125;
+        const splitSelect = document.getElementById('splitSelect');
+        if (splitSelect) {
+            for (let i = 1; i <= 20; i++) {
+                const opt = document.createElement('option');
+                opt.value = i; opt.innerText = `${i} Mile${i > 1 ? 's' : ''}`;
+                splitSelect.appendChild(opt);
+            }
+            const savedSplit = localStorage.getItem('bikeTracker_split');
+            if (savedSplit) splitSelect.value = savedSplit;
+            currentSplitInterval = parseFloat(splitSelect.value) || 0.125;
+            splitSelect.addEventListener('change', (e) => {
+                currentSplitInterval = parseFloat(e.target.value);
+                localStorage.setItem('bikeTracker_split', e.target.value);
+            });
+        }
+
+        function renderSplitsList(splitsData, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!splitsData || splitsData.length === 0) {
+                container.innerHTML = '<div class="text-zinc-500 text-xs uppercase font-sans">No splits recorded yet.</div>';
+                return;
+            }
+            splitsData.forEach((split, idx) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-black p-2.5 rounded-lg border border-zinc-900 shadow-inner">
+                        <span class="text-neon-dim font-bold text-[0.65rem]">#${idx + 1} (${split.dist.toFixed(3)}mi)</span>
+                        <div class="flex space-x-4">
+                            <span class="text-neon-main font-digital text-lg">${formatTime(split.time)}</span>
+                            <span class="text-neon-main font-digital text-lg">${split.avg.toFixed(1)}<span class="text-[0.6rem] text-neon-dark ml-1">MPH</span></span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        async function fetchRouteName(lat, lng) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await res.json();
+                if (data && data.address) {
+                    const addr = data.address;
+                    const location = addr.park || addr.leisure || addr.nature_reserve || addr.road || addr.pedestrian || addr.cycleway;
+                    const city = addr.city || addr.town || addr.village || addr.neighbourhood;
+                    if (location && city) return `${location}, ${city}`;
+                    if (location) return `${location} Ride`;
+                }
+            } catch (e) {}
+            return "New Ride";
+        }
+
+        saveRouteBtn.addEventListener('click', async () => {
+            saveModal.classList.remove('hidden');
+            const nameInput = document.getElementById('routeNameInput');
+            nameInput.value = "Locating...";
+            document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
+            let lat = lastPosition ? lastPosition.coords.latitude : (currentRouteCoords.length > 0 ? currentRouteCoords[0][0] : 0);
+            let lng = lastPosition ? lastPosition.coords.longitude : (currentRouteCoords.length > 0 ? currentRouteCoords[0][1] : 0);
+            if (lat !== 0) nameInput.value = await fetchRouteName(lat, lng);
+            else nameInput.value = "My Route";
+        });
+        document.getElementById('cancelSaveBtn').addEventListener('click', () => saveModal.classList.add('hidden'));
         
+        document.getElementById('confirmSaveBtn').addEventListener('click', () => {
+            const name = document.getElementById('routeNameInput').value.trim() || "Untitled Ride";
+            const notes = document.getElementById('routeNotesInput').value.trim();
+            try {
+                const existingRoutes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                existingRoutes.push({
+                    id: Date.now().toString(), name, distance: totalDistanceMiles.toFixed(2), 
+                    timeSec: rideSeconds, avgSpeed: (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1),
+                    ascent: totalAscentMeters, descent: totalDescentMeters,
+                    maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed,
+                    splitInterval: currentSplitInterval, splits: JSON.stringify(splits), notes,
+                    points: JSON.stringify(currentRouteCoords), timestamp: Date.now()
+                });
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(existingRoutes));
+                saveModal.classList.add('hidden'); localStorage.removeItem(STATE_KEY);
+                showAlert("Route saved!"); resetRide(); 
+            } catch (err) { showAlert("Storage full!"); }
+        });
+
+        function loadRoutesList() {
+            const listEl = document.getElementById('routesList');
+            const sortMode = document.getElementById('routeSortSelect').value;
+            try {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                routes.forEach(route => {
+                    route._distAway = null;
+                    if (lastPosition && route.points) {
+                        try {
+                            const pts = JSON.parse(route.points);
+                            if (pts.length > 0) route._distAway = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, pts[0][0], pts[0][1]);
+                        } catch(e) {}
+                    }
+                });
+                routes.sort((a, b) => sortMode === 'proximity' ? (a._distAway - b._distAway) : (b.timestamp - a.timestamp));
+                if (routes.length === 0) return listEl.innerHTML = '<p class="text-neon-dark text-sm text-center py-4">No routes found.</p>';
+                listEl.innerHTML = '';
+                routes.forEach(route => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-4 rounded-xl font-digital";
+                    const dateStr = route.timestamp ? new Date(route.timestamp).toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'}) : 'No Date';
+                    btn.innerHTML = `<div class="flex justify-between"><b>${route.name}</b><small>${dateStr}</small></div><div class="text-xs text-neon-dark">${route.distance} mi ${route._distAway !== null ? '| ' + route._distAway.toFixed(1) + ' mi away' : ''}</div>`;
+                    btn.addEventListener('click', () => openRouteDetails(route));
+                    listEl.appendChild(btn);
+                });
+            } catch (err) { listEl.innerHTML = '<p class="text-red-500">Error.</p>'; }
+        }
+
+        document.getElementById('routeSortSelect').addEventListener('change', loadRoutesList);
+        openRoutesBtn.addEventListener('click', () => { loadModal.classList.remove('hidden'); loadRoutesList(); });
+        document.getElementById('closeLoadBtn').addEventListener('click', () => loadModal.classList.add('hidden'));
+
+        function openRouteDetails(route) {
+            loadModal.classList.add('hidden');
+            document.getElementById('detailNameInput').value = route.name;
+            document.getElementById('detailDistance').innerText = route.distance;
+            document.getElementById('detailAscent').innerText = Math.round((route.ascent || 0) * 3.28084);
+            document.getElementById('detailDescent').innerText = Math.round((route.descent || 0) * 3.28084);
+            document.getElementById('detailTopSpeed').innerText = route.topSpeed || "0.0";
+            document.getElementById('detailConsistentTime').innerText = formatTime(route.maxConsistentSec || 0);
+            document.getElementById('detailConsistentDist').innerText = (route.maxConsistentDist || 0).toFixed(1);
+            document.getElementById('detailConsistentSpeed').innerText = (route.maxConsistentSpeed || 0).toFixed(1);
+            document.getElementById('detailNotesInput').value = route.notes || "";
+            
+            const savedSplit = route.splitInterval || 0.125;
+            document.getElementById('detailSplitsTitle').innerText = `${getSplitLabel(savedSplit)} Splits`;
+            let loadedSplits = []; try { loadedSplits = JSON.parse(route.splits || '[]'); } catch(e){}
+            renderSplitsList(loadedSplits, 'detailSplitsList');
+            
+            document.getElementById('btnLoadMap').onclick = () => {
+                let pts = []; try { pts = JSON.parse(route.points || '[]'); } catch(e){}
+                if (pts.length > 0) {
+                    loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds(), { padding: [50, 50] });
+                    routeDetailModal.classList.add('hidden'); currentViewIndex = 4; layoutMode = 0; applyLayoutMode(); showView(4);
+                }
+            };
+            document.getElementById('btnDeleteRoute').onclick = () => {
+                let routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                routes = routes.filter(r => r.id !== route.id);
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
+                routeDetailModal.classList.add('hidden'); showAlert("Deleted.");
+            };
+            routeDetailModal.classList.remove('hidden');
+            setTimeout(() => drawElevationProfile(JSON.parse(route.points || '[]'), 'detailElevationCanvas'), 50);
+        }
+
+        document.getElementById('btnCloseDetails').onclick = () => routeDetailModal.classList.add('hidden');
+        document.getElementById('btnSaveNotes').onclick = () => {
+            const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            const idx = routes.findIndex(r => r.id === currentlyViewingRouteId);
+            if(idx > -1) { routes[idx].notes = document.getElementById('detailNotesInput').value; routes[idx].name = document.getElementById('detailNameInput').value; localStorage.setItem(ROUTES_KEY, JSON.stringify(routes)); showAlert("Updated!"); }
+        };
+
+        function updateUpcomingHill(lat, lng) {
+            const hillInd = document.getElementById('upcomingHillIndicator'), hillText = document.getElementById('upcomingHillText');
+            if (!loadedCompareRoutePoints || loadedCompareRoutePoints.length < 5) { hillInd.classList.add('hidden'); return; }
+            let closestIdx = 0, minDist = Infinity;
+            for(let i=0; i<loadedCompareRoutePoints.length; i++) {
+                const d = calculateDistance(lat, lng, loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1]);
+                if(d < minDist) { minDist = d; closestIdx = i; }
+            }
+            if (minDist > 0.05) { hillInd.classList.add('hidden'); return; }
+            let lookAheadDist = 0, lookIdx = closestIdx;
+            for(let i=closestIdx; i<loadedCompareRoutePoints.length-1; i++) {
+                lookAheadDist += calculateDistance(loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1], loadedCompareRoutePoints[i+1][0], loadedCompareRoutePoints[i+1][1]);
+                lookIdx = i+1; if(lookAheadDist >= 0.062) break;
+            }
+            const grade = ((loadedCompareRoutePoints[lookIdx][2] - loadedCompareRoutePoints[closestIdx][2]) / (lookAheadDist * 1609.34)) * 100;
+            if (Math.abs(grade) >= 2.5) {
+                hillInd.classList.remove('hidden');
+                const isUp = grade > 0;
+                hillInd.style.boxShadow = `0 0 10px ${isUp ? '#ff1493' : '#39ff14'}`;
+                hillText.innerHTML = `<span style="color:${isUp ? '#ff1493' : '#39ff14'}">${isUp ? '▲' : '▼'} ${isUp ? 'UP' : 'DN'} ${Math.abs(grade).toFixed(1)}%</span>`;
+            } else hillInd.classList.add('hidden');
+        }
+
         function calculateDistance(l1, o1, l2, o2) {
             const R = 3958.8, dLat = (l2-l1)*Math.PI/180, dLon = (o2-o1)*Math.PI/180;
             const a = Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
-
-        function getSplitLabel(v) { return v < 1 ? (v===0.125?"1/8 Mi":v===0.25?"1/4 Mi":"1/2 Mi") : `${v} Mi`; }
+        function getSplitLabel(v) { return v < 1 ? (v===0.125?"1/8":v===0.25?"1/4":"1/2") + " Mi" : `${v} Mi`; }
         function updateOdometer(m) {
             const s = m.toFixed(2).split('.'), i = s[0];
             document.getElementById('odo4').innerText = s[1][0]; document.getElementById('odo5').innerText = s[1][1];
