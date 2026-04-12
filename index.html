@@ -68,7 +68,13 @@
             font-family: 'DS-Digital', sans-serif;
             overflow: hidden;
             letter-spacing: 0.05em; 
+            transition: filter 0.3s ease;
         }
+        
+        /* Brightness Levels */
+        body.br-medium { filter: brightness(1.4) contrast(1.1); }
+        body.br-high { filter: brightness(1.8) contrast(1.2); }
+
         .no-select {
             user-select: none;
             -webkit-user-select: none;
@@ -89,7 +95,6 @@
             filter: invert(100%) grayscale(100%) contrast(120%) brightness(80%);
         }
 
-        /* Custom Hill Popup Styling */
         .leaflet-popup-content-wrapper {
             background: rgba(0,0,0,0.9) !important;
             color: #fff !important;
@@ -159,6 +164,12 @@
             </svg>
             <span class="font-digital text-sm uppercase tracking-wider mt-1">Color</span>
         </button>
+        <button onclick="cycleBrightness()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"></path>
+            </svg>
+            <span id="brightnessLabel" class="font-digital text-sm uppercase tracking-wider mt-1">Dark</span>
+        </button>
         <button onclick="location.reload()" class="px-3 py-1.5 rounded-lg bg-black/90 border border-zinc-900 backdrop-blur-md shadow-neon-sm flex items-center justify-center text-neon-main hover:bg-zinc-900 transition-colors" title="Reload App">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -184,7 +195,7 @@
         </div>
     </div>
 
-    <!-- Bottom Dashboard -->
+    <!-- Bottom Dashboard UI -->
     <div id="bottomDashboard" class="absolute bottom-0 w-full dash-expanded bg-black/95 backdrop-blur-xl border-t border-zinc-900 rounded-t-[2.5rem] p-5 sm:p-6 z-[1000] shadow-[0_-10px_40px_rgba(0,0,0,0.8)] transition-all duration-500 flex flex-col">
         
         <div class="flex justify-center items-center mb-4 w-full max-w-sm mx-auto px-2 shrink-0 relative">
@@ -214,11 +225,7 @@
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-10 opacity-100 bg-zinc-950 rounded-[2rem] border border-zinc-900 shadow-inner px-8">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-52 sm:h-52 flex flex-col items-center justify-center bg-black rounded-full border-[8px] border-zinc-900 shadow-[0_0_15px_rgba(0,0,0,0.8)_inset] mb-4 mt-2 transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                        <defs>
-                            <mask id="gaugeMask">
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="20" stroke-dasharray="2 1.12" pathLength="100" />
-                            </mask>
-                        </defs>
+                        <defs><mask id="gaugeMask"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="20" stroke-dasharray="2 1.12" pathLength="100" /></mask></defs>
                         <circle cx="50" cy="50" r="40" fill="none" stroke="#18181b" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" pathLength="100" />
                         <circle id="speedGauge" cx="50" cy="50" r="40" fill="none" stroke="var(--neon-gauge)" stroke-width="14" mask="url(#gaugeMask)" transform="rotate(135 50 50)" stroke-dasharray="75 100" stroke-dashoffset="75" pathLength="100" class="transition-all duration-300" style="filter: drop-shadow(0 0 8px var(--neon-gauge));" />
                     </svg>
@@ -280,24 +287,19 @@
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none bg-zinc-950 rounded-[2rem] border border-zinc-900 shadow-inner p-4">
                 <div id="goalScale" class="flex flex-col items-center justify-center w-full transition-transform duration-300">
                     <h3 class="text-neon-dark font-bold uppercase tracking-wider mb-4 text-xs">Race Goal & Auto-Pause</h3>
-                    
                     <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900">
                         <button id="btnGoalDistance" onclick="setGoalType('distance')" class="flex-1 py-2 text-sm font-bold rounded-lg bg-neon-bg text-black shadow-neon-sm transition-colors">Miles</button>
                         <button id="btnGoalTime" onclick="setGoalType('time')" class="flex-1 py-2 text-sm font-bold rounded-lg text-neon-dark hover:text-neon-main transition-colors">Minutes</button>
                     </div>
-
                     <div class="flex items-center space-x-3 bg-black p-3 rounded-2xl border border-zinc-900 w-full max-w-[250px] justify-center shadow-inner mb-4">
                         <input type="number" id="goalInput" class="w-24 bg-transparent text-neon-main text-center focus:outline-none font-digital text-5xl tabular-nums placeholder-neon-dim neon-glow" placeholder="0.0">
                         <span id="goalUnitLabel" class="text-neon-dark font-bold text-lg uppercase pr-2">Mi</span>
                     </div>
-
                     <div class="grid grid-cols-2 gap-2 w-full max-w-[250px]">
                         <div class="flex flex-col items-center bg-black/40 p-2 rounded-xl border border-zinc-900">
                             <span class="text-[0.6rem] text-neon-dark font-bold uppercase mb-1">Splits</span>
                             <select id="splitSelect" class="bg-transparent text-neon-main text-center focus:outline-none font-digital text-lg cursor-pointer">
-                                <option value="0.125">1/8</option>
-                                <option value="0.25">1/4</option>
-                                <option value="0.5">1/2</option>
+                                <!-- JS Populated -->
                             </select>
                         </div>
                         <div class="flex flex-col items-center bg-black/40 p-2 rounded-xl border border-zinc-900">
@@ -308,10 +310,10 @@
                 </div>
             </div>
             
-            <!-- 5. Map Transparency Layer -->
             <div id="view-map" class="dash-view absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 z-0 opacity-0 pointer-events-none rounded-[2rem] border-transparent p-4"></div>
         </div>
 
+        <!-- Controls -->
         <div class="flex space-x-3 mb-3 w-full max-w-sm mx-auto shrink-0">
             <button id="startBtn" class="flex-1 bg-green-500 hover:bg-green-400 text-black font-black py-4 rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-transform active:scale-95 text-xl uppercase tracking-wide">Start Ride</button>
             <button id="stopBtn" disabled class="flex-1 bg-zinc-950 text-zinc-600 font-black py-4 rounded-2xl transition-transform text-xl cursor-not-allowed border border-zinc-900 uppercase tracking-wide">Stop</button>
@@ -327,7 +329,6 @@
 
     <!-- Modals -->
 
-    <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center justify-center p-6 text-center">
         <h2 class="text-3xl font-black text-neon-main mb-6 tracking-tight uppercase neon-glow">Ride Summary</h2>
         <div class="w-full max-w-sm relative bg-zinc-950 border border-zinc-900 rounded-2xl mb-8 shadow-2xl overflow-hidden">
@@ -336,21 +337,27 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
                         <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Distance</span>
-                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> <span class="text-sm text-neon-dark font-sans">Mi</span></span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumDistance">0.0</span> Mi</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 border-b border-zinc-900 pb-3">
+                        <div>
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-[0.65rem] block">Total Ascent</span>
+                            <span class="text-neon-main font-digital font-black text-xl tabular-nums neon-glow"><span id="sumAscent">0</span><span class="text-xs ml-1">ft</span></span>
+                        </div>
+                        <div>
+                            <span class="text-neon-dark font-bold uppercase tracking-wider text-[0.65rem] block text-right">Total Descent</span>
+                            <span class="text-neon-main font-digital font-black text-xl tabular-nums neon-glow block text-right"><span id="sumDescent">0</span><span class="text-xs ml-1">ft</span></span>
+                        </div>
                     </div>
                     <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Elev Gain/Loss</span>
-                        <span class="text-neon-main font-digital font-black text-xl tabular-nums neon-glow"><span id="sumAscent">0</span><span class="text-xs mr-2">ft</span> <span id="sumDescent">0</span><span class="text-xs">ft</span></span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
-                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Avg Speed</span>
-                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumAvgSpeed">0.0</span> <span class="text-sm text-neon-dark font-sans">MPH</span></span>
+                        <span class="text-neon-dark font-bold uppercase tracking-wider text-sm">Top Speed</span>
+                        <span class="text-neon-main font-digital font-black text-2xl tabular-nums neon-glow"><span id="sumTopSpeed">0.0</span> MPH</span>
                     </div>
                     <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
                         <span class="text-neon-dark font-bold uppercase tracking-wider text-sm text-left">Max Consistent</span>
                         <div class="text-right flex flex-col items-end justify-center">
                             <span id="sumConsistentTime" class="text-neon-main font-digital font-black text-xl tabular-nums neon-glow leading-none">00:00</span>
-                            <span class="text-neon-gauge font-digital text-sm tabular-nums mt-1 tracking-wide"><span id="sumConsistentDist">0.0</span> MI @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
+                            <span class="text-neon-main font-digital text-sm tabular-nums mt-1 tracking-wide opacity-80"><span id="sumConsistentDist">0.0</span> MI @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
                         </div>
                     </div>
                 </div>
@@ -363,7 +370,6 @@
         <button id="closeSummaryBtn" class="w-full max-w-sm py-3 rounded-xl font-bold text-black bg-neon-bg shadow-neon-md transition-transform active:scale-95 text-lg uppercase tracking-wide shrink-0">Close</button>
     </div>
 
-    <!-- Save Route Modal -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
         <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg">
             <h3 class="text-xl font-bold text-neon-main mb-2 uppercase tracking-wide">Save Your Route</h3>
@@ -377,22 +383,27 @@
         </div>
     </div>
 
-    <!-- Load Routes Modal -->
     <div id="loadModal" class="hidden absolute inset-0 bg-black/90 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
         <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-sm border border-neon-bg/30 shadow-neon-lg flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-2 mb-3 shrink-0">
-                <h3 class="text-xl font-bold text-neon-main uppercase tracking-wide">Saved Routes</h3>
-                <select id="routeSortSelect" class="bg-zinc-900 text-neon-main border border-zinc-700 rounded p-1 text-xs font-sans outline-none">
-                    <option value="date">Newest First</option>
-                    <option value="proximity">Closest First</option>
-                </select>
+                <h3 class="text-xl font-bold text-neon-main uppercase tracking-wide">Routes</h3>
+                <div class="flex space-x-2">
+                    <select id="routeLimitSelect" class="bg-zinc-900 text-neon-main border border-zinc-700 rounded p-1 text-xs font-sans outline-none cursor-pointer">
+                        <option value="all">All</option>
+                        <option value="25">Top 25</option>
+                    </select>
+                    <select id="routeSortSelect" class="bg-zinc-900 text-neon-main border border-zinc-700 rounded p-1 text-xs font-sans outline-none cursor-pointer">
+                        <option value="date">Newest</option>
+                        <option value="proximity">Closest</option>
+                        <option value="performance">Best</option>
+                    </select>
+                </div>
             </div>
             <div id="routesList" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1"></div>
             <button id="closeLoadBtn" class="w-full py-3 rounded-lg font-bold text-black bg-neon-bg shadow-neon-md uppercase shrink-0">Close</button>
         </div>
     </div>
 
-    <!-- Details Modal -->
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 backdrop-blur-md z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto">
         <div class="mt-8 w-full max-w-sm">
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-black text-neon-main mb-4 tracking-tight uppercase neon-glow font-digital border-b border-transparent focus:border-neon-bg outline-none" value="Route Name" />
@@ -404,15 +415,21 @@
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Distance</span>
                             <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailDistance">0.0</span> Mi</span>
                         </div>
-                        <div class="flex justify-between items-center border-b border-zinc-900 pb-2">
-                            <span class="text-neon-dark font-bold uppercase tracking-wider text-xs">Elev Gain/Loss</span>
-                            <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAscent">0</span><span class="text-[0.6rem] mr-2">ft</span> <span id="detailDescent">0</span><span class="text-[0.6rem]">ft</span></span>
+                        <div class="grid grid-cols-2 gap-2 border-b border-zinc-900 pb-2">
+                            <div>
+                                <span class="text-neon-dark font-bold uppercase tracking-wider text-[0.6rem] block">Ascent</span>
+                                <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow"><span id="detailAscent">0</span><span class="text-xs ml-1">ft</span></span>
+                            </div>
+                            <div>
+                                <span class="text-neon-dark font-bold uppercase tracking-wider text-[0.6rem] block text-right">Descent</span>
+                                <span class="text-neon-main font-digital font-bold text-lg tabular-nums neon-glow block text-right"><span id="detailDescent">0</span><span class="text-xs ml-1">ft</span></span>
+                            </div>
                         </div>
                         <div class="flex justify-between items-center border-b border-zinc-900 pb-2 pt-1">
                             <span class="text-neon-dark font-bold uppercase tracking-wider text-xs text-left">Max Consistent</span>
                             <div class="text-right flex flex-col items-end justify-center">
                                 <span id="detailConsistentTime" class="text-neon-main font-digital font-bold text-lg leading-none">00:00</span>
-                                <span class="text-neon-gauge font-digital text-[0.7rem] tabular-nums mt-1 tracking-wide"><span id="detailConsistentDist">0.0</span> MI @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
+                                <span class="text-neon-main font-digital text-[0.7rem] tabular-nums mt-1 tracking-wide opacity-80"><span id="detailConsistentDist">0.0</span> MI @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
                             </div>
                         </div>
                     </div>
@@ -422,7 +439,7 @@
                     </div>
                 </div>
             </div>
-            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl relative z-10">
+            <div class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 mb-6 shadow-2xl relative z-10 text-left">
                 <textarea id="detailNotesInput" class="w-full bg-black text-neon-main border border-zinc-800 rounded-lg p-3 mb-3 focus:outline-none focus:border-neon-bg h-24 resize-none text-sm font-digital"></textarea>
                 <button id="btnSaveNotes" class="w-full py-2 rounded-lg font-bold text-neon-bg bg-zinc-900 border border-neon-bg/30 hover:bg-zinc-800 text-sm uppercase">Save Notes</button>
                 <button id="btnDeleteRoute" class="w-full py-2 rounded-lg font-bold text-red-500 bg-zinc-900 border border-red-900 hover:bg-red-950 text-sm uppercase mt-3">Delete Route</button>
@@ -434,33 +451,29 @@
         </div>
     </div>
 
-    <!-- Alert Modal -->
-    <div id="alertModal" class="hidden absolute inset-0 bg-black/80 z-[3000] flex items-center justify-center p-4">
-        <div class="bg-zinc-950 rounded-2xl p-6 w-full max-w-[16rem] text-center border border-neon-bg/30 shadow-neon-lg">
-            <p id="alertText" class="text-neon-main mb-6 font-medium font-digital text-lg"></p>
-            <button id="closeAlertBtn" class="w-full py-2 rounded-lg font-bold text-black bg-neon-bg uppercase">OK</button>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
     <script>
         const ROUTES_KEY = 'bikeTracker_routes_v1';
         const RECORDS_KEY = 'bikeTracker_records_v1';
         const STATE_KEY = 'bikeTracker_activeRide_v1';
 
-        let map = null, currentRoutePolyline = null, compareRouteGroup = null, loadedCompareRoutePoints = null, currentMarker = null;
-        let activeThemeIndex = 0;
-
         const themes = [
-            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b', gauge: '#ff1493' } },
             { name: 'yellow',  vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
+            { name: 'white',   vars: { main: '#ffffff', bg: '#d4d4d8', dark: '#a1a1aa', dim: '#52525b', gauge: '#ff1493' } },
             { name: 'cyan',    vars: { main: '#00ffff', bg: '#06b6d4', dark: '#0891b2', dim: '#164e63', gauge: '#ff1493' } },
             { name: 'green',   vars: { main: '#39ff14', bg: '#22c55e', dark: '#16a34a', dim: '#14532d', gauge: '#ff00ff' } },
             { name: 'magenta', vars: { main: '#ff00ff', bg: '#d946ef', dark: '#c026d3', dim: '#701a75', gauge: '#39ff14' } },
             { name: 'orange',  vars: { main: '#ffaa00', bg: '#f97316', dark: '#ea580c', dim: '#9a3412', gauge: '#00ffff' } },
             { name: 'pink',    vars: { main: '#ff1493', bg: '#ec4899', dark: '#be185d', dim: '#831843', gauge: '#00ffff' } }
         ];
+
+        let map = null, currentRoutePolyline = null, compareRouteGroup = null, loadedCompareRoutePoints = null, currentMarker = null;
+        let activeThemeIndex = 0, currentBrightnessLevel = 0;
+        let watchId = null, uiTimer = null, rideSeconds = 0, totalDistanceMiles = 0, lastPosition = null, currentRouteCoords = [], isFirstFix = true, topSpeedMph = 0;
+        let flatUpTopSpeedMph = 0, longestConsistentSec = 0, longestConsistentDist = 0, longestConsistentSpeed = 0, currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0;
+        let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0, isAutoPaused = false, isAutoPauseEnabled = false;
+        let goalType = 'distance', raceGoalValue = 0, currentSplitInterval = 0.125;
+
+        // --- View Logic ---
 
         function cycleTheme() {
             activeThemeIndex = (activeThemeIndex + 1) % themes.length;
@@ -474,6 +487,16 @@
             applyThemeToMap();
         }
 
+        function cycleBrightness() {
+            currentBrightnessLevel = (currentBrightnessLevel + 1) % 3;
+            const body = document.body;
+            const label = document.getElementById('brightnessLabel');
+            body.classList.remove('br-medium', 'br-high');
+            if (currentBrightnessLevel === 0) label.innerText = "Dark";
+            else if (currentBrightnessLevel === 1) { label.innerText = "Medium"; body.classList.add('br-medium'); }
+            else { label.innerText = "High"; body.classList.add('br-high'); }
+        }
+
         function applyThemeToMap() {
             if (!currentRoutePolyline) return;
             const t = themes[activeThemeIndex];
@@ -482,13 +505,24 @@
             if (loadedCompareRoutePoints) drawCompareRoute(loadedCompareRoutePoints);
         }
 
+        // --- Analytics & Maps ---
+
+        function calculateDistance(l1, o1, l2, o2) { 
+            const R = 3958.8, dLat = (l2-l1)*Math.PI/180, dLon = (o2-o1)*Math.PI/180, a = Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; 
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        }
+
+        function formatTime(s) { 
+            const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); 
+            return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`; 
+        }
+
         function drawElevationProfile(points, canvasId) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
+            canvas.width = rect.width * window.devicePixelRatio; canvas.height = rect.height * window.devicePixelRatio;
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
             const w = rect.width, h = rect.height;
             ctx.clearRect(0, 0, w, h);
@@ -513,42 +547,37 @@
             const baseColor = activeTheme.vars.gauge;
             if (points && points.length > 0) {
                 L.polyline(points, {color: baseColor, weight: 3, opacity: 0.9, lineCap: 'round', lineJoin: 'round'}).addTo(compareRouteGroup);
-                const startIcon = L.divIcon({ html: `<svg viewBox="0 0 24 24" width="28" height="28" stroke="#000" stroke-width="2" fill="#22c55e" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`, className: 'bg-transparent', iconSize: [28, 28], iconAnchor: [4, 28] });
-                const finishIcon = L.divIcon({ html: `<svg viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.8));"><defs><pattern id="checkerPattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="2" height="2" fill="#ffffff" /><rect x="2" width="2" height="2" fill="#000000" /><rect y="2" width="2" height="2" fill="#000000" /><rect x="2" y="2" width="2" height="2" fill="#ffffff" /></pattern></defs><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="url(#checkerPattern)" stroke="#ffffff" stroke-width="1"></path><line x1="4" y1="22" x2="4" y2="15" stroke="#ffffff" stroke-width="2"></line></svg>`, className: 'bg-transparent', iconSize: [28, 28], iconAnchor: [4, 28] });
+                const startIcon = L.divIcon({ html: `<svg viewBox="0 0 24 24" width="28" height="28" fill="#22c55e" stroke="#000" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`, className: 'bg-transparent', iconSize: [28, 28], iconAnchor: [4, 28] });
+                const finishIcon = L.divIcon({ html: `<svg viewBox="0 0 24 24" width="28" height="28"><defs><pattern id="check" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="2" height="2" fill="#fff" /><rect x="2" width="2" height="2" fill="#000" /><rect y="2" width="2" height="2" fill="#000" /><rect x="2" y="2" width="2" height="2" fill="#fff" /></pattern></defs><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" fill="url(#check)" stroke="#fff" stroke-width="1"></path><line x1="4" y1="22" x2="4" y2="15" stroke="#fff" stroke-width="2"></line></svg>`, className: 'bg-transparent', iconSize: [28, 28], iconAnchor: [4, 28] });
                 L.marker(points[0], { icon: startIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
                 if (points.length > 1) L.marker(points[points.length - 1], { icon: finishIcon, zIndexOffset: 100 }).addTo(compareRouteGroup);
-                if (points[0].length >= 3) {
-                    let smoothed = points.map((p, i, arr) => {
-                        let sum = 0, count = 0;
-                        for (let j = Math.max(0, i-2); j <= Math.min(arr.length-1, i+2); j++) { sum += (arr[j][2] || 0); count++; }
-                        return [p[0], p[1], sum/count];
-                    });
-                    let currentSegStartIdx = 0, currentSegDist = 0;
-                    for (let i = 1; i < smoothed.length; i++) {
-                        let d = calculateDistance(smoothed[i-1][0], smoothed[i-1][1], smoothed[i][0], smoothed[i][1]) * 1609.34;
-                        currentSegDist += d;
-                        if (currentSegDist >= 150) { 
-                            let altDiff = (smoothed[i][2] || 0) - (smoothed[currentSegStartIdx][2] || 0);
-                            if (Math.abs(altDiff) >= 3.5) {
-                                let grade = (altDiff / currentSegDist) * 100;
-                                let isUp = grade > 0;
-                                let color = isUp ? '#ff1493' : '#39ff14';
-                                const hillIcon = L.divIcon({
-                                    html: `<div class="flex flex-col items-center justify-center w-full h-full font-bold font-sans" style="color: ${color}; background: rgba(0,0,0,0.9); border-radius: 8px; border: 2px solid ${color}; box-shadow: 0 0 12px ${color};">
-                                        <span class="text-xl leading-none">${isUp ? '▲' : '▼'}</span>
-                                        <span class="text-[10px] leading-none">${Math.abs(grade).toFixed(1)}%</span>
-                                    </div>`,
-                                    className: 'bg-transparent', iconSize: [50, 45], iconAnchor: [25, 22]
-                                });
-                                let marker = L.marker([smoothed[Math.floor((currentSegStartIdx + i)/2)][0], smoothed[Math.floor((currentSegStartIdx + i)/2)][1]], { icon: hillIcon, zIndexOffset: 50 }).addTo(compareRouteGroup);
-                                marker.bindPopup(`<b>Hill Segment</b><br>Grade: ${Math.abs(grade).toFixed(1)}%<br>Length: ~${Math.round(currentSegDist * 3.28084)} ft`);
-                            }
-                            currentSegStartIdx = i; currentSegDist = 0;
+                
+                let currentSegDist = 0;
+                for (let i = 1; i < points.length; i++) {
+                    let d = calculateDistance(points[i-1][0], points[i-1][1], points[i][0], points[i][1]) * 1609.34;
+                    currentSegDist += d;
+                    if (currentSegDist >= 200) {
+                        let altDiff = (points[i][2] || 0) - (points[i-5 < 0 ? 0 : i-5][2] || 0);
+                        if (Math.abs(altDiff) >= 3.0) {
+                            let grade = (altDiff / currentSegDist) * 100;
+                            let color = grade > 0 ? '#ff1493' : '#39ff14';
+                            const hillIcon = L.divIcon({
+                                html: `<div class="flex flex-col items-center justify-center w-full h-full font-bold" style="color:${color}; background:rgba(0,0,0,0.8); border:2px solid ${color}; border-radius:6px; box-shadow:0 0 10px ${color};">
+                                    <span class="text-lg leading-none">${grade > 0 ? '▲' : '▼'}</span>
+                                    <span class="text-[9px] leading-none">${Math.abs(grade).toFixed(1)}%</span>
+                                </div>`,
+                                className: 'bg-transparent', iconSize:[45,40], iconAnchor:[22,20]
+                            });
+                            L.marker([points[i][0], points[i][1]], {icon: hillIcon}).addTo(compareRouteGroup)
+                                .bindPopup(`Grade: ${Math.abs(grade).toFixed(1)}%<br>Ascent Segment`);
                         }
+                        currentSegDist = 0;
                     }
                 }
             }
         }
+
+        // --- Dashboard & Mode Control ---
 
         let layoutMode = 0, isGridMode = false;
         function applyLayoutMode() {
@@ -568,137 +597,75 @@
         function showView(index) {
             views.forEach((id, i) => { const el = document.getElementById(id); if (i === index) { el.classList.remove('opacity-0', 'pointer-events-none'); el.classList.add('opacity-100'); } else { el.classList.add('opacity-0', 'pointer-events-none'); } });
             document.querySelectorAll('.view-dot').forEach((dot, i) => { dot.classList.toggle('bg-neon-main', i === index); dot.classList.toggle('shadow-neon-sm', i === index); dot.classList.toggle('bg-zinc-800', i !== index); });
-            const bottomDashboard = document.getElementById('bottomDashboard'), dashboardContainer = document.getElementById('dashboardContainer');
-            if (views[index] === 'view-map' && !isGridMode) { bottomDashboard.classList.remove('bg-black/95', 'backdrop-blur-xl', 'border-t'); bottomDashboard.classList.add('bg-transparent', 'border-transparent', 'shadow-none'); bottomDashboard.style.pointerEvents = 'none'; document.querySelectorAll('#bottomDashboard button').forEach(b => b.style.pointerEvents = 'auto'); dashboardContainer.style.pointerEvents = 'none'; }
-            else { bottomDashboard.classList.add('bg-black/95', 'backdrop-blur-xl', 'border-t'); bottomDashboard.classList.remove('bg-transparent', 'border-transparent', 'shadow-none'); bottomDashboard.style.pointerEvents = 'auto'; dashboardContainer.style.pointerEvents = 'auto'; }
+            const b = document.getElementById('bottomDashboard'), c = document.getElementById('dashboardContainer');
+            if (views[index] === 'view-map' && !isGridMode) { b.classList.remove('bg-black/95', 'backdrop-blur-xl', 'border-t'); b.classList.add('bg-transparent', 'border-transparent', 'shadow-none'); b.style.pointerEvents = 'none'; document.querySelectorAll('#bottomDashboard button').forEach(bt => bt.style.pointerEvents = 'auto'); c.style.pointerEvents = 'none'; }
+            else { b.classList.add('bg-black/95', 'backdrop-blur-xl', 'border-t'); b.classList.remove('bg-transparent', 'border-transparent', 'shadow-none'); b.style.pointerEvents = 'auto'; c.style.pointerEvents = 'auto'; }
         }
         function nextView() { currentViewIndex = (currentViewIndex + 1) % views.length; showView(currentViewIndex); }
         function prevView() { currentViewIndex = (currentViewIndex - 1 + views.length) % views.length; showView(currentViewIndex); }
 
-        let touchStartX = 0, touchEndX = 0, touchStartY = 0, touchEndY = 0;
-        const dashboardContainer = document.getElementById('dashboardContainer');
-        dashboardContainer.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; }, {passive: true});
-        dashboardContainer.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY;
-            const diffX = touchStartX - touchEndX, diffY = touchStartY - touchEndY;
-            if (Math.abs(diffX) > Math.abs(diffY)) { if (!isGridMode && Math.abs(diffX) > 40) { if (diffX > 40) nextView(); else prevView(); } }
-            else { if (Math.abs(diffY) > 40) { if (diffY > 40) { if (layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if (layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
-        }, {passive: true});
-
-        dashboardContainer.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-            if (isGridMode) { const clickedView = e.target.closest('.dash-view'); if (clickedView) { const index = views.indexOf(clickedView.id); if (index > -1) { currentViewIndex = index; layoutMode = 1; applyLayoutMode(); } } }
-        });
-
-        let goalType = 'distance', isAutoPauseEnabled = false;
-        function toggleAutoPause() {
-            isAutoPauseEnabled = !isAutoPauseEnabled;
-            const btn = document.getElementById('autoPauseToggle');
-            btn.innerText = isAutoPauseEnabled ? "ON" : "OFF";
-            btn.classList.toggle('text-neon-main', !isAutoPauseEnabled);
-            btn.classList.toggle('text-green-500', isAutoPauseEnabled);
-        }
-
-        function setGoalType(type) {
-            goalType = type;
-            const btnDist = document.getElementById('btnGoalDistance'), btnTime = document.getElementById('btnGoalTime'), input = document.getElementById('goalInput'), label = document.getElementById('goalUnitLabel');
-            if (type === 'distance') { btnDist.classList.replace('text-neon-dark', 'text-black'); btnDist.classList.add('bg-neon-bg'); btnTime.classList.replace('text-black', 'text-neon-dark'); btnTime.classList.remove('bg-neon-bg'); label.innerText = 'Mi'; }
-            else { btnTime.classList.replace('text-neon-dark', 'text-black'); btnTime.classList.add('bg-neon-bg'); btnDist.classList.replace('text-black', 'text-neon-dark'); btnDist.classList.remove('bg-neon-bg'); label.innerText = 'Min'; }
-        }
-
-        map = L.map('map', { zoomControl: false }).setView([39.8283, -98.5795], 4);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }).addTo(map);
-        currentRoutePolyline = L.polyline([], {color: '#ffff00', weight: 6, opacity: 0.9, lineCap: 'round', lineJoin: 'round'}).addTo(map); 
-        compareRouteGroup = L.layerGroup().addTo(map); 
-
-        const savedThemeId = localStorage.getItem('bikeTracker_theme');
-        if (savedThemeId) { activeThemeIndex = parseInt(savedThemeId) - 1; cycleTheme(); }
-        else cycleTheme();
-
-        applyLayoutMode();
-        map.on('click', () => { if(layoutMode !== 0) { layoutMode = 0; applyLayoutMode(); } });
-
-        let watchId = null, uiTimer = null, rideSeconds = 0, totalDistanceMiles = 0, lastPosition = null, currentRouteCoords = [], isFirstFix = true, topSpeedMph = 0;
-        let flatUpTopSpeedMph = 0, longestConsistentSec = 0, longestConsistentDist = 0, longestConsistentSpeed = 0, currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0;
-        let splits = [], lastSplitDist = 0, lastSplitTime = 0, upHillCount = 0, downHillCount = 0, totalAscentMeters = 0, totalDescentMeters = 0;
-        let currentSlopeDir = 0, currentSlopeAltDiff = 0, countedCurrentSlope = false, raceGoalValue = 0, isRaceFinished = false, wakeLock = null, isAutoPaused = false;
+        // --- Tracking & Persistent State ---
 
         function saveRideState(isTrackingActive) {
-            try { localStorage.setItem(STATE_KEY, JSON.stringify({ isTracking: isTrackingActive, rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, upHillCount, downHillCount, ascent: totalAscentMeters, descent: totalDescentMeters, raceGoalValue, goalType, coords: currentRouteCoords })); } catch(e) {}
+            try { localStorage.setItem(STATE_KEY, JSON.stringify({ rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, raceGoalValue, goalType, coords: currentRouteCoords })); } catch(e) {}
         }
 
         function restoreRideState() {
             try {
-                const saved = localStorage.getItem(STATE_KEY);
-                if (saved) {
-                    const state = JSON.parse(saved);
-                    if (state.rideSeconds > 2) {
-                        rideSeconds = state.rideSeconds; totalDistanceMiles = state.totalDistanceMiles;
-                        totalAscentMeters = state.ascent || 0; totalDescentMeters = state.descent || 0;
-                        topSpeedMph = state.topSpeedMph; flatUpTopSpeedMph = state.flatUpTopSpeedMph || 0;
-                        longestConsistentSec = state.longestConsistentSec; longestConsistentDist = state.longestConsistentDist; longestConsistentSpeed = state.longestConsistentSpeed;
-                        splits = state.splits; lastSplitDist = state.lastSplitDist; lastSplitTime = state.lastSplitTime;
-                        upHillCount = state.upHillCount; downHillCount = state.downHillCount;
-                        raceGoalValue = state.raceGoalValue; goalType = state.goalType; currentRouteCoords = state.coords;
-                        updateOdometer(totalDistanceMiles); liveTimerText.innerText = formatTime(rideSeconds);
-                        avgSpeedEl.innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
-                        topSpeedEl.innerText = topSpeedMph.toFixed(1);
+                const s = localStorage.getItem(STATE_KEY);
+                if (s) {
+                    const st = JSON.parse(s);
+                    if (st.rideSeconds > 2) {
+                        rideSeconds = st.rideSeconds; totalDistanceMiles = st.totalDistanceMiles; totalAscentMeters = st.ascent || 0; totalDescentMeters = st.descent || 0;
+                        topSpeedMph = st.topSpeedMph; flatUpTopSpeedMph = st.flatUpTopSpeedMph || 0;
+                        longestConsistentSec = st.longestConsistentSec; longestConsistentDist = st.longestConsistentDist; longestConsistentSpeed = st.longestConsistentSpeed;
+                        splits = st.splits; lastSplitDist = st.lastSplitDist; lastSplitTime = st.lastSplitTime; currentRouteCoords = st.coords;
+                        updateOdometer(totalDistanceMiles); document.getElementById('liveTimerText').innerText = formatTime(rideSeconds);
                         currentRoutePolyline.setLatLngs(currentRouteCoords);
-                        if (currentRouteCoords.length > 0) { const last = currentRouteCoords[currentRouteCoords.length - 1]; map.setView(last, 16); currentMarker = L.circleMarker(last, { radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map); }
-                        startBtn.innerText = "RESUME"; stopBtn.disabled = true; updateStatus("Recovered", "bg-zinc-500");
-                        saveRouteBtn.classList.remove('hidden'); summaryBtn.classList.remove('hidden'); resetBtn.classList.remove('hidden');
+                        if (currentRouteCoords.length > 0) { const l = currentRouteCoords[currentRouteCoords.length-1]; map.setView(l, 16); currentMarker = L.circleMarker(l, {radius:8, fillColor:themes[activeThemeIndex].vars.main, color:'#000', weight:3, opacity:1, fillOpacity:1}).addTo(map); }
+                        document.getElementById('startBtn').innerText = "RESUME"; document.getElementById('stopBtn').disabled = true;
+                        document.getElementById('saveRouteBtn').classList.remove('hidden'); document.getElementById('summaryBtn').classList.remove('hidden'); document.getElementById('resetBtn').classList.remove('hidden'); document.getElementById('openRoutesBtn').classList.add('hidden');
+                        updateStatus("Recovered", "bg-zinc-500");
                     }
                 }
-            } catch (e) {}
+            } catch(e){}
         }
-        window.addEventListener('load', restoreRideState);
-
-        let audioCtx = null;
-        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function playTone(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'goal') { osc.type = 'triangle'; osc.frequency.setValueAtTime(440, audioCtx.currentTime); osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 1); }
-            else if (type === 'split') { osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
-        }
-
-        const startBtn = document.getElementById('startBtn'), stopBtn = document.getElementById('stopBtn'), liveTimerText = document.getElementById('liveTimerText');
-        const avgSpeedEl = document.getElementById('avgSpeed'), topSpeedEl = document.getElementById('topSpeed'), speedEl = document.getElementById('speed');
-        const saveRouteBtn = document.getElementById('saveRouteBtn'), summaryBtn = document.getElementById('summaryBtn'), resetBtn = document.getElementById('resetBtn'), openRoutesBtn = document.getElementById('openRoutesBtn');
-        const saveModal = document.getElementById('saveModal'), loadModal = document.getElementById('loadModal'), routeDetailModal = document.getElementById('routeDetailModal');
 
         function startTracking() {
-            initAudio(); if (!navigator.geolocation) return showAlert("GPS not supported.");
-            if (startBtn.innerText === "START RIDE") resetRide();
-            isAutoPaused = false; startBtn.disabled = true; stopBtn.disabled = false;
-            watchId = navigator.geolocation.watchPosition(updatePosition, () => updateStatus("GPS Error", "bg-red-500"), { enableHighAccuracy: true });
-            if (!uiTimer) uiTimer = setInterval(() => { if (!isAutoPaused && watchId) { rideSeconds++; liveTimerText.innerText = formatTime(rideSeconds); saveRideState(true); } }, 1000);
-            saveRouteBtn.classList.add('hidden'); summaryBtn.classList.add('hidden'); resetBtn.classList.add('hidden'); openRoutesBtn.classList.add('hidden');
+            if (!navigator.geolocation) return showAlert("GPS not supported.");
+            isAutoPaused = false;
+            document.getElementById('startBtn').disabled = true; document.getElementById('stopBtn').disabled = false;
+            watchId = navigator.geolocation.watchPosition(updatePosition, () => {}, { enableHighAccuracy: true });
+            if (!uiTimer) uiTimer = setInterval(() => { if (!isAutoPaused && watchId) { rideSeconds++; document.getElementById('liveTimerText').innerText = formatTime(rideSeconds); saveRideState(true); } }, 1000);
+            document.getElementById('openRoutesBtn').classList.add('hidden');
         }
 
         function stopTracking() {
             if (watchId) navigator.geolocation.clearWatch(watchId); watchId = null;
-            startBtn.disabled = false; startBtn.innerText = "RESUME"; stopBtn.disabled = true;
-            updateStatus("Ride Paused", "bg-zinc-500"); saveRideState(false);
-            if (currentRouteCoords.length > 2) { saveRouteBtn.classList.remove('hidden'); summaryBtn.classList.remove('hidden'); resetBtn.classList.remove('hidden'); }
-            else openRoutesBtn.classList.remove('hidden');
+            document.getElementById('startBtn').disabled = false; document.getElementById('startBtn').innerText = "RESUME"; document.getElementById('stopBtn').disabled = true;
+            saveRideState(false);
+            if (currentRouteCoords.length > 2) { document.getElementById('saveRouteBtn').classList.remove('hidden'); document.getElementById('summaryBtn').classList.remove('hidden'); document.getElementById('resetBtn').classList.remove('hidden'); }
+            else { document.getElementById('openRoutesBtn').classList.remove('hidden'); }
         }
 
         function updatePosition(position) {
             const lat = position.coords.latitude, lng = position.coords.longitude, speedMps = position.coords.speed || 0, alt = position.coords.altitude || 0, now = Date.now();
             const currentSpeedMph = speedMps * 2.23694;
+            
             if (isAutoPauseEnabled) {
                 if (!isAutoPaused && currentSpeedMph < 1.0) { isAutoPaused = true; updateStatus("Paused", "bg-orange-500", true); }
-                else if (isAutoPaused && currentSpeedMph > 1.5) { isAutoPaused = false; playTone('split'); updateStatus("Resumed", "bg-neon-main", true); }
+                else if (isAutoPaused && currentSpeedMph > 1.5) { isAutoPaused = false; updateStatus("Resumed", "bg-neon-main", true); }
             }
-            speedEl.innerText = Math.round(currentSpeedMph).toString().padStart(2, '0');
-            if (currentSpeedMph > topSpeedMph) { topSpeedMph = currentSpeedMph; topSpeedEl.innerText = topSpeedMph.toFixed(1); }
-            speedGauge.style.strokeDashoffset = 75 - (75 * Math.min(currentSpeedMph / 50, 1));
-            if (position.coords.heading !== null) compassRose.style.transform = `rotate(${-position.coords.heading}deg)`;
-            currentRouteCoords.push([lat, lng, alt]); currentRoutePolyline.setLatLngs(currentRouteCoords);
-            if (!currentMarker) currentMarker = L.circleMarker([lat, lng], { radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1 }).addTo(map);
+
+            document.getElementById('speed').innerText = Math.round(currentSpeedMph).toString().padStart(2, '0');
+            if (currentSpeedMph > topSpeedMph) { topSpeedMph = currentSpeedMph; document.getElementById('topSpeed').innerText = topSpeedMph.toFixed(1); }
+            document.getElementById('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(currentSpeedMph / 50, 1));
+            
+            currentRouteCoords.push([lat, lng, alt]); 
+            currentRoutePolyline.setLatLngs(currentRouteCoords);
+            if (!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius:8, fillColor:themes[activeThemeIndex].vars.main, color:'#000', weight:3, opacity:1, fillOpacity:1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
+
             if (isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
             if (lastPosition) {
                 const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
@@ -709,24 +676,138 @@
                     if (lastGpsTimestamp > 0) {
                         const dt = (now - lastGpsTimestamp) / 1000;
                         if (currentSpeedMph >= 4.0) {
-                            if (Math.abs(currentSpeedMph - consistentSpeedRef) <= 1.5) { currentConsistentSec += dt; currentConsistentDist += d; if (currentConsistentSec > longestConsistentSec) { longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef; } }
-                            else { consistentSpeedRef = currentSpeedMph; currentConsistentSec = 0; currentConsistentDist = 0; }
-                        } else { currentConsistentSec = 0; currentConsistentDist = 0; consistentSpeedRef = 0; }
+                            if (Math.abs(currentSpeedMph - consistentSpeedRef) <= 1.5) {
+                                currentConsistentSec += dt; currentConsistentDist += d;
+                                if (currentConsistentSec > longestConsistentSec) { longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef; }
+                            } else { consistentSpeedRef = currentSpeedMph; currentConsistentSec = 0; currentConsistentDist = 0; }
+                        }
                     }
                 }
-                if (totalDistanceMiles - lastSplitDist >= currentSplitInterval) { 
+                if (totalDistanceMiles - lastSplitDist >= currentSplitInterval) {
                     splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
-                    lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds; playTone('split');
+                    lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
                 }
             }
-            lastGpsTimestamp = now; lastPosition = position; updateUpcomingHill(lat, lng);
+            lastGpsTimestamp = now; lastPosition = position;
+            checkNearbyRoutes(lat, lng);
+            updateUpcomingHill(lat, lng);
         }
 
-        function resetRide() {
-            localStorage.removeItem(STATE_KEY);
-            rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0;
-            longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0; splits = []; lastSplitDist = 0; lastSplitTime = 0;
-            currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null;
+        // --- Route List & Management ---
+
+        function checkNearbyRoutes(lat, lng) {
+            try {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let isNear = false;
+                for (let r of routes) {
+                    if (r.points) {
+                        try {
+                            const pts = JSON.parse(r.points);
+                            if (pts.length > 0 && calculateDistance(lat, lng, pts[0][0], pts[0][1]) < 0.05) { isNear = true; break; }
+                        } catch(e){}
+                    }
+                }
+                const btn = document.getElementById('openRoutesBtn');
+                if (isNear) {
+                    btn.innerText = '📍 NEARBY';
+                    btn.classList.add('bg-neon-gauge', 'text-black', 'animate-pulse');
+                    btn.classList.remove('bg-zinc-900', 'text-neon-main');
+                } else {
+                    btn.innerText = 'ROUTES';
+                    btn.classList.remove('bg-neon-gauge', 'text-black', 'animate-pulse');
+                    btn.classList.add('bg-zinc-900', 'text-neon-main');
+                }
+            } catch(e) {}
+        }
+
+        function loadRoutes() {
+            const list = document.getElementById('routesList');
+            const sortSel = document.getElementById('routeSortSelect').value;
+            const limitSel = document.getElementById('routeLimitSelect').value;
+            try {
+                let routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                const curLat = lastPosition ? lastPosition.coords.latitude : null;
+                const curLng = lastPosition ? lastPosition.coords.longitude : null;
+
+                routes.forEach(r => {
+                    r._distAway = Infinity;
+                    if (curLat !== null && r.points) {
+                        try {
+                            const pts = JSON.parse(r.points);
+                            if (pts.length > 0) r._distAway = calculateDistance(curLat, curLng, pts[0][0], pts[0][1]);
+                        } catch(e) {}
+                    }
+                    r._d = parseFloat(r.distance) || 0;
+                    r._t = parseFloat(r.timeSec) || 0;
+                    r._s = parseFloat(r.avgSpeed) || 0;
+                });
+                
+                routes.sort((a,b) => {
+                    if (sortSel === 'proximity') return a._distAway - b._distAway;
+                    if (sortSel === 'performance') {
+                        if (b._d !== a._d) return b._d - a._d; // distance first (longest)
+                        if (b._t !== a._t) return b._t - a._t; // time (longest)
+                        return b._s - a._s; // speed (fastest)
+                    }
+                    return b.timestamp - a.timestamp;
+                });
+                
+                if (limitSel === '25') routes = routes.slice(0, 25);
+                
+                list.innerHTML = routes.length ? '' : '<p class="text-center opacity-50 py-4">No routes.</p>';
+                routes.forEach(r => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-2 font-digital transition-colors hover:bg-zinc-800";
+                    const dateStr = r.timestamp ? new Date(r.timestamp).toLocaleDateString() : 'No Date';
+                    const distStr = r._distAway !== Infinity ? `<span class="text-neon-main font-bold neon-glow">${r._distAway.toFixed(1)} mi away</span>` : '';
+                    btn.innerHTML = `<div class="flex justify-between items-start mb-1"><b class="truncate max-w-[70%] text-neon-main text-lg uppercase tracking-wide">${r.name}</b><small class="text-[0.65rem] text-zinc-400 mt-1">${dateStr}</small></div><div class="text-xs text-neon-dark flex justify-between"><span>${r.distance} mi @ ${r.avgSpeed || '0.0'} mph</span>${distStr}</div>`;
+                    btn.onclick = () => openRouteDetails(r);
+                    list.appendChild(btn);
+                });
+            } catch(e) { list.innerHTML = '<p class="text-red-500">Error.</p>'; }
+        }
+
+        function openRouteDetails(route) {
+            document.getElementById('loadModal').classList.add('hidden');
+            document.getElementById('detailNameInput').value = route.name;
+            document.getElementById('detailDistance').innerText = route.distance;
+            document.getElementById('detailAscent').innerText = Math.round((route.ascent || 0) * 3.28084);
+            document.getElementById('detailDescent').innerText = Math.round((route.descent || 0) * 3.28084);
+            document.getElementById('detailConsistentTime').innerText = formatTime(route.maxConsistentSec || 0);
+            document.getElementById('detailConsistentDist').innerText = (route.maxConsistentDist || 0).toFixed(1);
+            document.getElementById('detailConsistentSpeed').innerText = (route.maxConsistentSpeed || 0).toFixed(1);
+            document.getElementById('detailNotesInput').value = route.notes || "";
+            document.getElementById('detailSplitsTitle').innerText = `${getSplitLabel(route.splitInterval || 0.125)} Splits`;
+            
+            const list = document.getElementById('detailSplitsList'); list.innerHTML = '';
+            let spts = []; try { spts = JSON.parse(route.splits || '[]'); } catch(e){}
+            spts.forEach((s, i) => list.innerHTML += `<div class="flex justify-between bg-black p-2 rounded mb-1 text-xs"><span>#${i+1}</span><span>${formatTime(s.time)}</span><span>${s.avg.toFixed(1)} MPH</span></div>`);
+            
+            document.getElementById('routeDetailModal').classList.remove('hidden');
+            drawElevationProfile(JSON.parse(route.points || '[]'), 'detailElevationCanvas');
+            
+            document.getElementById('btnLoadMap').onclick = () => {
+                const pts = JSON.parse(route.points);
+                loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
+                document.getElementById('routeDetailModal').classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
+            };
+            document.getElementById('btnDeleteRoute').onclick = () => {
+                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                rts = rts.filter(r => r.id !== route.id);
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                document.getElementById('routeDetailModal').classList.add('hidden'); showAlert("Deleted.");
+            };
+        }
+
+        // --- Infrastructure Utilities ---
+
+        function updateOdometer(m) {
+            const s = m.toFixed(2).split('.'), i = s[0];
+            document.getElementById('odo4').innerText = s[1][0]; document.getElementById('odo5').innerText = s[1][1];
+            const o1=document.getElementById('odo1'), o2=document.getElementById('odo2'), o3=document.getElementById('odo3');
+            if (i.length>=3) { o1.classList.remove('hidden'); o2.classList.remove('hidden'); o1.innerText=i[i.length-3]; o2.innerText=i[i.length-2]; o3.innerText=i[i.length-1]; }
+            else if (i.length===2) { o1.classList.add('hidden'); o2.classList.remove('hidden'); o2.innerText=i[0]; o3.innerText=i[1]; }
+            else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
         }
 
         function updateUpcomingHill(lat, lng) {
@@ -748,121 +829,57 @@
                 hillInd.classList.remove('hidden');
                 const isUp = grade > 0;
                 hillInd.style.boxShadow = `0 0 10px ${isUp ? '#ff1493' : '#39ff14'}`;
-                hillText.innerHTML = `<span style="color:${isUp ? '#ff1493' : '#39ff14'}">${isUp ? '▲ UP' : '▼ DN'} ${Math.abs(grade).toFixed(1)}%</span>`;
+                hillText.innerHTML = `<span style="color:${isUp ? '#ff1493' : '#39ff14'}">${isUp ? '▲' : '▼'} ${isUp ? 'UP' : 'DN'} ${Math.abs(grade).toFixed(1)}%</span>`;
             } else hillInd.classList.add('hidden');
         }
 
-        summaryBtn.addEventListener('click', () => {
-            document.getElementById('sumDistance').innerText = totalDistanceMiles.toFixed(2);
-            document.getElementById('sumAscent').innerText = Math.round(totalAscentMeters * 3.28084);
-            document.getElementById('sumDescent').innerText = Math.round(totalDescentMeters * 3.28084);
-            document.getElementById('sumTopSpeed').innerText = topSpeedMph.toFixed(1);
-            document.getElementById('sumConsistentTime').innerText = formatTime(longestConsistentSec);
-            document.getElementById('sumConsistentDist').innerText = longestConsistentDist.toFixed(1);
-            document.getElementById('sumConsistentSpeed').innerText = longestConsistentSpeed.toFixed(1);
-            renderSplitsList(splits, 'sumSplitsList');
-            summaryModal.classList.remove('hidden'); drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
-        });
-        document.getElementById('closeSummaryBtn').onclick = () => summaryModal.classList.add('hidden');
-
-        let currentSplitInterval = 0.125;
-        const splitSelect = document.getElementById('splitSelect');
-        for (let i = 1; i <= 20; i++) { const opt = document.createElement('option'); opt.value = i; opt.innerText = i + " Mi"; splitSelect.appendChild(opt); }
-        const savedSplit = localStorage.getItem('bikeTracker_split');
-        if (savedSplit) { splitSelect.value = savedSplit; currentSplitInterval = parseFloat(savedSplit); }
-        splitSelect.onchange = (e) => { currentSplitInterval = parseFloat(e.target.value); localStorage.setItem('bikeTracker_split', e.target.value); };
-
-        function renderSplitsList(splitsData, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            if (!splitsData || splitsData.length === 0) { container.innerHTML = '<small>No splits.</small>'; return; }
-            splitsData.forEach((s, i) => { container.innerHTML += `<div class="flex justify-between bg-black p-2 rounded border border-zinc-900 mb-1"><span>#${i+1}</span> <span>${formatTime(s.time)}</span> <span>${s.avg.toFixed(1)} MPH</span></div>`; });
-        }
-
-        async function fetchRouteName(lat, lng) {
-            try { const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`); const d = await r.json(); return d.address.road || "New Ride"; } catch(e) { return "New Ride"; }
-        }
-
-        saveRouteBtn.onclick = async () => {
-            saveModal.classList.remove('hidden');
-            document.getElementById('routeNameInput').value = "Locating...";
-            document.getElementById('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
-            let lat = lastPosition ? lastPosition.coords.latitude : (currentRouteCoords.length > 0 ? currentRouteCoords[0][0] : 0);
-            let lng = lastPosition ? lastPosition.coords.longitude : (currentRouteCoords.length > 0 ? currentRouteCoords[0][1] : 0);
-            if (lat !== 0) document.getElementById('routeNameInput').value = await fetchRouteName(lat, lng);
-        };
-        document.getElementById('cancelSaveBtn').onclick = () => saveModal.classList.add('hidden');
-        document.getElementById('confirmSaveBtn').onclick = () => {
-            const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-            routes.push({ id: Date.now().toString(), name: document.getElementById('routeNameInput').value, distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, topSpeed: topSpeedMph.toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splitInterval: currentSplitInterval, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
-            localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
-            saveModal.classList.add('hidden'); localStorage.removeItem(STATE_KEY); resetRide(); showAlert("Saved!");
-        };
-
-        function loadRoutesList() {
-            const list = document.getElementById('routesList'), sort = document.getElementById('routeSortSelect').value;
-            try {
-                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                routes.sort((a, b) => sort === 'proximity' ? 0 : (b.timestamp - a.timestamp));
-                if (routes.length === 0) { list.innerHTML = '<p>No routes.</p>'; return; }
-                list.innerHTML = '';
-                routes.forEach(r => {
-                    const btn = document.createElement('button');
-                    btn.className = "w-full text-left bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-2 font-digital";
-                    btn.innerHTML = `<div class="flex justify-between"><b>${r.name}</b><small>${new Date(r.timestamp).toLocaleDateString()}</small></div><div class="text-xs">${r.distance} mi</div>`;
-                    btn.onclick = () => openRouteDetails(r);
-                    list.appendChild(btn);
-                });
-            } catch(e) {}
-        }
-        document.getElementById('routeSortSelect').onchange = loadRoutesList;
-        openRoutesBtn.onclick = () => { loadModal.classList.remove('hidden'); loadRoutesList(); };
-        document.getElementById('closeLoadBtn').onclick = () => loadModal.classList.add('hidden');
-
-        function openRouteDetails(route) {
-            loadModal.classList.add('hidden'); routeDetailModal.classList.remove('hidden');
-            document.getElementById('detailNameInput').value = route.name;
-            document.getElementById('detailDistance').innerText = route.distance;
-            document.getElementById('detailAscent').innerText = Math.round((route.ascent || 0) * 3.28084);
-            document.getElementById('detailDescent').innerText = Math.round((route.descent || 0) * 3.28084);
-            document.getElementById('detailConsistentTime').innerText = formatTime(route.maxConsistentSec || 0);
-            document.getElementById('detailConsistentDist').innerText = (route.maxConsistentDist || 0).toFixed(1);
-            document.getElementById('detailConsistentSpeed').innerText = (route.maxConsistentSpeed || 0).toFixed(1);
-            document.getElementById('detailNotesInput').value = route.notes || "";
-            renderSplitsList(JSON.parse(route.splits || '[]'), 'detailSplitsList');
-            document.getElementById('btnLoadMap').onclick = () => {
-                const pts = JSON.parse(route.points);
-                loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
-                routeDetailModal.classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
-            };
-            document.getElementById('btnDeleteRoute').onclick = () => {
-                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                rts = rts.filter(r => r.id !== route.id);
-                localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-                routeDetailModal.classList.add('hidden'); showAlert("Deleted.");
-            };
-            setTimeout(() => drawElevationProfile(JSON.parse(route.points || '[]'), 'detailElevationCanvas'), 50);
-        }
-        document.getElementById('btnCloseDetails').onclick = () => routeDetailModal.classList.add('hidden');
-
-        function calculateDistance(l1, o1, l2, o2) {
-            const R = 3958.8, dLat = (l2-l1)*Math.PI/180, dLon = (o2-o1)*Math.PI/180;
-            const a = Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-        function formatTime(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`; }
-        function updateOdometer(m) {
-            const s = m.toFixed(2).split('.'), i = s[0];
-            document.getElementById('odo4').innerText = s[1][0]; document.getElementById('odo5').innerText = s[1][1];
-            const o1=document.getElementById('odo1'), o2=document.getElementById('odo2'), o3=document.getElementById('odo3');
-            if (i.length>=3) { o1.classList.remove('hidden'); o2.classList.remove('hidden'); o1.innerText=i[i.length-3]; o2.innerText=i[i.length-2]; o3.innerText=i[i.length-1]; }
-            else if (i.length===2) { o1.classList.add('hidden'); o2.classList.remove('hidden'); o2.innerText=i[0]; o3.innerText=i[1]; }
-            else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
-        }
-        function getDirection(h) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(h/45)%8]; }
+        function updateStatus(t, c) { document.getElementById('statusText').innerText = t; document.getElementById('statusDot').className = `w-2 h-2 rounded-full mr-2 ${c}`; }
         function showAlert(m) { document.getElementById('alertText').innerText = m; document.getElementById('alertModal').classList.remove('hidden'); }
+        function toggleAutoPause() { isAutoPauseEnabled = !isAutoPauseEnabled; document.getElementById('autoPauseToggle').innerText = isAutoPauseEnabled ? "ON" : "OFF"; }
+        function setGoalType(t) { goalType = t; [document.getElementById('btnGoalDistance'), document.getElementById('btnGoalTime')].forEach(b => b.classList.remove('bg-neon-bg', 'text-black')); document.getElementById(t === 'distance' ? 'btnGoalDistance' : 'btnGoalTime').classList.add('bg-neon-bg', 'text-black'); document.getElementById('goalUnitLabel').innerText = t === 'distance' ? 'Mi' : 'Min'; }
+        function getSplitLabel(val) { if (val === 0.125) return "1/8 Mi"; if (val === 0.25) return "1/4 Mi"; if (val === 0.5) return "1/2 Mi"; return `${val} Mi`; }
+
+        // --- Init ---
+
+        window.onload = () => {
+            map = L.map('map', { zoomControl: false }).setView([39.82, -98.57], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
+            compareRouteGroup = L.layerGroup().addTo(map);
+
+            const splitSel = document.getElementById('splitSelect');
+            [0.125, 0.25, 0.5, 1, 2, 5, 10, 20].forEach(v => { const o = document.createElement('option'); o.value = v; o.innerText = getSplitLabel(v); splitSel.appendChild(o); });
+            splitSel.onchange = (e) => { currentSplitInterval = parseFloat(e.target.value); localStorage.setItem('bikeTracker_split', e.target.value); };
+
+            restoreRideState();
+            const savedThemeId = localStorage.getItem('bikeTracker_theme');
+            if (savedThemeId) { activeThemeIndex = parseInt(savedThemeId) - 1; cycleTheme(); } else cycleTheme();
+            applyLayoutMode();
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    lastPosition = pos; map.setView([pos.coords.latitude, pos.coords.longitude], 14); checkNearbyRoutes(pos.coords.latitude, pos.coords.longitude);
+                });
+            }
+        };
+
+        document.getElementById('startBtn').onclick = () => { if (rideSeconds === 0) resetRide(); startTracking(); };
+        document.getElementById('stopBtn').onclick = stopTracking;
+        document.getElementById('resetBtn').onclick = resetRide;
+        document.getElementById('openRoutesBtn').onclick = () => { document.getElementById('loadModal').classList.remove('hidden'); loadRoutes(); };
+        document.getElementById('closeLoadBtn').onclick = () => document.getElementById('loadModal').classList.add('hidden');
+        document.getElementById('closeSummaryBtn').onclick = () => document.getElementById('summaryModal').classList.add('hidden');
+        document.getElementById('btnCloseDetails').onclick = () => document.getElementById('routeDetailModal').classList.add('hidden');
+        document.getElementById('routeSortSelect').onchange = loadRoutes;
+        document.getElementById('routeLimitSelect').onchange = loadRoutes;
+        document.getElementById('confirmSaveBtn').onclick = () => {
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            rts.push({id:Date.now().toString(), name:document.getElementById('routeNameInput').value||"Ride", distance:totalDistanceMiles.toFixed(2), timeSec:rideSeconds, ascent:totalAscentMeters, descent:totalDescentMeters, topSpeed:topSpeedMph.toFixed(1), maxConsistentSec:longestConsistentSec, maxConsistentDist:longestConsistentDist, maxConsistentSpeed:longestConsistentSpeed, avgSpeed: (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1), splitInterval: currentSplitInterval, splits:JSON.stringify(splits), points:JSON.stringify(currentRouteCoords), timestamp:Date.now()});
+            localStorage.setItem(ROUTES_KEY, JSON.stringify(rts)); document.getElementById('saveModal').classList.add('hidden'); localStorage.removeItem(STATE_KEY); resetRide(); showAlert("Saved!");
+        };
+        document.getElementById('cancelSaveBtn').onclick = () => document.getElementById('saveModal').classList.add('hidden');
         document.getElementById('closeAlertBtn').onclick = () => document.getElementById('alertModal').classList.add('hidden');
-        resetBtn.onclick = resetRide;
+
     </script>
 </body>
 </html>
