@@ -203,7 +203,7 @@
             <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 active:text-neon-main transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
             <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-600 active:text-neon-main transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
-            <!-- 1. Speed -->
+            <!-- 1. Speed (Segmented RPM Gauge) -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-between py-6 opacity-100 z-10 transition-opacity">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center bg-black rounded-full border-[4px] border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)_inset] transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -268,15 +268,13 @@
             <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
+        <!-- Master Control Buttons -->
         <div class="flex space-x-3 mb-4 w-full max-w-sm mx-auto shrink-0">
-            <button id="startBtn" class="flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-lg border border-[#2ecc71]">Start Ride</button>
-            <button id="stopBtn" disabled class="flex-1 bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase border border-zinc-800">Stop</button>
+            <button id="mainActionBtn" class="flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-lg border border-[#2ecc71]">Start Ride</button>
+            <button id="liveSummaryBtn" disabled class="flex-1 bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Summary</button>
         </div>
 
         <div class="flex flex-wrap justify-center gap-2.5 w-full max-w-sm mx-auto">
-            <button id="saveRouteBtn" class="hidden flex-1 bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all shadow-neon-sm">Save</button>
-            <button id="summaryBtn" class="hidden flex-1 bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all shadow-neon-sm">Summary</button>
-            <button id="resetBtn" class="hidden flex-1 bg-[#111] border border-zinc-800 text-zinc-500 font-digital py-3 rounded-xl text-sm uppercase tracking-widest transition-all">Discard</button>
             <button id="openRoutesBtn" class="flex-1 w-full bg-black border border-neon-main text-neon-main font-digital py-3 rounded-xl text-sm uppercase tracking-widest shadow-neon-sm active:scale-95 transition-all">Routes</button>
         </div>
     </div>
@@ -288,11 +286,17 @@
             <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-20 z-0"></canvas>
             <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left font-digital">
                 <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="uppercase text-neon-main tracking-widest">Distance</span><span class="text-neon-main text-2xl"><span id="sumDistance">0.0</span> Mi</span></div>
+                
+                <div class="grid grid-cols-2 gap-4 border-b border-zinc-900 pb-3">
+                    <div><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem]">Avg Speed</small><span class="text-neon-main text-2xl"><span id="sumAvgSpeed">0.0</span> MPH</span></div>
+                    <div class="text-right"><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem] text-right">Top Speed (Flat)</small><span class="text-neon-main text-2xl block text-right"><span id="sumTopSpeed">0.0</span> MPH</span></div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4 border-b border-zinc-900 pb-3">
                     <div><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem]">Total Ascent</small><span class="text-neon-main text-2xl"><span id="sumAscent">0</span> ft</span></div>
                     <div class="text-right"><small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem] text-right">Total Descent</small><span class="text-neon-main text-2xl block text-right"><span id="sumDescent">0</span> ft</span></div>
                 </div>
-                <div class="flex justify-between border-b border-zinc-900 pb-3"><span class="uppercase text-neon-main tracking-widest">Top Speed</span><span class="text-neon-main text-2xl"><span id="sumTopSpeed">0.0</span> MPH</span></div>
+                
                 <div class="border-b border-zinc-900 pb-3">
                     <small class="text-neon-main uppercase tracking-widest block opacity-60 text-[0.6rem]">Max Consistent</small>
                     <div class="flex justify-between items-end mt-1">
@@ -303,10 +307,28 @@
                 <div class="pt-2"><small id="sumSplitsTitle" class="text-neon-main uppercase tracking-widest block mb-3 opacity-60">Splits</small><div id="sumSplitsList" class="space-y-2"></div></div>
             </div>
         </div>
-        <button id="closeSummaryBtn" class="w-full max-w-sm py-4 rounded-xl font-digital font-bold text-black bg-neon-bg uppercase tracking-widest text-lg shadow-neon-md">Close</button>
+        
+        <div class="flex w-full max-w-sm space-x-3">
+            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-neon-bg uppercase tracking-widest text-lg shadow-neon-md active:scale-95 transition-transform">Return</button>
+            <div class="flex flex-col space-y-2 flex-1">
+                <button id="saveRideFromSummaryBtn" class="w-full py-2 rounded-lg font-digital font-bold text-black bg-[#2ecc71] uppercase tracking-widest text-sm shadow-[0_0_10px_rgba(46,204,113,0.4)] active:scale-95 transition-transform border border-[#2ecc71]">Save Ride</button>
+                <button id="discardRideBtn" class="w-full py-2 rounded-lg font-digital font-bold text-red-500 bg-[#111] border border-red-900 uppercase tracking-widest text-sm active:scale-95 transition-transform">Discard</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Save Modal -->
+    <!-- Confirm Discard Modal -->
+    <div id="confirmDiscardModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
+            <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
+            <div class="flex space-x-3">
+                <button id="cancelDiscardBtn" class="flex-1 py-3 bg-zinc-900 text-zinc-400 font-bold tracking-widest uppercase rounded-lg">No</button>
+                <button id="confirmDiscardBtn" class="flex-1 py-3 bg-red-600 text-black font-bold tracking-widest uppercase rounded-lg">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for saving and browsing routes -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-neon-main mb-6 uppercase tracking-widest">Save Route</h3>
@@ -320,14 +342,13 @@
         </div>
     </div>
 
-    <!-- Route Browser with Medals -->
     <div id="loadModal" class="hidden absolute inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4">
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-end border-b border-zinc-800 pb-3 mb-4">
                 <h3 class="text-xl font-digital text-neon-main uppercase tracking-widest">Routes</h3>
                 <div class="flex space-x-1">
-                    <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none"><option value="all">All</option><option value="25">Top 25</option></select>
-                    <select id="routeSortSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
+                    <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="all">All</option><option value="25">Top 25</option></select>
+                    <select id="routeSortSelect" class="bg-black border border-zinc-800 text-neon-main font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
                 </div>
             </div>
             <div id="routesList" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
@@ -335,7 +356,6 @@
         </div>
     </div>
 
-    <!-- Route Detail Modal -->
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto backdrop-blur-md">
         <div class="mt-12 w-full max-w-sm">
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-2xl font-digital text-neon-main mb-6 uppercase outline-none tracking-widest neon-glow" />
@@ -343,6 +363,12 @@
                 <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-20 pointer-events-none"></canvas>
                 <div class="space-y-4 relative z-10 font-digital">
                     <div class="flex justify-between border-b border-zinc-900 pb-2"><span class="uppercase tracking-widest text-neon-main opacity-70">Distance</span><span id="detailDistance" class="text-neon-main text-xl">0.0</span></div>
+                    
+                    <div class="grid grid-cols-2 border-b border-zinc-900 pb-2">
+                        <div><small class="text-neon-main opacity-60 block uppercase tracking-widest text-[0.6rem]">Avg Speed</small><span class="text-neon-main text-xl"><span id="detailAvgSpeed">0.0</span> MPH</span></div>
+                        <div class="text-right"><small class="text-neon-main opacity-60 block uppercase tracking-widest text-right text-[0.6rem]">Top Speed (Flat)</small><span class="text-neon-main text-xl block text-right"><span id="detailTopSpeed">0.0</span> MPH</span></div>
+                    </div>
+
                     <div class="grid grid-cols-2 border-b border-zinc-900 pb-2">
                         <div><small class="text-neon-main opacity-60 block uppercase tracking-widest text-[0.6rem]">Ascent</small><span id="detailAscent" class="text-neon-main text-xl">0</span> ft</div>
                         <div class="text-right"><small class="text-neon-main opacity-60 block uppercase tracking-widest text-right text-[0.6rem]">Descent</small><span id="detailDescent" class="text-neon-main text-xl block text-right">0</span> ft</div>
@@ -354,8 +380,6 @@
             <div class="bg-[#050505] border border-zinc-800 p-5 rounded-2xl mb-8 text-left shadow-2xl">
                 <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main h-24 mb-4 outline-none text-sm font-digital tracking-widest"></textarea>
                 <button id="btnSaveNotes" class="w-full py-2.5 bg-zinc-900 border border-neon-main text-neon-main rounded-lg font-digital uppercase tracking-widest text-sm mb-3">Save Updates</button>
-                
-                <!-- Fixed Double-Tap Delete Button -->
                 <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors">Delete Route</button>
             </div>
             <div class="flex space-x-3 mb-10">
@@ -366,12 +390,12 @@
     </div>
 
     <div id="alertModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-neon-main mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-neon-bg text-black font-bold tracking-widest uppercase rounded-lg">OK</button></div>
+        <div class="bg-[#0a0a0a] border border-neon-main shadow-neon-sm p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-neon-main mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-neon-bg text-black font-bold tracking-widest uppercase rounded-lg">OK</button></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- GLOBALS & STATE ---
+        // --- 1. GLOBALS & STATE ---
         const ROUTES_KEY = 'bikeTracker_routes_v1', STATE_KEY = 'bikeTracker_activeRide_v1';
         const themes = [
             { name: 'yellow', vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
@@ -390,10 +414,37 @@
         let currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0;
         let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0, isAutoPaused = false, isAutoPauseEnabled = false;
         let currentSplitInterval = 0.125, goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
+        
+        let wakeLock = null;
+        let isTracking = false;
 
         const get = id => document.getElementById(id);
 
-        // --- THEME & UI ENGINE ---
+        // --- WAKE LOCK ENGINE ---
+
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log('Wake lock failed:', err);
+                }
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (isTracking && wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+
+        // --- 2. THEME & UI ENGINE ---
 
         function cycleTheme() {
             activeThemeIndex = (activeThemeIndex + 1) % themes.length;
@@ -469,7 +520,29 @@
         function nextView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex + 1) % v.length; showView(currentViewIndex); }
         function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
 
-        // --- TRACKING ENGINE ---
+        function updateMainButtons() {
+            const mBtn = get('mainActionBtn');
+            const sBtn = get('liveSummaryBtn');
+
+            if (rideSeconds === 0 && !isTracking) {
+                mBtn.innerText = "START RIDE";
+                mBtn.className = "flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+                sBtn.disabled = true;
+                sBtn.className = "flex-1 bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
+            } else if (isTracking) {
+                mBtn.innerText = "PAUSE";
+                mBtn.className = "flex-1 bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600";
+                sBtn.disabled = false;
+                sBtn.className = "flex-1 bg-black border border-neon-main text-neon-main font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-neon-sm";
+            } else {
+                mBtn.innerText = "RESUME";
+                mBtn.className = "flex-1 bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+                sBtn.disabled = false;
+                sBtn.className = "flex-1 bg-black border border-neon-main text-neon-main font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-neon-sm";
+            }
+        }
+
+        // --- 3. TRACKING ENGINE ---
 
         function formatTime(s) { 
             const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); 
@@ -485,22 +558,41 @@
             const lat = pos.coords.latitude, lng = pos.coords.longitude, spd = (pos.coords.speed || 0) * 2.23694, alt = pos.coords.altitude || 0, now = Date.now();
             if(isAutoPauseEnabled) {
                 if(!isAutoPaused && spd < 1.0) { isAutoPaused = true; updateStatus("Paused", "bg-orange-500"); }
-                else if(isAutoPaused && spd > 1.5) { isAutoPaused = false; updateStatus("Resumed", "bg-neon-main"); }
+                else if(isAutoPaused && spd > 1.5) { isAutoPaused = false; updateStatus("Recording...", "bg-neon-main"); }
             }
             get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
-            if(spd > topSpeedMph) { topSpeedMph = spd; get('topSpeed').innerText = spd.toFixed(1); }
+            
             get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
             if(pos.coords.heading !== null) get('compassRose').style.transform = `rotate(${-pos.coords.heading}deg)`;
-            currentRouteCoords.push([lat, lng, alt]); currentRoutePolyline.setLatLngs(currentRouteCoords);
+            
+            currentRouteCoords.push([lat, lng, alt]); 
+            currentRoutePolyline.setLatLngs(currentRouteCoords);
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
+            
             if(lastPosition) {
                 const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                 if(d > 0.0005 && !isAutoPaused) {
                     totalDistanceMiles += d; updateOdometer(totalDistanceMiles);
                     const da = alt - (lastPosition.coords.altitude || 0);
                     if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
+                    
+                    if (currentRouteCoords.length >= 5) {
+                        let pastPt = currentRouteCoords[currentRouteCoords.length - 5];
+                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
+                        if (dPast > 5) {
+                            let grade = ((alt - pastPt[2]) / dPast) * 100;
+                            if (grade > -1.5) { 
+                                if (spd > flatUpTopSpeedMph) flatUpTopSpeedMph = spd;
+                            }
+                        }
+                    } else if (currentRouteCoords.length < 5 && spd > flatUpTopSpeedMph) {
+                        flatUpTopSpeedMph = spd;
+                    }
+
+                    if (spd > topSpeedMph) { topSpeedMph = spd; }
+
                     if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
                         currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
                         if(currentConsistentSec > longestConsistentSec) { longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef; }
@@ -511,23 +603,40 @@
                     lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
                 }
             }
+            
+            get('topSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
+            get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+            
             lastGpsTimestamp = now; lastPosition = pos;
             checkNearbyRoutes(lat, lng);
             updateUpcomingHill(lat, lng);
         }
 
-        function startTracking() {
-            if (!navigator.geolocation) return showAlert("GPS not supported.");
-            isAutoPaused = false; get('startBtn').disabled = true; get('stopBtn').disabled = false;
-            watchId = navigator.geolocation.watchPosition(updatePosition, ()=>{}, {enableHighAccuracy: true});
-            if(!uiTimer) uiTimer = setInterval(()=>{ if(!isAutoPaused && watchId){ rideSeconds++; get('liveTimerText').innerText = formatTime(rideSeconds); saveRideState(true); }}, 1000);
-        }
-
-        function stopTracking() {
-            if(watchId) navigator.geolocation.clearWatch(watchId); watchId = null;
-            get('startBtn').disabled = false; get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
-            saveRideState(false);
-            if(currentRouteCoords.length > 2) { get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden'); }
+        function toggleTracking() {
+            if (!isTracking) {
+                if (!navigator.geolocation) return showAlert("GPS not supported.");
+                requestWakeLock();
+                isAutoPaused = false;
+                isTracking = true;
+                updateMainButtons();
+                updateStatus("Recording...", "bg-neon-main");
+                
+                watchId = navigator.geolocation.watchPosition(updatePosition, ()=>{}, {enableHighAccuracy: true});
+                if(!uiTimer) uiTimer = setInterval(()=>{ 
+                    if(!isAutoPaused && isTracking && watchId){ 
+                        rideSeconds++; 
+                        get('liveTimerText').innerText = formatTime(rideSeconds); 
+                        saveRideState(true); 
+                    }
+                }, 1000);
+            } else {
+                if(watchId) navigator.geolocation.clearWatch(watchId); 
+                watchId = null;
+                isTracking = false;
+                updateMainButtons();
+                saveRideState(false);
+                updateStatus("Paused", "bg-orange-500");
+            }
         }
 
         function saveRideState(active) {
@@ -543,18 +652,22 @@
                         rideSeconds=st.rideSeconds; totalDistanceMiles=st.totalDistanceMiles; currentRouteCoords=st.coords;
                         updateOdometer(totalDistanceMiles); get('liveTimerText').innerText = formatTime(rideSeconds);
                         if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
-                        get('startBtn').innerText = "RESUME"; get('stopBtn').disabled = true;
+                        
+                        isTracking = false;
+                        updateMainButtons();
                         updateStatus("Recovered", "bg-zinc-500");
-                        get('saveRouteBtn').classList.remove('hidden'); get('summaryBtn').classList.remove('hidden'); get('resetBtn').classList.remove('hidden');
                     }
                 }
             } catch(e){}
         }
 
-        // --- UI & DATA ACTIONS ---
+        // --- 4. UI & DATA ACTIONS ---
 
         function resetRide() {
-            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; longestConsistentSec = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; get('speed').innerText="00"; updateStatus("Ready to ride", "bg-neon-main");
+            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; flatUpTopSpeedMph = 0; longestConsistentSec = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; get('speed').innerText="00"; get('topSpeed').innerText="0.0"; get('avgSpeed').innerText="0.0"; updateStatus("Ready to ride", "bg-neon-main");
+            
+            isTracking = false;
+            updateMainButtons();
         }
 
         function toggleAutoPause() { 
@@ -562,10 +675,10 @@
             const btn = get('autoPauseToggle');
             if (isAutoPauseEnabled) {
                 btn.innerText = "Auto Pause: ON";
-                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-green-500 text-green-500 font-digital text-[0.7rem] uppercase tracking-widest shadow-[0_0_8px_rgba(34,197,94,0.4)]";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-green-500 text-green-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(34,197,94,0.3)]";
             } else {
                 btn.innerText = "Auto Pause: OFF";
-                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest shadow-[0_0_8px_rgba(239,68,68,0.4)]";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(239,68,68,0.3)]";
             }
         }
 
@@ -573,7 +686,8 @@
             get('sumDistance').innerText = totalDistanceMiles.toFixed(2);
             get('sumAscent').innerText = Math.round(totalAscentMeters * 3.28084);
             get('sumDescent').innerText = Math.round(totalDescentMeters * 3.28084);
-            get('sumTopSpeed').innerText = topSpeedMph.toFixed(1);
+            get('sumAvgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+            get('sumTopSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
             get('sumConsistentTime').innerText = formatTime(longestConsistentSec);
             get('sumConsistentDist').innerText = longestConsistentDist.toFixed(1);
             get('sumConsistentSpeed').innerText = longestConsistentSpeed.toFixed(1);
@@ -585,20 +699,23 @@
 
         function saveRide() {
             const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: (totalDistanceMiles/(rideSeconds/3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
+            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: (totalDistanceMiles/(rideSeconds/3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1), flatTopSpeed: (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
             localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-            localStorage.removeItem(STATE_KEY); location.reload();
+            
+            releaseWakeLock();
+            localStorage.removeItem(STATE_KEY); 
+            location.reload();
         }
 
-        // --- Categories & Medals System ---
+        // --- 5. CATEGORIES & MEDALS SYSTEM ---
 
         function getMedal(route, rankArray, prop) {
             if (!route[prop] || route[prop] <= 0) return '';
-            const valid = rankArray.filter(x => x[prop] > 0);
-            const idx = valid.findIndex(x => x.id === route.id);
-            if (idx === 0) return '🥇';
-            if (idx === 1) return '🥈';
-            if (idx === 2) return '🥉';
+            const uniqueVals = [...new Set(rankArray.map(x => x[prop]))].filter(x => x > 0).sort((a,b) => b - a);
+            const rank = uniqueVals.indexOf(route[prop]);
+            if (rank === 0) return '🥇';
+            if (rank === 1) return '🥈';
+            if (rank === 2) return '🥉';
             return '';
         }
 
@@ -607,27 +724,27 @@
             const lat = lastPosition?.coords.latitude, lng = lastPosition?.coords.longitude;
             let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
             
-            // Parse numerical properties for ranking
             rts.forEach(r => {
                 r._distAway = Infinity;
                 if(lat && r.points) { try { const p = JSON.parse(r.points); if(p.length) r._distAway = calculateDistance(lat, lng, p[0][0], p[0][1]); } catch(e){} }
                 r._d = parseFloat(r.distance) || 0; 
                 r._t = parseFloat(r.timeSec) || 0; 
                 r._s = parseFloat(r.avgSpeed) || 0;
+                r._ts = parseFloat(r.flatTopSpeed) || parseFloat(r.topSpeed) || 0;
             });
 
-            // Calculate Rankings
             const dRank = [...rts].sort((a,b) => b._d - a._d);
             const tRank = [...rts].sort((a,b) => b._t - a._t);
             const sRank = [...rts].sort((a,b) => b._s - a._s);
+            const tsRank = [...rts].sort((a,b) => b._ts - a._ts);
 
             rts.forEach(r => {
                 r.mDist = getMedal(r, dRank, '_d');
                 r.mTime = getMedal(r, tRank, '_t');
                 r.mSpeed = getMedal(r, sRank, '_s');
+                r.mTopSpeed = getMedal(r, tsRank, '_ts');
             });
 
-            // Apply selected sort
             rts.sort((a,b) => {
                 if(sort === 'proximity') return a._distAway - b._distAway;
                 if(sort === 'performance') return (b._d - a._d) || (b._t - a._t) || (b._s - a._s);
@@ -635,34 +752,45 @@
             });
 
             if(lim === '25') rts = rts.slice(0, 25);
-            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital tracking-widest mt-4">No routes found.</p>';
+            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital mt-4 text-white">No routes found.</p>';
             
             rts.forEach(r => {
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left bg-black border border-neon-main shadow-neon-sm p-4 rounded-xl mb-3 font-digital hover:bg-[#111] transition-colors";
                 
+                let badge = "";
+                if (r.mDist === '🥇') badge += `<span class="bg-neon-main text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-neon-sm">🏆 DISTANCE</span>`;
+                if (r.mTime === '🥇') badge += `<span class="bg-neon-gauge text-white px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_8px_var(--neon-gauge)]">⏳ ENDURANCE</span>`;
+                if (r.mSpeed === '🥇') badge += `<span class="bg-[#ff00ff] text-white px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_8px_#ff00ff]">⚡ AVG SPD</span>`;
+                if (r.mTopSpeed === '🥇') badge += `<span class="bg-[#00ffff] text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_8px_#00ffff]">🚀 TOP SPD</span>`;
+
                 const distTxt = r._distAway !== Infinity ? `<div class="text-[0.65rem] text-neon-dark mt-1 tracking-widest">${r._distAway.toFixed(1)} MI AWAY</div>` : '';
                 
                 btn.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="truncate pr-2">
                             <b class="text-lg uppercase text-neon-main tracking-widest">${r.name}</b>
+                            <div class="flex flex-wrap mt-1.5">${badge}</div>
                         </div>
                         <small class="text-zinc-500 whitespace-nowrap">${new Date(r.timestamp).toLocaleDateString()}</small>
                     </div>
                     ${distTxt}
-                    <div class="grid grid-cols-3 gap-2 text-center mt-3 pt-3 border-t border-zinc-900">
+                    <div class="grid grid-cols-4 gap-1 text-center mt-3 pt-3 border-t border-zinc-900">
                         <div class="flex flex-col">
-                            <span class="text-[0.6rem] text-neon-main opacity-50 tracking-widest">DISTANCE</span>
-                            <span class="text-neon-main font-bold mt-1 text-sm">${r.distance} ${r.mDist}</span>
+                            <span class="text-[0.55rem] text-neon-main opacity-50 tracking-widest">DIST</span>
+                            <span class="text-neon-main font-bold mt-1 text-[0.85rem]">${r.distance} ${r.mDist}</span>
                         </div>
                         <div class="flex flex-col border-l border-zinc-900">
-                            <span class="text-[0.6rem] text-neon-main opacity-50 tracking-widest">ENDURANCE</span>
-                            <span class="text-neon-main font-bold mt-1 text-sm">${formatTime(r._t)} ${r.mTime}</span>
+                            <span class="text-[0.55rem] text-neon-main opacity-50 tracking-widest">TIME</span>
+                            <span class="text-neon-main font-bold mt-1 text-[0.85rem]">${formatTime(r._t)} ${r.mTime}</span>
                         </div>
                         <div class="flex flex-col border-l border-zinc-900">
-                            <span class="text-[0.6rem] text-neon-main opacity-50 tracking-widest">SPEED</span>
-                            <span class="text-neon-main font-bold mt-1 text-sm">${r.avgSpeed} ${r.mSpeed}</span>
+                            <span class="text-[0.55rem] text-neon-main opacity-50 tracking-widest">AVG SPD</span>
+                            <span class="text-neon-main font-bold mt-1 text-[0.85rem]">${r.avgSpeed} ${r.mSpeed}</span>
+                        </div>
+                        <div class="flex flex-col border-l border-zinc-900">
+                            <span class="text-[0.55rem] text-neon-main opacity-50 tracking-widest">TOP SPD</span>
+                            <span class="text-neon-main font-bold mt-1 text-[0.85rem]">${(r.flatTopSpeed || r.topSpeed || '0.0')} ${r.mTopSpeed}</span>
                         </div>
                     </div>
                 `;
@@ -674,8 +802,12 @@
         function openRouteDetails(r) {
             get('loadModal').classList.add('hidden'); get('routeDetailModal').classList.remove('hidden');
             currentlyViewingRouteId = r.id;
-            get('detailNameInput').value = r.name; get('detailDistance').innerText = r.distance;
-            get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
+            get('detailNameInput').value = r.name; 
+            get('detailDistance').innerText = r.distance;
+            get('detailAvgSpeed').innerText = r.avgSpeed || '0.0';
+            get('detailTopSpeed').innerText = r.flatTopSpeed || r.topSpeed || '0.0';
+            get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); 
+            get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
             get('detailConsistentTime').innerText = formatTime(r.maxConsistentSec||0);
             get('detailConsistentDist').innerText = (r.maxConsistentDist||0).toFixed(1);
             get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
@@ -689,12 +821,10 @@
                 get('routeDetailModal').classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
             };
             
-            // Reset Delete Button State
             const delBtn = get('btnDeleteRoute');
             delBtn.innerText = "Delete Route";
             delBtn.className = "w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors";
             
-            // Secure Double-Tap Delete Assignment
             delBtn.onclick = (e) => {
                 e.stopPropagation();
                 if (delBtn.innerText === "Delete Route" || delBtn.innerText === "DELETE ROUTE") {
@@ -712,7 +842,6 @@
                     localStorage.setItem(ROUTES_KEY, JSON.stringify(all));
                     get('routeDetailModal').classList.add('hidden'); 
                     
-                    // Reset styling and immediately refresh route list
                     delBtn.innerText = "Delete Route";
                     delBtn.classList.replace('text-white', 'text-red-500');
                     delBtn.classList.replace('bg-red-700', 'bg-[#111]');
@@ -721,6 +850,8 @@
                 }
             };
         }
+
+        // --- UTILS ---
 
         function updateOdometer(m) {
             const s = m.toFixed(2).split('.'), i = s[0], o1=get('odo1'), o2=get('odo2'), o3=get('odo3');
@@ -814,20 +945,37 @@
             get('toggleBtn').onclick = toggleDashboardMode;
             get('navLeft').onclick = prevView;
             get('navRight').onclick = nextView;
-            get('startBtn').onclick = () => { if(rideSeconds === 0) resetRide(); startTracking(); };
-            get('stopBtn').onclick = stopTracking;
-            get('resetBtn').onclick = () => { localStorage.removeItem(STATE_KEY); location.reload(); };
+            
+            get('mainActionBtn').onclick = toggleTracking;
+            get('liveSummaryBtn').onclick = showSummary;
+
             get('openRoutesBtn').onclick = () => { get('loadModal').classList.remove('hidden'); loadRoutes(); };
             get('closeLoadBtn').onclick = () => get('loadModal').classList.add('hidden');
-            get('closeSummaryBtn').onclick = () => get('summaryModal').classList.add('hidden');
             get('btnCloseDetails').onclick = () => get('routeDetailModal').classList.add('hidden');
             get('cancelSaveBtn').onclick = () => get('saveModal').classList.add('hidden');
             get('confirmSaveBtn').onclick = saveRide;
-            get('summaryBtn').onclick = showSummary;
-            get('saveRouteBtn').onclick = () => { get('saveModal').classList.remove('hidden'); get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2); };
-            get('routeLimitSelect').onchange = loadRoutes;
-            get('routeSortSelect').onchange = loadRoutes;
+            
+            get('returnToRideBtn').onclick = () => get('summaryModal').classList.add('hidden');
+            get('saveRideFromSummaryBtn').onclick = () => {
+                if(currentRouteCoords.length < 2 && rideSeconds < 5) { showAlert("Not enough data to save."); return; }
+                get('summaryModal').classList.add('hidden');
+                if (isTracking) toggleTracking(); 
+                get('saveModal').classList.remove('hidden');
+                get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
+            };
+            get('discardRideBtn').onclick = () => { get('confirmDiscardModal').classList.remove('hidden'); };
+            get('cancelDiscardBtn').onclick = () => { get('confirmDiscardModal').classList.add('hidden'); };
+            get('confirmDiscardBtn').onclick = () => {
+                get('confirmDiscardModal').classList.add('hidden');
+                get('summaryModal').classList.add('hidden');
+                if (isTracking) toggleTracking();
+                releaseWakeLock();
+                resetRide();
+            };
+
             get('autoPauseToggle').onclick = toggleAutoPause;
+            get('btnGoalDistance').onclick = () => setGoalType('distance');
+            get('btnGoalTime').onclick = () => setGoalType('time');
             get('btnSaveNotes').onclick = () => {
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 const idx = rts.findIndex(rx => rx.id === currentlyViewingRouteId);
@@ -845,12 +993,12 @@
             compareRouteGroup = L.layerGroup().addTo(map);
 
             restoreRideState();
-            const sb = localStorage.getItem('bikeTracker_brightness');
-            if(sb) { currentBrightnessLevel = parseInt(sb)-1; cycleBrightness(); } else { currentBrightnessLevel = -1; cycleBrightness(); }
+            currentBrightnessLevel = -1; cycleBrightness();
             const st = localStorage.getItem('bikeTracker_theme');
             if(st) { activeThemeIndex = parseInt(st)-1; cycleTheme(); } else cycleTheme();
             applyLayoutMode();
             navigator.geolocation.getCurrentPosition(p => { lastPosition = p; map.setView([p.coords.latitude, p.coords.longitude], 14); checkNearbyRoutes(p.coords.latitude, p.coords.longitude); });
+            updateMainButtons();
         };
     </script>
 </body>
