@@ -268,19 +268,19 @@
             <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
-        <!-- Master Control Buttons (2x2 Layout) -->
+        <!-- Master Control Buttons (2x2 Grid Layout) -->
         <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0">
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
-            <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Save</button>
-            <button id="openRoutesBtn" class="w-full bg-black border border-neon-main text-neon-main font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase shadow-neon-sm active:scale-95 transition-all">Routes</button>
+            <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
+            <button id="openRoutesBtn" class="w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-all">Routes</button>
             <button id="liveSummaryBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Summary</button>
         </div>
     </div>
 
     <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
-        <h2 class="text-3xl font-digital text-white font-bold mb-8 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.4);">Ride Summary</h2>
-        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-8 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)]">
+        <h2 class="text-3xl font-digital text-white font-bold mb-8 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-8 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.1)]">
             <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-30 z-0"></canvas>
             <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left font-digital text-white">
                 <div class="flex justify-between border-b border-zinc-800 pb-3">
@@ -461,6 +461,13 @@
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
 
+        function showAlert(msg) {
+            const textEl = get('alertText');
+            if (textEl) textEl.innerText = msg;
+            const modalEl = get('alertModal');
+            if (modalEl) modalEl.classList.remove('hidden');
+        }
+
         // --- WAKE LOCK ENGINE ---
 
         async function requestWakeLock() {
@@ -567,31 +574,46 @@
             const svBtn = get('saveRouteBtn');
 
             if (rideSeconds === 0 && !isTracking) {
-                mBtn.innerText = "START RIDE";
-                mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
-                sBtn.disabled = true;
-                sBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
+                if(mBtn) {
+                    mBtn.innerText = "START RIDE";
+                    mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+                }
+                if(sBtn) {
+                    sBtn.disabled = true;
+                    sBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
+                }
                 if(svBtn) {
                     svBtn.disabled = true;
+                    svBtn.innerText = "STOP / SAVE";
                     svBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
                 }
             } else if (isTracking) {
-                mBtn.innerText = "PAUSE";
-                mBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600";
-                sBtn.disabled = false;
-                sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
-                if(svBtn) {
-                    svBtn.disabled = true;
-                    svBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
+                if(mBtn) {
+                    mBtn.innerText = "PAUSE";
+                    mBtn.className = "w-full bg-[#eab308] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#eab308]";
                 }
-            } else {
-                mBtn.innerText = "RESUME";
-                mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
-                sBtn.disabled = false;
-                sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
+                if(sBtn) {
+                    sBtn.disabled = false;
+                    sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
+                }
                 if(svBtn) {
                     svBtn.disabled = false;
-                    svBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
+                    svBtn.innerText = "STOP / SAVE";
+                    svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600";
+                }
+            } else {
+                if(mBtn) {
+                    mBtn.innerText = "RESUME";
+                    mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+                }
+                if(sBtn) {
+                    sBtn.disabled = false;
+                    sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
+                }
+                if(svBtn) {
+                    svBtn.disabled = false;
+                    svBtn.innerText = "STOP / SAVE";
+                    svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600";
                 }
             }
         }
@@ -784,7 +806,13 @@
 
         function saveRide() {
             const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: (totalDistanceMiles/(rideSeconds/3600)).toFixed(1), topSpeed: topSpeedMph.toFixed(1), flatTopSpeed: (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
+            
+            let avgSpd = "0.0";
+            if (rideSeconds > 0) {
+                avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
+            }
+
+            rts.push({ id: Date.now().toString(), name: get('routeNameInput').value||"Ride", distance: totalDistanceMiles.toFixed(2), timeSec: rideSeconds, ascent: totalAscentMeters, descent: totalDescentMeters, avgSpeed: avgSpd, topSpeed: topSpeedMph.toFixed(1), flatTopSpeed: (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1), maxConsistentSec: longestConsistentSec, maxConsistentDist: longestConsistentDist, maxConsistentSpeed: longestConsistentSpeed, splits: JSON.stringify(splits), points: JSON.stringify(currentRouteCoords), timestamp: Date.now() });
             localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
             
             releaseWakeLock();
@@ -837,7 +865,7 @@
             });
 
             if(lim === '25') rts = rts.slice(0, 25);
-            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital mt-4 text-white opacity-80">No routes found.</p>';
+            list.innerHTML = rts.length ? '' : '<p class="text-center text-white opacity-60 font-digital mt-4 tracking-widest">No routes found.</p>';
             
             rts.forEach(r => {
                 const btn = document.createElement('button');
