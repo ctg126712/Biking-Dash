@@ -280,7 +280,7 @@
     <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-8 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
-        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-8 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-8 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)]">
             <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-30 z-0"></canvas>
             <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left font-digital text-white">
                 <div class="flex justify-between border-b border-zinc-800 pb-3">
@@ -457,6 +457,7 @@
         
         let wakeLock = null;
         let isTracking = false;
+        let isFirstFix = true;
 
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
@@ -768,6 +769,8 @@
             isTracking = false;
             currentSpeed = 0;
             stoppedSeconds = 0;
+            isFirstFix = true;
+            lastPosition = null;
             updateMainButtons();
         }
 
