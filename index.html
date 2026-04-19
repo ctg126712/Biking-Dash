@@ -640,49 +640,66 @@
             get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
             if(pos.coords.heading !== null) get('compassRose').style.transform = `rotate(${-pos.coords.heading}deg)`;
             
-            currentRouteCoords.push([lat, lng, alt]); 
-            currentRoutePolyline.setLatLngs(currentRouteCoords);
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
             
             if(lastPosition) {
                 const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
-                if(d > 0.0005 && !isAutoPaused) {
-                    totalDistanceMiles += d; updateOdometer(totalDistanceMiles);
-                    const da = alt - (lastPosition.coords.altitude || 0);
-                    if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
-                    
-                    if (currentRouteCoords.length >= 5) {
-                        let pastPt = currentRouteCoords[currentRouteCoords.length - 5];
-                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
-                        if (dPast > 5) {
-                            let grade = ((alt - pastPt[2]) / dPast) * 100;
-                            if (grade > -1.5) { 
-                                if (spd > flatUpTopSpeedMph) flatUpTopSpeedMph = spd;
+                
+                // Robust Distance Accumulator: Only process data AND update anchor if moved more than ~2.6 feet.
+                // This prevents rapid GPS firing from losing distance via microscopic increments.
+                if(d > 0.0005) {
+                    if(!isAutoPaused && isTracking) {
+                        totalDistanceMiles += d; updateOdometer(totalDistanceMiles);
+                        const da = alt - (lastPosition.coords.altitude || 0);
+                        if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
+                        
+                        currentRouteCoords.push([lat, lng, alt]); 
+                        currentRoutePolyline.setLatLngs(currentRouteCoords);
+
+                        if (currentRouteCoords.length >= 5) {
+                            let pastPt = currentRouteCoords[currentRouteCoords.length - 5];
+                            let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
+                            if (dPast > 5) {
+                                let grade = ((alt - pastPt[2]) / dPast) * 100;
+                                if (grade > -1.5) { 
+                                    if (spd > flatUpTopSpeedMph) flatUpTopSpeedMph = spd;
+                                }
                             }
+                        } else if (currentRouteCoords.length < 5 && spd > flatUpTopSpeedMph) {
+                            flatUpTopSpeedMph = spd;
                         }
-                    } else if (currentRouteCoords.length < 5 && spd > flatUpTopSpeedMph) {
-                        flatUpTopSpeedMph = spd;
+
+                        if (spd > topSpeedMph) { topSpeedMph = spd; }
+
+                        if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
+                            currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
+                            if(currentConsistentSec > longestConsistentSec) { longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef; }
+                        } else { consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; }
+
+                        if(totalDistanceMiles - lastSplitDist >= currentSplitInterval) {
+                            splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
+                            lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
+                        }
                     }
-
-                    if (spd > topSpeedMph) { topSpeedMph = spd; }
-
-                    if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
-                        currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
-                        if(currentConsistentSec > longestConsistentSec) { longestConsistentSec = currentConsistentSec; longestConsistentDist = currentConsistentDist; longestConsistentSpeed = consistentSpeedRef; }
-                    } else { consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; }
+                    
+                    // We moved significantly, update the anchor point
+                    lastPosition = pos;
+                    lastGpsTimestamp = now;
                 }
-                if(totalDistanceMiles - lastSplitDist >= currentSplitInterval) {
-                    splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
-                    lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
+            } else {
+                lastPosition = pos;
+                lastGpsTimestamp = now;
+                if (isTracking) {
+                    currentRouteCoords.push([lat, lng, alt]); 
+                    currentRoutePolyline.setLatLngs(currentRouteCoords);
                 }
             }
             
             get('topSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
             get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
             
-            lastGpsTimestamp = now; lastPosition = pos;
             checkNearbyRoutes(lat, lng);
             updateUpcomingHill(lat, lng);
         }
