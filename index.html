@@ -1229,21 +1229,66 @@
             click('cancelSaveBtn', () => get('saveModal').classList.add('hidden'));
             click('confirmSaveBtn', saveRide);
             
-            click('saveBtn', () => {
+            const triggerSaveFlow = async () => {
                 if(currentRouteCoords.length < 2 && rideSeconds < 5) { showAlert("Not enough data to save."); return; }
+                
+                const sModal = get('summaryModal');
+                if (sModal && !sModal.classList.contains('hidden')) sModal.classList.add('hidden');
+                
                 if (isTracking) toggleTracking(); 
+                
                 get('saveModal').classList.remove('hidden');
                 get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
-            });
+                
+                const nameInput = get('routeNameInput');
+                nameInput.value = "";
+                nameInput.placeholder = "Loading location...";
+                
+                // Determine if this is a Record Ride
+                let isRecord = false;
+                let curAvgSpd = rideSeconds > 0 ? (totalDistanceMiles/(rideSeconds/3600)) : 0;
+                let curTopSpd = flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph;
+                
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                if (rts.length > 0) {
+                    let maxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
+                    let maxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
+                    let maxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
+                    let maxTop = Math.max(...rts.map(r => parseFloat(r.flatTopSpeed) || parseFloat(r.topSpeed) || 0));
+                    
+                    if (totalDistanceMiles > maxDist || rideSeconds > maxTime || curAvgSpd > maxAvg || curTopSpd > maxTop) {
+                        isRecord = true;
+                    }
+                } else if (totalDistanceMiles > 0.1) {
+                    isRecord = true; // First real ride is a record
+                }
+
+                let prefix = isRecord ? "Record " : "";
+                let baseName = prefix + "Ride";
+                
+                // Reverse Geocode the starting point
+                try {
+                    if (currentRouteCoords.length > 0) {
+                        const startPt = currentRouteCoords[0];
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${startPt[0]}&lon=${startPt[1]}&format=json`);
+                        const data = await res.json();
+                        const city = data.address.city || data.address.town || data.address.village || data.address.county || "";
+                        if (city) {
+                            baseName = `${prefix}${city} Ride`;
+                        }
+                    }
+                } catch(e) {
+                    console.log("Location fetch failed", e);
+                }
+                
+                nameInput.value = baseName;
+            };
+
+            click('saveBtn', triggerSaveFlow);
+            click('saveRideFromSummaryBtn', triggerSaveFlow);
 
             click('returnToRideBtn', () => get('summaryModal').classList.add('hidden'));
-            click('saveRideFromSummaryBtn', () => {
-                if(currentRouteCoords.length < 2 && rideSeconds < 5) { showAlert("Not enough data to save."); return; }
-                get('summaryModal').classList.add('hidden');
-                if (isTracking) toggleTracking(); 
-                get('saveModal').classList.remove('hidden');
-                get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
-            });
+            
             click('discardRideBtn', () => { get('confirmDiscardModal').classList.remove('hidden'); });
             click('cancelDiscardBtn', () => { get('confirmDiscardModal').classList.add('hidden'); });
             click('confirmDiscardBtn', () => {
