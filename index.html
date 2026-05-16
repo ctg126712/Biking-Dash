@@ -463,6 +463,14 @@
                     </div>
                 </div>
 
+                <div class="border-b border-zinc-800 pb-4">
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Voice Announcements (Per Mile)</label>
+                    <div class="flex space-x-1">
+                        <button id="voiceOnBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase">On</button>
+                        <button id="voiceOffBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Off</button>
+                    </div>
+                </div>
+
                 <div>
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Tire Size</label>
                     <select id="tireSizePreset" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest mb-2 cursor-pointer">
@@ -526,6 +534,7 @@
         let isAutoPaused = false, isAutoPauseEnabled = true, isFirstFix = true;
         let currentSplitInterval = 0.125, goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
         let tireSizeMm = 2136, frontTeeth = 42, rearTeeth = 13, gearRatio = 3.23;
+        let voiceEnabled = true, lastAnnouncedMile = 0;
         
         let wakeLock = null;
         let isTracking = false;
@@ -752,6 +761,23 @@
                             lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
                         }
 
+                        // Mile Voice Announcement
+                        let currentWholeMile = Math.floor(totalDistanceMiles);
+                        if (currentWholeMile > lastAnnouncedMile && currentWholeMile >= 1) {
+                            lastAnnouncedMile = currentWholeMile;
+                            if (voiceEnabled && 'speechSynthesis' in window) {
+                                let currentAvg = (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1);
+                                let msg = new SpeechSynthesisUtterance(`Mile ${currentWholeMile} completed. Average speed, ${currentAvg} miles per hour.`);
+                                
+                                // Fetch available voices and apply British Female accent
+                                let voices = window.speechSynthesis.getVoices();
+                                let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK'))) || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
+                                if (britVoice) msg.voice = britVoice;
+
+                                window.speechSynthesis.speak(msg);
+                            }
+                        }
+
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                     }
@@ -861,6 +887,8 @@
                         totalDescentMeters = st.descent || 0;
                         currentRouteCoords = st.coords || [];
                         
+                        lastAnnouncedMile = Math.floor(totalDistanceMiles);
+
                         updateOdometer(totalDistanceMiles); 
                         get('liveTimerText').innerText = formatTime(rideSeconds);
                         get('speed').innerText = "00";
@@ -888,6 +916,7 @@
             isFirstFix = true;
             lastPosition = null;
             consistentStartAlt = 0;
+            lastAnnouncedMile = 0;
             updateMainButtons();
         }
 
@@ -1177,6 +1206,22 @@
             click('navLeft', prevView);
             click('navRight', nextView);
             
+            voiceEnabled = localStorage.getItem('bikeTracker_voice') !== 'false';
+            
+            function updateVoiceUI() {
+                [get('voiceOnBtn'), get('voiceOffBtn')].forEach(b => {
+                    b.classList.remove('bg-white', 'text-black');
+                    b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
+                });
+                const activeBtn = get(voiceEnabled ? 'voiceOnBtn' : 'voiceOffBtn');
+                activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
+                activeBtn.classList.add('bg-white', 'text-black');
+            }
+            updateVoiceUI();
+            
+            click('voiceOnBtn', () => { voiceEnabled = true; localStorage.setItem('bikeTracker_voice', true); updateVoiceUI(); });
+            click('voiceOffBtn', () => { voiceEnabled = false; localStorage.setItem('bikeTracker_voice', false); updateVoiceUI(); });
+
             const tirePreset = get('tireSizePreset');
             const tireInput = get('tireSizeInput');
             const fTeeth = get('frontTeethInput');
