@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bike Neon</title>
     
-    <!-- iOS / Android Home Screen App Icons & Native Theme -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bike Neon">
@@ -13,7 +12,6 @@
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.svg">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -142,7 +140,7 @@
 
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 140px; height: 140px; }
         #dashboardContainer.grid-mode #speed { font-size: 4rem !important; }
-        #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-map { display: none !important; }
+        #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-cadence, #dashboardContainer.grid-mode #view-map { display: none !important; }
     </style>
 </head>
 <body class="flex flex-col h-full w-full no-select relative">
@@ -150,7 +148,6 @@
     <div id="dimmerOverlay"></div>
     <div id="map"></div>
 
-    <!-- Top Left Controls -->
     <div class="absolute top-6 left-4 z-[1010] pointer-events-auto flex flex-col space-y-3 items-start">
         <button id="themeBtn" class="px-3 py-2 rounded-lg bg-black border border-neon-main shadow-neon-sm flex items-center justify-center text-neon-main transition-all active:scale-95">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
@@ -163,32 +160,30 @@
         <button id="reloadBtn" class="px-3 py-2 rounded-lg bg-black border border-neon-main shadow-neon-sm flex items-center justify-center text-neon-main transition-all active:scale-95">
             <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         </button>
+        <button id="settingsBtn" class="px-3 py-2 rounded-lg bg-black border border-neon-main shadow-neon-sm flex items-center justify-center text-neon-main transition-all active:scale-95 mt-1">
+            <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </button>
     </div>
 
     <!-- Header Status -->
-    <div class="absolute top-6 w-full px-4 z-[1010] flex justify-center pointer-events-none">
-        <div id="statusIndicator" class="inline-flex items-center justify-center px-5 py-1.5 rounded-full bg-black border border-neon-main text-neon-main pointer-events-auto shadow-neon-sm">
-            <span id="statusDot" class="w-2 h-2 rounded-full bg-neon-main mr-3 animate-pulse"></span>
-            <span id="statusText" class="font-digital text-sm uppercase tracking-widest mt-0.5 text-white opacity-90">Ready to ride</span>
         </div>
     </div>
 
-    <!-- Top Right Stats -->
     <div class="absolute top-6 right-4 z-[1010] pointer-events-none flex flex-col items-end space-y-2">
         <div class="px-4 py-2 rounded-lg bg-black border border-neon-gauge shadow-[0_0_var(--box-glow-md)_var(--neon-gauge)] transition-all">
             <span id="liveTimerText" class="font-digital text-neon-gauge text-3xl neon-gauge-glow tracking-widest tabular-nums">00:00</span>
         </div>
-        <button id="autoPauseToggle" class="pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(239,68,68,0.3)]">Auto Pause: OFF</button>
+        <button id="autoPauseToggle" class="pointer-events-auto px-3 py-1.5 rounded bg-black border border-green-500 text-green-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(34,197,94,0.3)]">Auto Pause: ON</button>
         <div id="upcomingHillIndicator" class="hidden px-3 py-1 rounded-lg bg-black border border-zinc-800 transition-all duration-300">
             <span id="upcomingHillText" class="font-bold text-xs font-digital tracking-widest text-white opacity-90"></span>
         </div>
     </div>
 
-    <!-- Bottom Dashboard -->
     <div id="bottomDashboard" class="absolute bottom-0 w-full dash-expanded bg-black border-t border-zinc-900 rounded-t-[2.5rem] p-4 sm:p-6 z-[1000] flex flex-col shadow-2xl transition-all duration-500">
         <div class="flex justify-center items-center mb-5 w-full max-w-sm mx-auto px-2 relative">
             <div id="indicators" class="flex space-x-2.5">
                 <div class="view-dot w-2 h-2 rounded-full bg-neon-main shadow-neon-sm transition-colors"></div>
+                <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
@@ -203,7 +198,6 @@
             <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
             <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
-            <!-- 1. Speed (Segmented RPM Gauge) -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-between py-6 opacity-100 z-10 transition-opacity">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center bg-black rounded-full border-[4px] border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)_inset] transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -222,7 +216,6 @@
                 </div>
             </div>
 
-            <!-- 2. Distance -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="odoScale" class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-6">Total Distance</div>
@@ -233,7 +226,6 @@
                 </div>
             </div>
 
-            <!-- 3. Compass -->
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="compassScale" class="flex flex-col items-center">
                     <div id="headingDir" class="text-5xl font-digital neon-glow mb-6 text-neon-main">--</div>
@@ -246,7 +238,6 @@
                 </div>
             </div>
 
-            <!-- 4. Goal -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6">
                 <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-white text-black uppercase">Miles</button>
@@ -263,25 +254,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 6. Cadence -->
+            <div id="view-cadence" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
+                <div class="flex flex-col items-center">
+                    <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-4">Est. Pedal Cadence</div>
+                    <div id="cadenceVal" class="text-[7rem] font-digital neon-glow mb-2 text-neon-main leading-none">00</div>
+                    <div class="text-lg font-digital uppercase tracking-widest text-white opacity-80">RPM</div>
+                </div>
+            </div>
             
             <!-- 5. Map -->
-            <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
-        </div>
 
-        <!-- Master Control Buttons (2x2 Grid Layout) -->
-        <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0">
-            <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
-            <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
-            <button id="openRoutesBtn" class="w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-all">Routes</button>
-            <button id="liveSummaryBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Summary</button>
-        </div>
-    </div>
-
-    <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-8 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
         <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-8 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)]">
-            <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-30 z-0"></canvas>
             <div class="p-6 relative z-10 max-h-[60vh] overflow-y-auto space-y-6 text-left font-digital text-white">
                 <div class="flex justify-between border-b border-zinc-800 pb-3">
                     <span class="uppercase tracking-widest text-white opacity-80">Distance</span>
@@ -310,13 +297,21 @@
                     </div>
                 </div>
                 
-                <div class="border-b border-zinc-800 pb-3">
+                <div class="border-b border-zinc-800 pb-4">
                     <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1">Max Consistent</small>
                     <div class="flex justify-between items-end mt-1">
                         <span id="sumConsistentTime" class="text-3xl font-bold">00:00</span>
                         <span class="text-sm pb-1 text-white opacity-90 font-bold"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
                     </div>
                 </div>
+
+                <div class="pt-2 pb-4 border-b border-zinc-800">
+                    <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-2">Elevation Profile</small>
+                    <div class="w-full h-24 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
+                        <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
+                    </div>
+                </div>
+
                 <div class="pt-2">
                     <small id="sumSplitsTitle" class="uppercase tracking-widest block mb-3 text-white opacity-80 text-[0.65rem]">Splits</small>
                     <div id="sumSplitsList" class="space-y-2"></div>
@@ -333,7 +328,6 @@
         </div>
     </div>
 
-    <!-- Confirm Discard Modal -->
     <div id="confirmDiscardModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
             <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
@@ -344,7 +338,6 @@
         </div>
     </div>
 
-    <!-- Modals for saving and browsing routes -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
@@ -376,7 +369,6 @@
         <div class="mt-12 w-full max-w-sm">
             <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest" style="text-shadow: 0 0 5px rgba(255,255,255,0.5);" />
             <div class="bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-[0_0_10px_rgba(255,255,255,0.1)]">
-                <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-30 pointer-events-none"></canvas>
                 <div class="space-y-4 relative z-10 font-digital text-white">
                     <div class="flex justify-between border-b border-zinc-800 pb-2">
                         <span class="uppercase tracking-widest text-white opacity-80">Distance</span>
@@ -404,13 +396,21 @@
                             <span class="text-xl font-bold block text-right"><span id="detailDescent">0</span> ft</span>
                         </div>
                     </div>
-                    <div>
+                    <div class="pb-2 border-b border-zinc-800">
                         <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-1">Max Consistent</small>
                         <div class="flex justify-between items-end mt-1">
                             <span id="detailConsistentTime" class="text-2xl font-bold">00:00</span>
                             <span class="text-[0.8rem] font-bold"><span id="detailConsistentDist">0.0</span> Mi @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
                         </div>
                     </div>
+                    
+                    <div class="pt-2 pb-2 border-b border-zinc-800">
+                        <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-2">Elevation Profile</small>
+                        <div class="w-full h-24 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
+                            <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
+                        </div>
+                    </div>
+
                     <div class="pt-2">
                         <small id="detailSplitsTitle" class="block mb-2 uppercase tracking-widest text-white opacity-80 text-[0.65rem]">Splits</small>
                         <div id="detailSplitsList" class="space-y-2"></div>
@@ -433,6 +433,52 @@
         <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)]">OK</button></div>
     </div>
 
+    <!-- Settings & Cadence Modal -->
+    <div id="settingsModal" class="hidden absolute inset-0 bg-black/95 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#050505] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-6 rounded-2xl w-full max-w-sm flex flex-col">
+            <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest border-b border-zinc-800 pb-3 mb-4">Settings</h3>
+            
+            <div class="space-y-4 mb-6 text-left">
+                <div>
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Tire Size</label>
+                    <select id="tireSizePreset" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest mb-2 cursor-pointer">
+                        <option value="2096">700x23c</option>
+                        <option value="2105">700x25c</option>
+                        <option value="2136">700x28c</option>
+                        <option value="2155">700x32c</option>
+                        <option value="2288">29x2.1"</option>
+                        <option value="2326">29x2.25"</option>
+                        <option value="2148">27.5x2.1"</option>
+                        <option value="2182">27.5x2.25"</option>
+                        <option value="2055">26x2.0"</option>
+                        <option value="custom">Custom (mm)</option>
+                    </select>
+                    <input type="number" id="tireSizeInput" class="hidden w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest" placeholder="2136">
+                </div>
+                <div>
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Gearing (Front Ring / Rear Cog)</label>
+                    <div class="flex space-x-2 items-center">
+                        <input type="number" id="frontTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="42">
+                        <span class="text-white opacity-50 font-digital text-xl">/</span>
+                        <input type="number" id="rearTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="13">
+                    </div>
+                    <small class="text-white opacity-60 text-[0.6rem] font-digital uppercase tracking-widest mt-2 block">Ratio: <span id="ratioDisplayPreview" class="text-neon-main font-bold">3.23</span></small>
+                </div>
+                
+                <div class="pt-4 border-t border-zinc-800">
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Backup & Restore</label>
+                    <div class="flex space-x-2">
+                        <button id="exportBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Export</button>
+                        <button id="importProxyBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Import</button>
+                        <input type="file" id="importFileInput" accept=".json" class="hidden">
+                    </div>
+                </div>
+            </div>
+            
+            <button id="closeSettingsBtn" class="w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Save & Close</button>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // --- 1. GLOBALS & STATE ---
@@ -452,12 +498,13 @@
         let watchId = null, uiTimer = null, rideSeconds = 0, totalDistanceMiles = 0, lastPosition = null, currentRouteCoords = [];
         let topSpeedMph = 0, flatUpTopSpeedMph = 0, longestConsistentSec = 0, longestConsistentDist = 0, longestConsistentSpeed = 0;
         let currentSpeed = 0, stoppedSeconds = 0, currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0;
-        let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0, isAutoPaused = false, isAutoPauseEnabled = false;
+        let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0;
+        let isAutoPaused = false, isAutoPauseEnabled = true, isFirstFix = true;
         let currentSplitInterval = 0.125, goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
+        let tireSizeMm = 2136, frontTeeth = 42, rearTeeth = 13, gearRatio = 3.23;
         
         let wakeLock = null;
         let isTracking = false;
-        let isFirstFix = true;
 
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
@@ -535,7 +582,7 @@
         function toggleDashboardMode() { layoutMode = (layoutMode + 1) % 3; applyLayoutMode(); }
 
         function showView(index) {
-            const viewsIds = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
+            const viewsIds = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-cadence', 'view-map'];
             viewsIds.forEach((id, i) => {
                 const el = get(id);
                 if (el) {
@@ -566,8 +613,8 @@
             }
         }
 
-        function nextView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex + 1) % v.length; showView(currentViewIndex); }
-        function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
+        function nextView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-cadence', 'view-map']; currentViewIndex = (currentViewIndex + 1) % v.length; showView(currentViewIndex); }
+        function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-cadence', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
 
         function updateMainButtons() {
             const mBtn = get('mainActionBtn');
@@ -636,8 +683,15 @@
             currentSpeed = spd;
             
             get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
-            
             get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
+
+            let cadence = 0;
+            if (spd > 1.5) {
+                let wheelRpm = (spd * 26822.4) / tireSizeMm;
+                cadence = wheelRpm / gearRatio;
+            }
+            get('cadenceVal').innerText = Math.round(cadence).toString().padStart(2, '0');
+            
             if(pos.coords.heading !== null) get('compassRose').style.transform = `rotate(${-pos.coords.heading}deg)`;
             
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
@@ -647,8 +701,6 @@
             if(lastPosition) {
                 const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                 
-                // Robust Distance Accumulator: Only process data AND update anchor if moved more than ~2.6 feet.
-                // This prevents rapid GPS firing from losing distance via microscopic increments.
                 if(d > 0.0005) {
                     if(!isAutoPaused && isTracking) {
                         totalDistanceMiles += d; updateOdometer(totalDistanceMiles);
@@ -684,7 +736,6 @@
                         }
                     }
                     
-                    // We moved significantly, update the anchor point
                     lastPosition = pos;
                     lastGpsTimestamp = now;
                 }
@@ -737,13 +788,18 @@
                             }
                         } else {
                             stoppedSeconds = 0;
+                            if (isAutoPaused) { 
+                                isAutoPaused = false;
+                                updateStatus("Recording...", "bg-neon-main");
+                            }
                         }
 
                         if (!isAutoPaused) {
                             rideSeconds++; 
                             get('liveTimerText').innerText = formatTime(rideSeconds); 
-                            saveRideState(true); 
                         }
+                        
+                        saveRideState(true); 
                     }
                 }, 1000);
             } else {
@@ -757,7 +813,11 @@
         }
 
         function saveRideState(active) {
-            try { localStorage.setItem(STATE_KEY, JSON.stringify({ rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: currentRouteCoords })); } catch(e) {}
+            try { 
+                localStorage.setItem(STATE_KEY, JSON.stringify({ 
+                    rideSeconds, totalDistanceMiles, topSpeedMph, flatUpTopSpeedMph, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: currentRouteCoords 
+                })); 
+            } catch(e) {}
         }
 
         function restoreRideState() {
@@ -766,8 +826,26 @@
                 if(s) {
                     const st = JSON.parse(s);
                     if(st.rideSeconds > 2) {
-                        rideSeconds=st.rideSeconds; totalDistanceMiles=st.totalDistanceMiles; currentRouteCoords=st.coords;
-                        updateOdometer(totalDistanceMiles); get('liveTimerText').innerText = formatTime(rideSeconds);
+                        rideSeconds = st.rideSeconds || 0; 
+                        totalDistanceMiles = st.totalDistanceMiles || 0; 
+                        topSpeedMph = st.topSpeedMph || 0;
+                        flatUpTopSpeedMph = st.flatUpTopSpeedMph || 0;
+                        longestConsistentSec = st.longestConsistentSec || 0;
+                        longestConsistentDist = st.longestConsistentDist || 0;
+                        longestConsistentSpeed = st.longestConsistentSpeed || 0;
+                        splits = st.splits || [];
+                        lastSplitDist = st.lastSplitDist || 0;
+                        lastSplitTime = st.lastSplitTime || 0;
+                        totalAscentMeters = st.ascent || 0;
+                        totalDescentMeters = st.descent || 0;
+                        currentRouteCoords = st.coords || [];
+                        
+                        updateOdometer(totalDistanceMiles); 
+                        get('liveTimerText').innerText = formatTime(rideSeconds);
+                        get('speed').innerText = "00";
+                        get('topSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
+                        get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+
                         if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
                         
                         isTracking = false;
@@ -787,7 +865,6 @@
             currentSpeed = 0;
             stoppedSeconds = 0;
             isFirstFix = true;
-            lastPosition = null;
             updateMainButtons();
         }
 
@@ -1068,7 +1145,7 @@
             }, {passive: true});
             dc.onclick = e => {
                 if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-                const vs = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-map'];
+                const vs = ['view-speed', 'view-distance', 'view-compass', 'view-goal', 'view-cadence', 'view-map'];
                 if(isGridMode) { const cv = e.target.closest('.dash-view'); if(cv) { currentViewIndex = vs.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
             };
 
@@ -1078,6 +1155,102 @@
             click('toggleBtn', toggleDashboardMode);
             click('navLeft', prevView);
             click('navRight', nextView);
+            
+            const tirePreset = get('tireSizePreset');
+            const tireInput = get('tireSizeInput');
+            const fTeeth = get('frontTeethInput');
+            const rTeeth = get('rearTeethInput');
+            const ratioDisp = get('ratioDisplayPreview');
+
+            tirePreset.onchange = () => {
+                if (tirePreset.value === 'custom') tireInput.classList.remove('hidden');
+                else tireInput.classList.add('hidden');
+            };
+
+            const updateRatioDisp = () => {
+                const f = parseFloat(fTeeth.value) || 0;
+                const r = parseFloat(rTeeth.value) || 0;
+                ratioDisp.innerText = r > 0 ? (f/r).toFixed(2) : "0.00";
+            };
+            fTeeth.oninput = updateRatioDisp;
+            rTeeth.oninput = updateRatioDisp;
+
+            click('settingsBtn', () => {
+                let matched = false;
+                Array.from(tirePreset.options).forEach(opt => {
+                    if (opt.value == tireSizeMm) {
+                        tirePreset.value = tireSizeMm;
+                        matched = true;
+                    }
+                });
+                if (!matched) {
+                    tirePreset.value = 'custom';
+                    tireInput.classList.remove('hidden');
+                    tireInput.value = tireSizeMm;
+                } else {
+                    tireInput.classList.add('hidden');
+                }
+
+                fTeeth.value = frontTeeth;
+                rTeeth.value = rearTeeth;
+                updateRatioDisp();
+
+                get('settingsModal').classList.remove('hidden');
+            });
+
+            click('closeSettingsBtn', () => {
+                tireSizeMm = tirePreset.value === 'custom' ? (parseFloat(tireInput.value) || 2136) : parseFloat(tirePreset.value);
+                frontTeeth = parseFloat(fTeeth.value) || 42;
+                rearTeeth = parseFloat(rTeeth.value) || 13;
+                gearRatio = frontTeeth / rearTeeth;
+                
+                localStorage.setItem('bikeTracker_tireSize', tireSizeMm);
+                localStorage.setItem('bikeTracker_frontTeeth', frontTeeth);
+                localStorage.setItem('bikeTracker_rearTeeth', rearTeeth);
+                
+                get('settingsModal').classList.add('hidden');
+            });
+
+            click('exportBtn', () => {
+                const data = localStorage.getItem(ROUTES_KEY) || '[]';
+                const blob = new Blob([data], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bike_neon_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            click('importProxyBtn', () => get('importFileInput').click());
+
+            get('importFileInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if(Array.isArray(imported)) {
+                            const existing = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                            const merged = [...existing];
+                            imported.forEach(imp => {
+                                if(!merged.find(x => x.id === imp.id)) merged.push(imp);
+                            });
+                            localStorage.setItem(ROUTES_KEY, JSON.stringify(merged));
+                            showAlert("Data imported successfully!");
+                        } else {
+                            showAlert("Invalid backup format.");
+                        }
+                    } catch(err) {
+                        showAlert("Could not parse file.");
+                    }
+                    e.target.value = ''; 
+                };
+                reader.readAsText(file);
+            });
             
             click('mainActionBtn', toggleTracking);
             click('liveSummaryBtn', showSummary);
@@ -1127,6 +1300,11 @@
             const splitSel = get('splitSelect');
             [0.125, 0.25, 0.5, 1, 2, 5, 10].forEach(v => { const o = document.createElement('option'); o.value = v; o.innerText = v < 1 ? (v===0.125?"1/8":v===0.25?"1/4":"1/2")+" Mi" : v+" Mi"; splitSel.appendChild(o); });
             splitSel.onchange = (e) => { currentSplitInterval = parseFloat(e.target.value); localStorage.setItem('bikeTracker_split', e.target.value); };
+
+            tireSizeMm = parseFloat(localStorage.getItem('bikeTracker_tireSize')) || 2136;
+            frontTeeth = parseFloat(localStorage.getItem('bikeTracker_frontTeeth')) || 42;
+            rearTeeth = parseFloat(localStorage.getItem('bikeTracker_rearTeeth')) || 13;
+            gearRatio = frontTeeth / rearTeeth;
 
             map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
