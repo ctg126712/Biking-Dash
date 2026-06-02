@@ -1440,13 +1440,23 @@
 
         function checkNearbyRoutes(lat, lng) {
             try {
+                const btn = get('openRoutesBtn');
+                if (!btn) return;
+                
+                // Disable nearby pulsing if the user has started a ride
+                if (isTracking || rideSeconds > 0) {
+                    btn.classList.remove('nearby-pulse');
+                    btn.innerText = "ROUTES";
+                    return;
+                }
+
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 let near = false;
                 for(let r of rts) {
                     const pts = decodePoints(r.points);
                     if(pts.length > 0 && calculateDistance(lat, lng, pts[0][0], pts[0][1]) < 0.05) { near = true; break; }
                 }
-                const btn = get('openRoutesBtn');
+                
                 if(near) { btn.classList.add('nearby-pulse'); btn.innerText = "📍 NEARBY"; }
                 else { btn.classList.remove('nearby-pulse'); btn.innerText = "ROUTES"; }
             } catch(e){}
@@ -1700,9 +1710,17 @@
                         const startPt = currentRouteCoords[0];
                         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${startPt[0]}&lon=${startPt[1]}&format=json`);
                         const data = await res.json();
-                        const city = data.address.city || data.address.town || data.address.village || data.address.county || "";
-                        if (city) {
-                            baseName = `${prefix}${city} Ride`;
+                        
+                        const addr = data.address || {};
+                        // Prioritize granular locations: Landmark > Road > Area/City
+                        const landmark = addr.amenity || addr.leisure || addr.building || addr.park || addr.tourism || addr.shop;
+                        const road = addr.road || addr.pedestrian || addr.cycleway;
+                        const area = addr.neighbourhood || addr.suburb || addr.city || addr.town || addr.village;
+                        
+                        const locationName = landmark || road || area || "";
+                        
+                        if (locationName) {
+                            baseName = `${prefix}${locationName} Ride`;
                         }
                     }
                 } catch(e) {
