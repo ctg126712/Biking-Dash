@@ -809,7 +809,24 @@
         }
 
         function updatePosition(pos) {
-            const lat = pos.coords.latitude, lng = pos.coords.longitude, spd = (pos.coords.speed || 0) * 2.23694, alt = pos.coords.altitude || 0, now = Date.now();
+            // Ignore highly inaccurate GPS bounces (over 150 meters off) which cause impossible start speeds/distances
+            if (pos.coords.accuracy > 150) return; 
+
+            const lat = pos.coords.latitude, lng = pos.coords.longitude, alt = pos.coords.altitude || 0, now = Date.now();
+            
+            let spd = 0;
+            if (pos.coords.speed !== null) {
+                spd = pos.coords.speed * 2.23694;
+            } else if (lastPosition && lastGpsTimestamp > 0) {
+                // Fallback for devices that don't report speed natively
+                let dt = (now - lastGpsTimestamp) / 1000;
+                if (dt > 0.5) {
+                    let calcDist = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
+                    spd = calcDist / (dt / 3600);
+                }
+            }
+            if (spd > 150) spd = 0; // Filter impossible outlier speeds
+            
             currentSpeed = spd;
             
             get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
@@ -956,6 +973,13 @@
                 isAutoPaused = false;
                 stoppedSeconds = 0;
                 isTracking = true;
+                
+                // CRITICAL FIX: Nullify the last position when starting/resuming. 
+                // This forces the app to anchor a new starting point instead of calculating 
+                // the massive distance jump from where you opened the app to where you actually started riding.
+                lastPosition = null; 
+                lastGpsTimestamp = 0;
+
                 updateMainButtons();
                 updateStatus("Recording...", "bg-neon-main");
                 
