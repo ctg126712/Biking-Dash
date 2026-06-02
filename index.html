@@ -280,7 +280,44 @@
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
             <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
             <button id="openRoutesBtn" class="w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-all">Routes</button>
-            <button id="liveSummaryBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Summary</button>
+            <button id="liveSummaryBtn" class="w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]">Totals</button>
+        </div>
+    </div>
+
+    <!-- Totals Modal -->
+    <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
+        <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[70vh] overflow-y-auto p-6 font-digital text-white text-left space-y-6">
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Week</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totWeekDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totWeekTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totWeekCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totWeekAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Month</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totMonthDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totMonthTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totMonthCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totMonthAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Year</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totYearDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totYearTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totYearCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totYearAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="flex w-full max-w-sm shrink-0">
+            <button id="closeTotalsBtn" class="w-full py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95 transition-transform">Close</button>
         </div>
     </div>
 
@@ -512,11 +549,12 @@
                 
                 <div class="pt-4 border-t border-zinc-800">
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Backup & Restore</label>
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-2 mb-3">
                         <button id="exportBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Export</button>
                         <button id="importProxyBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Import</button>
                         <input type="file" id="importFileInput" accept=".json" class="hidden">
                     </div>
+                    <button id="compressHistoryBtn" class="w-full py-2.5 rounded-lg bg-[#111] border border-orange-900 text-orange-500 font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(234,179,8,0.1)] active:scale-95 transition-transform">Compress History Data</button>
                 </div>
             </div>
             
@@ -580,6 +618,18 @@
                 try { return JSON.parse(ptsData); } catch(e) { return []; }
             }
             return Array.isArray(ptsData) ? ptsData : [];
+        }
+
+        // Helper: intelligently reduces split data to 4 milestone quarters
+        function compressSplitsToQuarters(splitsArr, totalDist) {
+            if (!splitsArr || splitsArr.length <= 4) return splitsArr;
+            let quarters = [];
+            for (let i = 1; i <= 4; i++) {
+                let target = totalDist * (i / 4);
+                let closest = splitsArr.reduce((prev, curr) => Math.abs(curr.dist - target) < Math.abs(prev.dist - target) ? curr : prev);
+                if(!quarters.some(q => q.dist === closest.dist)) quarters.push(closest);
+            }
+            return quarters;
         }
 
         // --- WAKE LOCK ENGINE ---
@@ -693,8 +743,9 @@
                     mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
                 }
                 if(sBtn) {
-                    sBtn.disabled = true;
-                    sBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800";
+                    sBtn.disabled = false;
+                    sBtn.innerText = "TOTALS";
+                    sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
                 }
                 if(svBtn) {
                     svBtn.disabled = true;
@@ -708,6 +759,7 @@
                 }
                 if(sBtn) {
                     sBtn.disabled = false;
+                    sBtn.innerText = "SUMMARY";
                     sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
                 }
                 if(svBtn) {
@@ -722,6 +774,7 @@
                 }
                 if(sBtn) {
                     sBtn.disabled = false;
+                    sBtn.innerText = "SUMMARY";
                     sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]";
                 }
                 if(svBtn) {
@@ -1067,6 +1120,47 @@
             drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
         }
 
+        function showTotals() {
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            const now = new Date();
+            const dayOfWeek = now.getDay(); 
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+
+            let wD=0, wT=0, wC=0, wA=0;
+            let mD=0, mT=0, mC=0, mA=0;
+            let yD=0, yT=0, yC=0, yA=0;
+
+            rts.forEach(r => {
+                const ts = r.timestamp || 0;
+                const d = parseFloat(r.distance) || 0;
+                const t = parseFloat(r.timeSec) || 0;
+                const a = parseFloat(r.ascent) || 0;
+
+                if (ts >= startOfWeek) { wD+=d; wT+=t; wC++; wA+=a; }
+                if (ts >= startOfMonth) { mD+=d; mT+=t; mC++; mA+=a; }
+                if (ts >= startOfYear) { yD+=d; yT+=t; yC++; yA+=a; }
+            });
+
+            get('totWeekDist').innerText = wD.toFixed(1) + ' Mi';
+            get('totWeekTime').innerText = formatTime(wT);
+            get('totWeekCount').innerText = wC;
+            get('totWeekAscent').innerText = Math.round(wA * 3.28084) + ' ft';
+
+            get('totMonthDist').innerText = mD.toFixed(1) + ' Mi';
+            get('totMonthTime').innerText = formatTime(mT);
+            get('totMonthCount').innerText = mC;
+            get('totMonthAscent').innerText = Math.round(mA * 3.28084) + ' ft';
+
+            get('totYearDist').innerText = yD.toFixed(1) + ' Mi';
+            get('totYearTime').innerText = formatTime(yT);
+            get('totYearCount').innerText = yC;
+            get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
+
+            get('totalsModal').classList.remove('hidden');
+        }
+
         function saveRide() {
             try {
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
@@ -1081,6 +1175,12 @@
                 if (compressedCoords.length > 400) {
                     const step = Math.ceil(compressedCoords.length / 400);
                     compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
+                }
+                
+                // Cut splits to 4 milestones (25%, 50%, 75%, 100%)
+                let compressedSplits = splits;
+                if (compressedSplits.length > 4) {
+                    compressedSplits = compressSplitsToQuarters(compressedSplits, totalDistanceMiles);
                 }
                 
                 // Serialize as flat string to eliminate JSON array/bracket bloat
@@ -1099,15 +1199,25 @@
                     maxConsistentSec: longestConsistentSec, 
                     maxConsistentDist: longestConsistentDist, 
                     maxConsistentSpeed: longestConsistentSpeed, 
-                    splits: JSON.stringify(splits), 
+                    splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
                     timestamp: Date.now() 
                 });
                 
-                // Auto-Pruning Failsafe: If near 5MB limit, auto-delete oldest routes to make room
-                while (JSON.stringify(rts).length > 4500000 && rts.length > 1) {
+                // Auto-Pruning Failsafe: If near 4.5MB limit, gracefully archive map data of oldest rides first
+                let size = JSON.stringify(rts).length;
+                if (size > 4500000 && rts.length > 1) {
                     rts.sort((a,b) => a.timestamp - b.timestamp);
-                    rts.shift(); 
+                    for (let i = 0; i < rts.length; i++) {
+                        if (rts[i].points && rts[i].points.length > 0) {
+                            rts[i].points = ""; // Archive huge map data, but keep stats
+                            if (JSON.stringify(rts).length <= 4500000) break;
+                        }
+                    }
+                    // If STILL over the limit (unlikely for decades), start deleting absolute oldest rides
+                    while (JSON.stringify(rts).length > 4500000 && rts.length > 1) {
+                        rts.shift(); 
+                    }
                 }
                 
                 localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
@@ -1117,7 +1227,7 @@
                 location.reload();
             } catch (e) {
                 if (e.name === 'QuotaExceededError' || e.message.includes('quota')) {
-                    showAlert("Storage full! Please go to Settings and Export a backup, then delete old routes to free up space.");
+                    showAlert("Storage full! Please go to Settings and Compress History or Export a backup.");
                 } else {
                     showAlert("Error saving ride: " + e.message);
                 }
@@ -1234,7 +1344,12 @@
             drawElevationProfile(decodePoints(r.points), 'detailElevationCanvas');
             
             get('btnLoadMap').onclick = () => {
-                const pts = decodePoints(r.points); loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
+                const pts = decodePoints(r.points); 
+                if (!pts || pts.length === 0) {
+                    showAlert("Map route data for this ride has been automatically archived to save storage space. Stats remain available.");
+                    return;
+                }
+                loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
                 get('routeDetailModal').classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
             };
             
@@ -1450,6 +1565,65 @@
                 };
                 reader.readAsText(file);
             });
+
+            click('compressHistoryBtn', () => {
+                try {
+                    let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                    let compressedCount = 0;
+                    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+                    const now = Date.now();
+                    
+                    rts = rts.map(r => {
+                        let changed = false;
+                        const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
+                        
+                        if (isOld && r.points && r.points.length > 0) {
+                            // Strip map data for rides older than a month to keep stats forever
+                            r.points = "";
+                            changed = true;
+                        } else if (!isOld && r.points && r.points.length > 0) {
+                            // Downsample Points to max 400 for newer rides
+                            let pts = decodePoints(r.points);
+                            if (pts.length > 400) {
+                                const step = Math.ceil(pts.length / 400);
+                                pts = pts.filter((_, idx) => idx % step === 0);
+                                changed = true;
+                            }
+                            
+                            // Re-encode and strip decimals
+                            let newEncoded = pts.map(p => `${p[0].toFixed(5)},${p[1].toFixed(5)},${(p[2]||0).toFixed(0)}`).join('|');
+                            if (r.points !== newEncoded) {
+                                r.points = newEncoded;
+                                changed = true;
+                            }
+                        }
+                        
+                        // Cut Splits array to 4 quarters matching 25/50/75/100 distance percentiles
+                        if (r.splits) {
+                            try {
+                                let sp = JSON.parse(r.splits);
+                                if (Array.isArray(sp) && sp.length > 4) { 
+                                    let dist = parseFloat(r.distance) || 0;
+                                    let newSp = compressSplitsToQuarters(sp, dist);
+                                    let newSpStr = JSON.stringify(newSp);
+                                    if (r.splits !== newSpStr) {
+                                        r.splits = newSpStr;
+                                        changed = true;
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+                        
+                        if (changed) compressedCount++;
+                        return r;
+                    });
+                    
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                    showAlert(`Successfully archived and compressed ${compressedCount} saved routes to free up storage!`);
+                } catch (e) {
+                    showAlert("Compression error: " + e.message);
+                }
+            });
             
             voiceEnabled = localStorage.getItem('bikeTracker_voice') !== 'false';
             
@@ -1468,11 +1642,19 @@
             click('voiceOffBtn', () => { voiceEnabled = false; localStorage.setItem('bikeTracker_voice', false); updateVoiceUI(); });
             
             click('mainActionBtn', toggleTracking);
-            click('liveSummaryBtn', showSummary);
+
+            click('liveSummaryBtn', () => {
+                if (rideSeconds === 0 && !isTracking) {
+                    showTotals();
+                } else {
+                    showSummary();
+                }
+            });
 
             click('openRoutesBtn', () => { get('loadModal').classList.remove('hidden'); loadRoutes(); });
             click('closeLoadBtn', () => get('loadModal').classList.add('hidden'));
             click('closeSummaryBtn', () => get('summaryModal').classList.add('hidden'));
+            click('closeTotalsBtn', () => get('totalsModal').classList.add('hidden'));
             click('btnCloseDetails', () => get('routeDetailModal').classList.add('hidden'));
             click('cancelSaveBtn', () => get('saveModal').classList.add('hidden'));
             click('confirmSaveBtn', saveRide);
