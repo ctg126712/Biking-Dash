@@ -142,7 +142,9 @@
 
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 140px; height: 140px; }
         #dashboardContainer.grid-mode #speed { font-size: 4rem !important; }
-        #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-cadence, #dashboardContainer.grid-mode #view-map { display: none !important; }
+        /* ONLY THIS LINE WAS CHANGED TO SHOW CADENCE INSTEAD OF GOAL IN GRID MODE */
+        #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-goal, #dashboardContainer.grid-mode #view-map { display: none !important; }
+        #dashboardContainer.grid-mode #view-cadence { display: flex !important; opacity: 1 !important; z-index: 10 !important;}
     </style>
 </head>
 <body class="flex flex-col h-full w-full no-select relative">
@@ -220,9 +222,10 @@
                         <div class="text-[0.65rem] font-digital uppercase tracking-widest text-white opacity-80 mt-1">MPH</div>
                     </div>
                 </div>
-                <div id="speedExtra" class="flex justify-between w-full px-8 pb-2">
-                    <div class="text-center"><div id="avgSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-white opacity-80 font-digital uppercase tracking-widest text-[0.6rem]">AVG SPEED</small></div>
-                    <div class="text-center"><div id="topSpeed" class="text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-white opacity-80 font-digital uppercase tracking-widest text-[0.6rem]">TOP SPEED</small></div>
+                <div id="speedExtra" class="grid grid-cols-3 gap-2 w-full px-4 pb-2">
+                    <div class="text-center"><div id="avgSpeed" class="text-2xl sm:text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-white opacity-80 font-digital uppercase tracking-widest text-[0.55rem]">AVG SPD</small></div>
+                    <div class="text-center"><div id="flatTopSpeed" class="text-2xl sm:text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-white opacity-80 font-digital uppercase tracking-widest text-[0.55rem]">FLAT MAX</small></div>
+                    <div class="text-center"><div id="topSpeed" class="text-2xl sm:text-3xl font-digital neon-glow text-neon-main">0.0</div><small class="text-white opacity-80 font-digital uppercase tracking-widest text-[0.55rem]">ABS MAX</small></div>
                 </div>
             </div>
 
@@ -324,59 +327,60 @@
     <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
-        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[70vh]">
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)] flex-1 max-h-[70vh]">
             <div class="p-6 relative z-10 h-full overflow-y-auto space-y-6 text-left font-digital text-white">
                 <div class="flex justify-between border-b border-zinc-800 pb-3">
-                    <span class="uppercase tracking-widest text-zinc-300">Distance</span>
+                    <span class="uppercase tracking-widest text-white opacity-80">Distance</span>
                     <span class="text-2xl font-bold"><span id="sumDistance">0.0</span> Mi</span>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
                     <div>
-                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Avg Speed</small>
+                        <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1">Avg Speed</small>
                         <span class="text-2xl font-bold"><span id="sumAvgSpeed">0.0</span> MPH</span>
                     </div>
                     <div class="text-right">
-                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">Top Speed (Flat)</small>
-                        <span class="text-2xl font-bold block text-right"><span id="sumTopSpeed">0.0</span> MPH</span>
+                        <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1 text-right">Top Speeds</small>
+                        <span class="text-[0.8rem] font-bold block text-right text-zinc-400">Abs: <span id="sumTopSpeed" class="text-white text-lg">0.0</span> MPH</span>
+                        <span class="text-[0.8rem] font-bold block text-right text-zinc-400">Flat: <span id="sumFlatTopSpeed" class="text-white text-lg">0.0</span> MPH</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
                     <div>
-                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Total Ascent</small>
+                        <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1">Total Ascent</small>
                         <span class="text-2xl font-bold"><span id="sumAscent">0</span> ft</span>
                     </div>
                     <div class="text-right">
-                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">Total Descent</small>
+                        <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1 text-right">Total Descent</small>
                         <span class="text-2xl font-bold block text-right"><span id="sumDescent">0</span> ft</span>
                     </div>
                 </div>
                 
-                <div class="border-b border-zinc-800 pb-3">
-                    <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Max Consistent</small>
+                <div class="border-b border-zinc-800 pb-4">
+                    <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-1">Max Consistent</small>
                     <div class="flex justify-between items-end mt-1">
                         <span id="sumConsistentTime" class="text-3xl font-bold">00:00</span>
-                        <span class="text-sm pb-1 text-white font-bold"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
+                        <span class="text-sm pb-1 text-white opacity-90 font-bold"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
                     </div>
                 </div>
 
                 <div class="pt-2 pb-4 border-b border-zinc-800">
-                    <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-2">Elevation Profile</small>
+                    <small class="uppercase tracking-widest block text-white opacity-80 text-[0.65rem] mb-2">Elevation Profile</small>
                     <div class="w-full h-32 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
                         <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
                     </div>
                 </div>
 
                 <div class="pt-2">
-                    <small id="sumSplitsTitle" class="uppercase tracking-widest block mb-3 text-zinc-300 text-[0.65rem]">Splits</small>
+                    <small id="sumSplitsTitle" class="uppercase tracking-widest block mb-3 text-white opacity-80 text-[0.65rem]">Splits</small>
                     <div id="sumSplitsList" class="space-y-2"></div>
                 </div>
             </div>
         </div>
         
         <div class="flex w-full max-w-sm space-x-3 shrink-0">
-            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95 transition-transform">Return</button>
+            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_10px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Return</button>
             <div class="flex flex-col space-y-2 flex-1">
                 <button id="saveRideFromSummaryBtn" class="w-full py-2 rounded-lg font-digital font-bold text-black bg-[#2ecc71] uppercase tracking-widest text-sm shadow-[0_0_10px_rgba(46,204,113,0.4)] active:scale-95 transition-transform border border-[#2ecc71]">Save Ride</button>
                 <button id="discardRideBtn" class="w-full py-2 rounded-lg font-digital font-bold text-red-500 bg-[#111] border border-red-900 uppercase tracking-widest text-sm active:scale-95 transition-transform">Discard</button>
@@ -425,62 +429,65 @@
 
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto backdrop-blur-md">
         <div class="mt-12 w-full max-w-sm">
-            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest" style="text-shadow: 0 0 15px rgba(255,255,255,0.5);" />
-            <div class="bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                
+            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest" style="text-shadow: 0 0 5px rgba(255,255,255,0.5);" />
+            <div class="bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+                <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-30 pointer-events-none"></canvas>
                 <div class="space-y-4 relative z-10 font-digital text-white">
                     <div class="flex justify-between border-b border-zinc-800 pb-2">
-                        <span class="uppercase tracking-widest text-zinc-300">Distance</span>
+                        <span class="uppercase tracking-widest text-white opacity-80">Distance</span>
                         <span class="text-xl font-bold"><span id="detailDistance">0.0</span> Mi</span>
                     </div>
                     
                     <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
                         <div>
-                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Avg Speed</small>
+                            <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-1">Avg Speed</small>
                             <span class="text-xl font-bold"><span id="detailAvgSpeed">0.0</span> MPH</span>
                         </div>
                         <div class="text-right">
-                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">Top Speed (Flat)</small>
-                            <span class="text-xl font-bold block text-right"><span id="detailTopSpeed">0.0</span> MPH</span>
+                            <small class="block uppercase tracking-widest text-right text-white opacity-80 text-[0.65rem] mb-1">Top Speeds</small>
+                            <span class="text-[0.8rem] font-bold block text-right text-zinc-400">Abs: <span id="detailTopSpeed" class="text-white text-lg">0.0</span> MPH</span>
+                            <span class="text-[0.8rem] font-bold block text-right text-zinc-400">Flat: <span id="detailFlatTopSpeed" class="text-white text-lg">0.0</span> MPH</span>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
                         <div>
-                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Ascent</small>
+                            <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-1">Ascent</small>
                             <span class="text-xl font-bold"><span id="detailAscent">0</span> ft</span>
                         </div>
                         <div class="text-right">
-                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">Descent</small>
+                            <small class="block uppercase tracking-widest text-right text-white opacity-80 text-[0.65rem] mb-1">Descent</small>
                             <span class="text-xl font-bold block text-right"><span id="detailDescent">0</span> ft</span>
                         </div>
                     </div>
                     <div>
-                        <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Max Consistent</small>
+                        <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-1">Max Consistent</small>
                         <div class="flex justify-between items-end mt-1">
                             <span id="detailConsistentTime" class="text-2xl font-bold">00:00</span>
                             <span class="text-[0.8rem] font-bold"><span id="detailConsistentDist">0.0</span> Mi @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
                         </div>
                     </div>
+                    
                     <div class="pt-2 pb-2 border-b border-zinc-800">
-                        <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-2">Elevation Profile</small>
-                        <div class="w-full h-32 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
+                        <small class="block uppercase tracking-widest text-white opacity-80 text-[0.65rem] mb-2">Elevation Profile</small>
+                        <div class="w-full h-24 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
                             <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
                         </div>
                     </div>
+
                     <div class="pt-2">
-                        <small id="detailSplitsTitle" class="block mb-2 uppercase tracking-widest text-zinc-300 text-[0.65rem]">Splits</small>
+                        <small id="detailSplitsTitle" class="block mb-2 uppercase tracking-widest text-white opacity-80 text-[0.65rem]">Splits</small>
                         <div id="detailSplitsList" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
-            <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+            <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_10px_rgba(255,255,255,0.1)]">
                 <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600"></textarea>
-                <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save Updates</button>
+                <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_5px_rgba(255,255,255,0.3)]">Save Updates</button>
                 <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors">Delete Route</button>
             </div>
             <div class="flex space-x-3 mb-10">
-                <button id="btnLoadMap" class="flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Load Map Route</button>
+                <button id="btnLoadMap" class="flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_5px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Load Map Route</button>
                 <button id="btnCloseDetails" class="flex-1 py-3.5 bg-zinc-900 border border-zinc-700 text-white font-digital rounded-xl tracking-widest uppercase">Close</button>
             </div>
         </div>
@@ -497,7 +504,7 @@
             
             <div class="space-y-4 mb-6 text-left max-h-[60vh] overflow-y-auto pr-1">
                 
-                <!-- Goals & Splits (Moved from Dashboard) -->
+                <!-- Goals & Splits -->
                 <div class="grid grid-cols-2 gap-3 border-b border-zinc-800 pb-4">
                     <div>
                         <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Goal</label>
@@ -592,6 +599,7 @@
         
         let wakeLock = null;
         let isTracking = false;
+        let speedBuffer = [];
 
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
@@ -607,20 +615,17 @@
         function decodePoints(ptsData) {
             if (!ptsData) return [];
             if (typeof ptsData === 'string') {
-                // If it's our new ultra-compressed flat string format
                 if (ptsData.includes('|') || (ptsData.includes(',') && !ptsData.includes('['))) {
                     return ptsData.split('|').filter(Boolean).map(s => {
                         const p = s.split(',');
                         return [parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2]||0)];
                     });
                 }
-                // Fallback for older JSON array saves
                 try { return JSON.parse(ptsData); } catch(e) { return []; }
             }
             return Array.isArray(ptsData) ? ptsData : [];
         }
 
-        // Helper: intelligently reduces split data to 4 milestone quarters
         function compressSplitsToQuarters(splitsArr, totalDist) {
             if (!splitsArr || splitsArr.length <= 4) return splitsArr;
             let quarters = [];
@@ -785,17 +790,6 @@
             }
         }
 
-        function setGoalType(t) { 
-            goalType = t; 
-            [get('btnGoalDistance'), get('btnGoalTime')].forEach(b => {
-                b.classList.remove('bg-white', 'text-black');
-                b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
-            }); 
-            const activeBtn = get(t === 'distance' ? 'btnGoalDistance' : 'btnGoalTime');
-            activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
-            activeBtn.classList.add('bg-white', 'text-black'); 
-        }
-
         // --- 3. TRACKING ENGINE ---
 
         function formatTime(s) { 
@@ -809,23 +803,26 @@
         }
 
         function updatePosition(pos) {
-            // Ignore highly inaccurate GPS bounces (over 150 meters off) which cause impossible start speeds/distances
             if (pos.coords.accuracy > 150) return; 
 
             const lat = pos.coords.latitude, lng = pos.coords.longitude, alt = pos.coords.altitude || 0, now = Date.now();
             
-            let spd = 0;
-            if (pos.coords.speed !== null) {
-                spd = pos.coords.speed * 2.23694;
+            let rawSpd = 0;
+            if (pos.coords.speed !== null && pos.coords.speed >= 0) {
+                rawSpd = pos.coords.speed * 2.23694;
             } else if (lastPosition && lastGpsTimestamp > 0) {
-                // Fallback for devices that don't report speed natively
                 let dt = (now - lastGpsTimestamp) / 1000;
                 if (dt > 0.5) {
                     let calcDist = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
-                    spd = calcDist / (dt / 3600);
+                    rawSpd = calcDist / (dt / 3600);
                 }
             }
-            if (spd > 150) spd = 0; // Filter impossible outlier speeds
+            if (rawSpd > 150) rawSpd = 0; 
+            
+            speedBuffer.push(rawSpd);
+            if (speedBuffer.length > 3) speedBuffer.shift();
+            let spd = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
+            if (spd < 0.5) spd = 0;
             
             currentSpeed = spd;
             
@@ -858,23 +855,30 @@
                         currentRouteCoords.push([lat, lng, alt]); 
                         currentRoutePolyline.setLatLngs(currentRouteCoords);
 
-                        if (currentRouteCoords.length >= 5) {
-                            let pastPt = currentRouteCoords[currentRouteCoords.length - 5];
+                        if (currentRouteCoords.length >= 10) {
+                            let recentAlts = currentRouteCoords.slice(-5).map(p => p[2] || 0);
+                            let avgAlt = recentAlts.reduce((a,b)=>a+b,0) / recentAlts.length;
+                            
+                            let pastAlts = currentRouteCoords.slice(-10, -5).map(p => p[2] || 0);
+                            let pastAvgAlt = pastAlts.reduce((a,b)=>a+b,0) / pastAlts.length;
+                            
+                            let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
                             let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
-                            if (dPast > 5) {
-                                let grade = ((alt - pastPt[2]) / dPast) * 100;
-                                if (grade > -1.5) { 
+                            
+                            if (dPast > 10) {
+                                let grade = ((avgAlt - pastAvgAlt) / dPast) * 100;
+                                if (grade >= -2.5) { 
                                     if (spd > flatUpTopSpeedMph) flatUpTopSpeedMph = spd;
                                 }
                             }
-                        } else if (currentRouteCoords.length < 5 && spd > flatUpTopSpeedMph) {
-                            flatUpTopSpeedMph = spd;
+                        } else if (spd > flatUpTopSpeedMph) {
+                            flatUpTopSpeedMph = spd; 
                         }
 
                         if (spd > topSpeedMph) { topSpeedMph = spd; }
                         
                         // PR Check: Speed
-                        let currentRefTop = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph);
+                        let currentRefTop = topSpeedMph;
                         if (prevMaxSpeed > 0 && currentRefTop > prevMaxSpeed && !announcedPRSpeed) {
                             announcedPRSpeed = true;
                             if (voiceEnabled && 'speechSynthesis' in window) {
@@ -951,7 +955,8 @@
                 lastPosition = pos;
             }
             
-            get('topSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
+            get('topSpeed').innerText = topSpeedMph.toFixed(1);
+            get('flatTopSpeed').innerText = flatUpTopSpeedMph.toFixed(1);
             get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
             
             checkNearbyRoutes(lat, lng);
@@ -962,7 +967,7 @@
             if (!isTracking) {
                 if (!navigator.geolocation) return showAlert("GPS not supported.");
                 
-                // Unlock Web Speech API (Requires user interaction context to init)
+                // Unlock Web Speech API
                 if (voiceEnabled && 'speechSynthesis' in window) {
                     let unlockMsg = new SpeechSynthesisUtterance('');
                     unlockMsg.volume = 0;
@@ -974,16 +979,18 @@
                 stoppedSeconds = 0;
                 isTracking = true;
                 
-                // CRITICAL FIX: Nullify the last position when starting/resuming. 
-                // This forces the app to anchor a new starting point instead of calculating 
-                // the massive distance jump from where you opened the app to where you actually started riding.
                 lastPosition = null; 
                 lastGpsTimestamp = 0;
+                speedBuffer = [];
 
                 updateMainButtons();
                 updateStatus("Recording...", "bg-neon-main");
                 
-                watchId = navigator.geolocation.watchPosition(updatePosition, ()=>{}, {enableHighAccuracy: true});
+                watchId = navigator.geolocation.watchPosition(updatePosition, (err) => console.warn(err), {
+                    enableHighAccuracy: true,
+                    maximumAge: 2000,
+                    timeout: 10000
+                });
                 
                 if(!uiTimer) {
                     uiTimer = setInterval(() => { 
@@ -1083,7 +1090,8 @@
                         updateOdometer(totalDistanceMiles); 
                         get('liveTimerText').innerText = formatTime(rideSeconds);
                         get('speed').innerText = "00";
-                        get('topSpeed').innerText = (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1);
+                        get('topSpeed').innerText = topSpeedMph.toFixed(1);
+                        get('flatTopSpeed').innerText = flatUpTopSpeedMph.toFixed(1);
                         get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
 
                         if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
@@ -1108,6 +1116,7 @@
             lastPosition = null;
             consistentStartAlt = 0;
             lastAnnouncedMile = 0;
+            speedBuffer = [];
             updateMainButtons();
         }
 
@@ -1142,6 +1151,69 @@
             splits.forEach((s, i) => sl.innerHTML += `<div class="flex justify-between bg-black border border-zinc-800 p-2 rounded mb-1 font-digital text-sm text-white font-bold"><span class="text-zinc-500">#${i+1}</span><span>${formatTime(s.time)}</span><span>${s.avg.toFixed(1)} MPH</span></div>`);
             get('summaryModal').classList.remove('hidden');
             drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
+        }
+
+        function saveRide() {
+            try {
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                
+                let avgSpd = "0.0";
+                if (rideSeconds > 0) {
+                    avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
+                }
+                
+                // Ultra-Compression Engine to protect LocalStorage limits
+                let compressedCoords = currentRouteCoords;
+                if (compressedCoords.length > 400) {
+                    const step = Math.ceil(compressedCoords.length / 400);
+                    compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
+                }
+                
+                // Cut splits to 1/4 to save space
+                let compressedSplits = splits;
+                if (compressedSplits.length > 4) {
+                    compressedSplits = compressSplitsToQuarters(compressedSplits, totalDistanceMiles);
+                }
+                
+                // Serialize as flat string to eliminate JSON array/bracket bloat
+                const encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)}`).join('|');
+
+                rts.push({ 
+                    id: Date.now().toString(), 
+                    name: get('routeNameInput').value || "Ride", 
+                    distance: totalDistanceMiles.toFixed(2), 
+                    timeSec: rideSeconds, 
+                    ascent: totalAscentMeters, 
+                    descent: totalDescentMeters, 
+                    avgSpeed: avgSpd, 
+                    topSpeed: topSpeedMph.toFixed(1), 
+                    flatTopSpeed: (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1), 
+                    maxConsistentSec: longestConsistentSec, 
+                    maxConsistentDist: longestConsistentDist, 
+                    maxConsistentSpeed: longestConsistentSpeed, 
+                    splits: JSON.stringify(compressedSplits), 
+                    points: encodedPoints, 
+                    timestamp: Date.now() 
+                });
+                
+                // Auto-Pruning Failsafe: If near 5MB limit, auto-delete oldest routes to make room
+                while (JSON.stringify(rts).length > 4500000 && rts.length > 1) {
+                    rts.sort((a,b) => a.timestamp - b.timestamp);
+                    rts.shift(); 
+                }
+                
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                
+                releaseWakeLock();
+                localStorage.removeItem(STATE_KEY); 
+                location.reload();
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.message.includes('quota')) {
+                    showAlert("Storage full! Please go to Settings and Compress History or Export a backup.");
+                } else {
+                    showAlert("Error saving ride: " + e.message);
+                }
+            }
         }
 
         function showTotals() {
@@ -1183,79 +1255,6 @@
             get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
 
             get('totalsModal').classList.remove('hidden');
-        }
-
-        function saveRide() {
-            try {
-                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                
-                let avgSpd = "0.0";
-                if (rideSeconds > 0) {
-                    avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
-                }
-                
-                // Ultra-Compression Engine to protect LocalStorage limits
-                let compressedCoords = currentRouteCoords;
-                if (compressedCoords.length > 400) {
-                    const step = Math.ceil(compressedCoords.length / 400);
-                    compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
-                }
-                
-                // Cut splits to 4 milestones (25%, 50%, 75%, 100%)
-                let compressedSplits = splits;
-                if (compressedSplits.length > 4) {
-                    compressedSplits = compressSplitsToQuarters(compressedSplits, totalDistanceMiles);
-                }
-                
-                // Serialize as flat string to eliminate JSON array/bracket bloat
-                const encodedPoints = compressedCoords.map(p => `${p[0].toFixed(5)},${p[1].toFixed(5)},${(p[2]||0).toFixed(0)}`).join('|');
-
-                rts.push({ 
-                    id: Date.now().toString(), 
-                    name: get('routeNameInput').value || "Ride", 
-                    distance: totalDistanceMiles.toFixed(2), 
-                    timeSec: rideSeconds, 
-                    ascent: totalAscentMeters, 
-                    descent: totalDescentMeters, 
-                    avgSpeed: avgSpd, 
-                    topSpeed: topSpeedMph.toFixed(1), 
-                    flatTopSpeed: (flatUpTopSpeedMph > 0 ? flatUpTopSpeedMph : topSpeedMph).toFixed(1), 
-                    maxConsistentSec: longestConsistentSec, 
-                    maxConsistentDist: longestConsistentDist, 
-                    maxConsistentSpeed: longestConsistentSpeed, 
-                    splits: JSON.stringify(compressedSplits), 
-                    points: encodedPoints, 
-                    timestamp: Date.now() 
-                });
-                
-                // Auto-Pruning Failsafe: If near 4.5MB limit, gracefully archive map data of oldest rides first
-                let size = JSON.stringify(rts).length;
-                if (size > 4500000 && rts.length > 1) {
-                    rts.sort((a,b) => a.timestamp - b.timestamp);
-                    for (let i = 0; i < rts.length; i++) {
-                        if (rts[i].points && rts[i].points.length > 0) {
-                            rts[i].points = ""; // Archive huge map data, but keep stats
-                            if (JSON.stringify(rts).length <= 4500000) break;
-                        }
-                    }
-                    // If STILL over the limit (unlikely for decades), start deleting absolute oldest rides
-                    while (JSON.stringify(rts).length > 4500000 && rts.length > 1) {
-                        rts.shift(); 
-                    }
-                }
-                
-                localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-                
-                releaseWakeLock();
-                localStorage.removeItem(STATE_KEY); 
-                location.reload();
-            } catch (e) {
-                if (e.name === 'QuotaExceededError' || e.message.includes('quota')) {
-                    showAlert("Storage full! Please go to Settings and Compress History or Export a backup.");
-                } else {
-                    showAlert("Error saving ride: " + e.message);
-                }
-            }
         }
 
         // --- 5. CATEGORIES & MEDALS SYSTEM ---
@@ -1356,7 +1355,8 @@
             get('detailNameInput').value = r.name; 
             get('detailDistance').innerText = r.distance;
             get('detailAvgSpeed').innerText = r.avgSpeed || '0.0';
-            get('detailTopSpeed').innerText = r.flatTopSpeed || r.topSpeed || '0.0';
+            get('detailTopSpeed').innerText = r.topSpeed || r.flatTopSpeed || '0.0';
+            get('detailFlatTopSpeed').innerText = r.flatTopSpeed || r.topSpeed || '0.0';
             get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); 
             get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
             get('detailConsistentTime').innerText = formatTime(r.maxConsistentSec||0);
@@ -1612,11 +1612,9 @@
                         const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
                         
                         if (isOld && r.points && r.points.length > 0) {
-                            // Strip map data for rides older than a month to keep stats forever
                             r.points = "";
                             changed = true;
                         } else if (!isOld && r.points && r.points.length > 0) {
-                            // Downsample Points to max 400 for newer rides
                             let pts = decodePoints(r.points);
                             if (pts.length > 400) {
                                 const step = Math.ceil(pts.length / 400);
@@ -1624,7 +1622,6 @@
                                 changed = true;
                             }
                             
-                            // Re-encode and strip decimals
                             let newEncoded = pts.map(p => `${p[0].toFixed(5)},${p[1].toFixed(5)},${(p[2]||0).toFixed(0)}`).join('|');
                             if (r.points !== newEncoded) {
                                 r.points = newEncoded;
@@ -1632,7 +1629,6 @@
                             }
                         }
                         
-                        // Cut Splits array to 4 quarters matching 25/50/75/100 distance percentiles
                         if (r.splits) {
                             try {
                                 let sp = JSON.parse(r.splits);
@@ -1691,7 +1687,6 @@
             click('closeTotalsBtn', () => get('totalsModal').classList.add('hidden'));
             click('btnCloseDetails', () => get('routeDetailModal').classList.add('hidden'));
             click('cancelSaveBtn', () => get('saveModal').classList.add('hidden'));
-            click('confirmSaveBtn', saveRide);
             
             const triggerSaveFlow = async () => {
                 if(currentRouteCoords.length < 2 && rideSeconds < 5) { showAlert("Not enough data to save."); return; }
@@ -1758,6 +1753,7 @@
                 if (isTracking) toggleTracking(); 
                 showSummary(); 
             });
+            click('confirmSaveBtn', saveRide);
             click('saveRideFromSummaryBtn', triggerSaveFlow);
 
             click('returnToRideBtn', () => get('summaryModal').classList.add('hidden'));
