@@ -287,13 +287,13 @@
     </div>
 
     <!-- Totals Modal -->
-    <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
-        <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
-        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[70vh] overflow-y-auto p-6 font-digital text-white text-left space-y-6">
+    <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
+        <h2 class="text-3xl font-digital text-white font-bold mb-4 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-4 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[75vh] overflow-y-auto p-5 font-digital text-white text-left space-y-5">
             
             <div class="border-b border-zinc-800 pb-3">
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">Personal Records</h3>
-                <div id="prContainer" class="grid grid-cols-2 gap-4"></div>
+                <div id="prContainer" class="grid grid-cols-2 gap-y-4 gap-x-2"></div>
             </div>
 
             <div class="border-b border-zinc-800 pb-3">
@@ -303,38 +303,38 @@
                     <input type="date" id="totCustomEnd" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totCustomDist" class="text-xl font-bold">0.0 Mi</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totCustomTime" class="text-xl font-bold">00:00</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totCustomCount" class="text-xl font-bold">0</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totCustomAscent" class="text-xl font-bold">0 ft</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totCustomDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totCustomTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totCustomCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totCustomAscent" class="text-xl font-bold">0 ft</span></div>
                 </div>
             </div>
 
             <div class="border-b border-zinc-800 pb-3">
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Week</h3>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totWeekDist" class="text-xl font-bold">0.0 Mi</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totWeekTime" class="text-xl font-bold">00:00</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totWeekCount" class="text-xl font-bold">0</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totWeekAscent" class="text-xl font-bold">0 ft</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totWeekDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totWeekTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totWeekCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totWeekAscent" class="text-xl font-bold">0 ft</span></div>
                 </div>
             </div>
             <div class="border-b border-zinc-800 pb-3">
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Month</h3>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totMonthDist" class="text-xl font-bold">0.0 Mi</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totMonthTime" class="text-xl font-bold">00:00</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totMonthCount" class="text-xl font-bold">0</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totMonthAscent" class="text-xl font-bold">0 ft</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totMonthDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totMonthTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totMonthCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totMonthAscent" class="text-xl font-bold">0 ft</span></div>
                 </div>
             </div>
             <div>
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Year</h3>
                 <div class="grid grid-cols-2 gap-3">
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Distance</small><br><span id="totYearDist" class="text-xl font-bold">0.0 Mi</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Time</small><br><span id="totYearTime" class="text-xl font-bold">00:00</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Rides</small><br><span id="totYearCount" class="text-xl font-bold">0</span></div>
-                    <div><small class="uppercase tracking-widest text-zinc-400 text-xs">Ascent</small><br><span id="totYearAscent" class="text-xl font-bold">0 ft</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totYearDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totYearTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totYearCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totYearAscent" class="text-xl font-bold">0 ft</span></div>
                 </div>
             </div>
         </div>
@@ -374,6 +374,17 @@
                     <div class="text-right">
                         <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">Total Descent</small>
                         <span class="text-2xl font-bold block text-right"><span id="sumDescent">0</span> ft</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
+                    <div>
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Est Calories</small>
+                        <span class="text-2xl font-bold"><span id="sumCalories">0</span> kcal</span>
+                    </div>
+                    <div class="text-right">
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">20-Min Max Pwr</small>
+                        <span class="text-2xl font-bold block text-right"><span id="sumMax20m">0</span> W</span>
                     </div>
                 </div>
                 
@@ -484,6 +495,18 @@
                             <span class="text-xl font-bold block text-right"><span id="detailDescent">0</span> ft</span>
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
+                        <div>
+                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Est Calories</small>
+                            <span class="text-xl font-bold"><span id="detailCalories">0</span> kcal</span>
+                        </div>
+                        <div class="text-right">
+                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">20-Min Max Pwr</small>
+                            <span class="text-xl font-bold block text-right"><span id="detailMax20m">0</span> W</span>
+                        </div>
+                    </div>
+
                     <div>
                         <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Max Consistent</small>
                         <div class="flex justify-between items-end mt-1">
@@ -607,6 +630,7 @@
         let topSpeedMph = 0, topSpeedFlat = 0, topSpeedAscent = 0, topSpeedDescent = 0, longestConsistentSec = 0, longestConsistentDist = 0, longestConsistentSpeed = 0;
         let currentSpeed = 0, stoppedSeconds = 0, currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0, consistentStartAlt = 0;
         let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0;
+        let p1m = 0, p5m = 0, p20m = 0, calories = 0, longestContPower = 0, currentContPower = 0;
         let isAutoPaused = false, isAutoPauseEnabled = true, isFirstFix = true;
         let goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
         let tireSizeMm = 2136, frontTeeth = 42, rearTeeth = 13, gearRatio = 3.23;
@@ -617,7 +641,8 @@
         
         let wakeLock = null;
         let isTracking = false;
-        let speedBuffer = [];
+        let speedBuffer = [], powerBuffer = [];
+        let globalFTP = 200; // Recalculated dynamically on load
 
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
@@ -1015,6 +1040,56 @@
                 if(!uiTimer) {
                     uiTimer = setInterval(() => { 
                         if(isTracking && watchId !== null){ 
+                            
+                            // Estimate Power (Watts) & Energy
+                            if (!isAutoPaused && currentSpeed > 0) {
+                                let grade = 0;
+                                if (currentRouteCoords.length >= 2) {
+                                    let p1 = currentRouteCoords[Math.max(0, currentRouteCoords.length-5)]; 
+                                    let p2 = currentRouteCoords[currentRouteCoords.length-1];
+                                    if(p1 && p2) {
+                                        let d = calculateDistance(p1[0], p1[1], p2[0], p2[1]) * 1609.34;
+                                        if (d > 5) grade = ((p2[2] || 0) - (p1[2] || 0)) / d;
+                                    }
+                                }
+
+                                let v = currentSpeed * 0.44704; // m/s
+                                let m = 85; // kg (assumed rider+bike mass)
+                                let p_roll = m * 9.81 * 0.005 * v;
+                                let p_grav = m * 9.81 * grade * v;
+                                let p_aero = 0.5 * 1.225 * 0.32 * Math.pow(v, 3);
+                                let watts = Math.max(0, (p_roll + p_grav + p_aero) / 0.96);
+
+                                powerBuffer.push(watts);
+                                if (powerBuffer.length > 1200) powerBuffer.shift();
+
+                                const getAvg = (len) => {
+                                    if (powerBuffer.length < len) return 0;
+                                    let sum = 0;
+                                    for(let i=powerBuffer.length-len; i<powerBuffer.length; i++) sum += powerBuffer[i];
+                                    return sum/len;
+                                };
+
+                                let cur1m = getAvg(60);
+                                let cur5m = getAvg(300);
+                                let cur20m = getAvg(1200);
+
+                                if (cur1m > p1m) p1m = cur1m;
+                                if (cur5m > p5m) p5m = cur5m;
+                                if (cur20m > p20m) p20m = cur20m;
+
+                                // 1 kJ of work ~ 1 kcal of human burn
+                                calories += watts / 1000;
+
+                                if (globalFTP > 0 && watts >= globalFTP) {
+                                    currentContPower++;
+                                    if (currentContPower > longestContPower) longestContPower = currentContPower;
+                                } else {
+                                    currentContPower = 0;
+                                }
+                            }
+                            
+                            // Auto Pause Logic
                             if (isAutoPauseEnabled) {
                                 if (currentSpeed < 1.0) {
                                     if (!isAutoPaused) {
@@ -1080,7 +1155,8 @@
                 compressedCoords = compressedCoords.map(p => [Number(p[0]).toFixed(5), Number(p[1]).toFixed(5), Number((p[2]||0).toFixed(1)), Number((p[3]||0).toFixed(1)), p[4], p[5]]);
                 
                 localStorage.setItem(STATE_KEY, JSON.stringify({ 
-                    rideSeconds, totalDistanceMiles, topSpeedMph, topSpeedFlat, topSpeedAscent, topSpeedDescent, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: compressedCoords 
+                    rideSeconds, totalDistanceMiles, topSpeedMph, topSpeedFlat, topSpeedAscent, topSpeedDescent, longestConsistentSec, longestConsistentDist, longestConsistentSpeed, splits, lastSplitDist, lastSplitTime, ascent: totalAscentMeters, descent: totalDescentMeters, coords: compressedCoords,
+                    p1m, p5m, p20m, calories, longestContPower
                 })); 
             } catch(e) {}
         }
@@ -1107,6 +1183,12 @@
                         totalDescentMeters = st.descent || 0;
                         currentRouteCoords = st.coords || [];
                         
+                        p1m = st.p1m || 0;
+                        p5m = st.p5m || 0;
+                        p20m = st.p20m || 0;
+                        calories = st.calories || 0;
+                        longestContPower = st.longestContPower || 0;
+
                         lastAnnouncedMile = Math.floor(totalDistanceMiles);
 
                         updateOdometer(totalDistanceMiles); 
@@ -1130,7 +1212,7 @@
 
         function resetRide() {
             localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; topSpeedFlat = 0; topSpeedAscent = 0; topSpeedDescent = 0; longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; get('speed').innerText="00"; get('topSpeed').innerText="0.0"; get('flatTopSpeed').innerText="0.0"; get('avgSpeed').innerText="0.0"; updateStatus("Ready to ride", "text-white");
-            
+            p1m = 0; p5m = 0; p20m = 0; calories = 0; longestContPower = 0; currentContPower = 0; powerBuffer = [];
             isTracking = false;
             currentSpeed = 0;
             stoppedSeconds = 0;
@@ -1170,6 +1252,9 @@
             get('sumTopFlat').innerText = topSpeedFlat.toFixed(1);
             get('sumTopDescent').innerText = topSpeedDescent.toFixed(1);
             
+            get('sumCalories').innerText = Math.round(calories);
+            get('sumMax20m').innerText = Math.round(p20m);
+
             get('sumConsistentTime').innerText = formatTime(longestConsistentSec);
             get('sumConsistentDist').innerText = longestConsistentDist.toFixed(1);
             get('sumConsistentSpeed').innerText = longestConsistentSpeed.toFixed(1);
@@ -1194,14 +1279,23 @@
             let mD=0, mT=0, mC=0, mA=0;
             let yD=0, yT=0, yC=0, yA=0;
             
-            let maxD = null, maxT = null, maxS = null, maxA = null;
+            let maxD = null, maxT = null, maxA = null, maxCal = null;
+            let max1 = null, max5 = null, max20 = null;
+            let maxAsc = null, maxFlat = null, maxDesc = null;
+            let maxAvgS = null, maxSeg = null, maxCont = null;
+            
+            let days = [];
 
             rts.forEach(r => {
                 const ts = r.timestamp || 0;
                 const d = parseFloat(r.distance) || 0;
                 const t = parseFloat(r.timeSec) || 0;
-                const s = parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0;
                 const a = parseFloat(r.ascent) || 0;
+
+                if (ts > 0) {
+                    let rideDay = new Date(ts);
+                    days.push(new Date(rideDay.getFullYear(), rideDay.getMonth(), rideDay.getDate()).getTime());
+                }
 
                 if (ts >= startOfWeek) { wD+=d; wT+=t; wC++; wA+=a; }
                 if (ts >= startOfMonth) { mD+=d; mT+=t; mC++; mA+=a; }
@@ -1209,9 +1303,64 @@
                 
                 if (!maxD || d > (parseFloat(maxD.distance)||0)) maxD = r;
                 if (!maxT || t > (parseFloat(maxT.timeSec)||0)) maxT = r;
-                if (!maxS || s > (parseFloat(maxS.topSpeed) || parseFloat(maxS.flatTopSpeed) || 0)) maxS = r;
                 if (!maxA || a > (parseFloat(maxA.ascent)||0)) maxA = r;
+                
+                let cal = parseFloat(r.calories)||0;
+                if (!maxCal || cal > (parseFloat(maxCal.calories)||0)) maxCal = r;
+                
+                let w1 = parseFloat(r.p1m)||0;
+                if (!max1 || w1 > (parseFloat(max1.p1m)||0)) max1 = r;
+                
+                let w5 = parseFloat(r.p5m)||0;
+                if (!max5 || w5 > (parseFloat(max5.p5m)||0)) max5 = r;
+                
+                let w20 = parseFloat(r.p20m)||0;
+                if (!max20 || w20 > (parseFloat(max20.p20m)||0)) max20 = r;
+                
+                let ascS = parseFloat(r.ascentTopSpeed)||0;
+                if (!maxAsc || ascS > (parseFloat(maxAsc.ascentTopSpeed)||0)) maxAsc = r;
+                
+                let fltS = parseFloat(r.flatTopSpeed)||0;
+                if (!maxFlat || fltS > (parseFloat(maxFlat.flatTopSpeed)||0)) maxFlat = r;
+                
+                let dscS = parseFloat(r.descentTopSpeed)||0;
+                if (!maxDesc || dscS > (parseFloat(maxDesc.descentTopSpeed)||0)) maxDesc = r;
+                
+                let avgS = parseFloat(r.avgSpeed)||0;
+                if (!maxAvgS || avgS > (parseFloat(maxAvgS.avgSpeed)||0)) maxAvgS = r;
+                
+                let segS = parseFloat(r.maxConsistentSpeed)||0;
+                if (!maxSeg || segS > (parseFloat(maxSeg.maxConsistentSpeed)||0)) maxSeg = r;
+                
+                let lcp = parseFloat(r.longestContPower)||0;
+                if (!maxCont || lcp > (parseFloat(maxCont.longestContPower)||0)) maxCont = r;
             });
+            
+            // Calculate Streaks
+            days = [...new Set(days)].sort((a,b) => a-b);
+            let longestStreak = 0, currentStreak = 0, curr = 0;
+            const ONE_DAY = 86400000;
+            for(let i=0; i<days.length; i++) {
+                if(i===0) { curr=1; }
+                else {
+                    let diff = Math.round((days[i] - days[i-1])/ONE_DAY);
+                    if(diff === 1) curr++; else curr = 1;
+                }
+                if(curr > longestStreak) longestStreak = curr;
+            }
+            
+            let today = new Date();
+            today = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+            if (days.length > 0) {
+                let diffToToday = Math.round((today - days[days.length-1])/ONE_DAY);
+                if (diffToToday <= 1) {
+                    currentStreak = 1;
+                    for(let i=days.length-1; i>0; i--) {
+                        if (Math.round((days[i] - days[i-1])/ONE_DAY) === 1) currentStreak++;
+                        else break;
+                    }
+                }
+            }
 
             get('totWeekDist').innerText = wD.toFixed(1) + ' Mi';
             get('totWeekTime').innerText = formatTime(wT);
@@ -1229,19 +1378,32 @@
             get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
             
             const renderPR = (label, val, route) => {
-                if (!route) return `<div><small class="uppercase tracking-widest text-zinc-400 text-xs">${label}</small><br><span class="text-xl font-bold">--</span></div>`;
+                if (!route) return `<div><small class="uppercase tracking-widest text-zinc-400 text-[0.6rem]">${label}</small><br><span class="text-sm font-bold text-white opacity-50">--</span></div>`;
                 return `<div>
-                    <small class="uppercase tracking-widest text-zinc-400 text-xs">${label}</small><br>
-                    <span class="text-xl font-bold text-white">${val}</span>
-                    <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-2 text-[0.6rem] bg-zinc-800 text-white px-2 py-1 rounded opacity-80 hover:opacity-100 transition-opacity uppercase">View</button>
+                    <small class="uppercase tracking-widest text-zinc-400 text-[0.6rem] leading-tight block truncate">${label}</small>
+                    <span class="text-lg font-bold text-white leading-tight">${val}</span>
+                    <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-1 text-[0.55rem] bg-zinc-800 text-white px-1.5 py-0.5 rounded opacity-80 hover:opacity-100 transition-opacity uppercase">View</button>
                 </div>`;
             };
 
             get('prContainer').innerHTML = 
-                renderPR('Farthest', maxD ? parseFloat(maxD.distance).toFixed(1) + ' Mi' : '--', maxD) +
-                renderPR('Longest', maxT ? formatTime(parseFloat(maxT.timeSec)) : '--', maxT) +
-                renderPR('Fastest', maxS ? (parseFloat(maxS.topSpeed) || parseFloat(maxS.flatTopSpeed) || 0).toFixed(1) + ' MPH' : '--', maxS) +
-                renderPR('Highest', maxA ? Math.round((parseFloat(maxA.ascent)||0) * 3.28084) + ' ft' : '--', maxA);
+                renderPR('Longest Ride Time', maxT ? formatTime(maxT.timeSec) : '--', maxT) +
+                renderPR('Longest Distance', maxD ? parseFloat(maxD.distance).toFixed(1) + ' Mi' : '--', maxD) +
+                renderPR('Biggest Climb', maxA ? Math.round(parseFloat(maxA.ascent)*3.28084) + ' ft' : '--', maxA) +
+                renderPR('Highest Energy Burned', maxCal ? Math.round(parseFloat(maxCal.calories)) + ' kcal' : '--', maxCal) +
+                renderPR('1-Min Power', max1 ? Math.round(parseFloat(max1.p1m)) + ' W' : '--', max1) +
+                renderPR('5-Min Power', max5 ? Math.round(parseFloat(max5.p5m)) + ' W' : '--', max5) +
+                renderPR('20-Min Power', max20 ? Math.round(parseFloat(max20.p20m)) + ' W' : '--', max20) +
+                renderPR('Best FTP', max20 ? Math.round(parseFloat(max20.p20m)*0.95) + ' W' : '--', max20) +
+                renderPR('Fastest Ascent', maxAsc ? parseFloat(maxAsc.ascentTopSpeed).toFixed(1) + ' MPH' : '--', maxAsc) +
+                renderPR('Fastest Flat', maxFlat ? parseFloat(maxFlat.flatTopSpeed).toFixed(1) + ' MPH' : '--', maxFlat) +
+                renderPR('Fastest Descent', maxDesc ? parseFloat(maxDesc.descentTopSpeed).toFixed(1) + ' MPH' : '--', maxDesc) +
+                renderPR('Fastest Avg Speed', maxAvgS ? parseFloat(maxAvgS.avgSpeed).toFixed(1) + ' MPH' : '--', maxAvgS) +
+                renderPR('Fastest Segment', maxSeg ? parseFloat(maxSeg.maxConsistentSpeed).toFixed(1) + ' MPH' : '--', maxSeg) +
+                renderPR('Longest Power Output', maxCont ? formatTime(maxCont.longestContPower) : '--', maxCont) +
+                renderPR('Best Pace', maxAvgS ? (60/parseFloat(maxAvgS.avgSpeed)).toFixed(1) + ' Min/Mi' : '--', maxAvgS) +
+                `<div><small class="uppercase tracking-widest text-zinc-400 text-[0.6rem] leading-tight block">Longest Streak</small><span class="text-lg font-bold text-white leading-tight">${longestStreak} Days</span></div>` +
+                `<div><small class="uppercase tracking-widest text-zinc-400 text-[0.6rem] leading-tight block">Current Streak</small><span class="text-lg font-bold text-white leading-tight">${currentStreak} Days</span></div>`;
 
             window.updateCustomTotals = function() {
                 const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
@@ -1323,6 +1485,11 @@
                     maxConsistentSec: longestConsistentSec, 
                     maxConsistentDist: longestConsistentDist, 
                     maxConsistentSpeed: longestConsistentSpeed, 
+                    p1m: p1m.toFixed(1),
+                    p5m: p5m.toFixed(1),
+                    p20m: p20m.toFixed(1),
+                    calories: calories.toFixed(1),
+                    longestContPower: longestContPower,
                     splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
                     timestamp: Date.now() 
@@ -1460,6 +1627,10 @@
             get('detailTopDescent').innerText = r.descentTopSpeed || r.topSpeed || '0.0';
             get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); 
             get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
+            
+            get('detailCalories').innerText = Math.round(r.calories||0);
+            get('detailMax20m').innerText = Math.round(r.p20m||0);
+            
             get('detailConsistentTime').innerText = formatTime(r.maxConsistentSec||0);
             get('detailConsistentDist').innerText = (r.maxConsistentDist||0).toFixed(1);
             get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
@@ -1557,6 +1728,31 @@
             ctx.strokeStyle = '#ff1493'; 
             ctx.lineWidth = 2;
             ctx.stroke();
+
+            // Draw Quarter Splits Markers
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.font = "bold 10px 'DS-Digital', sans-serif";
+            ctx.textAlign = "center";
+            
+            for(let i=1; i<=3; i++) {
+                let idx = Math.floor(points.length * (i/4));
+                if(idx > 0 && idx < points.length) {
+                    const x = (idx / (points.length - 1)) * rect.width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, rect.height);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(x - 8, 2, 16, 14);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(`Q${i}`, x, 12);
+                }
+            }
+            ctx.setLineDash([]);
         }
 
         function drawCompareRoute(pts) {
@@ -1886,6 +2082,30 @@
             click('confirmSaveBtn', saveRide);
             click('saveRideFromSummaryBtn', triggerSaveFlow);
 
+            click('btnSaveNotes', () => {
+                if (!currentlyViewingRouteId) return;
+                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let routeIndex = rts.findIndex(r => r.id === currentlyViewingRouteId);
+                if (routeIndex > -1) {
+                    rts[routeIndex].name = get('detailNameInput').value;
+                    rts[routeIndex].notes = get('detailNotesInput').value;
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                    
+                    const btn = get('btnSaveNotes');
+                    const originalText = btn.innerText;
+                    btn.innerText = "SAVED!";
+                    btn.classList.add('bg-green-500', 'text-black');
+                    btn.classList.remove('bg-white');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('bg-green-500', 'text-black');
+                        btn.classList.add('bg-white');
+                    }, 2000);
+                    
+                    loadRoutes(); // Refresh background list
+                }
+            });
+
             click('returnToRideBtn', () => get('summaryModal').classList.add('hidden'));
             
             click('discardRideBtn', () => { get('confirmDiscardModal').classList.remove('hidden'); });
@@ -1918,6 +2138,9 @@
                 prevMaxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
                 prevMaxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
                 prevMaxSpeed = Math.max(...rts.map(r => parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0));
+                
+                let max20 = Math.max(...rts.map(r => parseFloat(r.p20m) || 0));
+                if (max20 > 0) globalFTP = max20 * 0.95;
             }
 
             restoreRideState();
