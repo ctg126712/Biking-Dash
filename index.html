@@ -293,7 +293,7 @@
             
             <div class="border-b border-zinc-800 pb-3">
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">Personal Records</h3>
-                <div id="prContainer" class="grid grid-cols-2 gap-y-4 gap-x-2"></div>
+                <div id="prContainer" class="grid grid-cols-2 gap-3"></div>
             </div>
 
             <div class="border-b border-zinc-800 pb-3">
@@ -1378,11 +1378,13 @@
             get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
             
             const renderPR = (label, val, route) => {
-                if (!route) return `<div><small class="uppercase tracking-widest text-zinc-400 text-[0.6rem]">${label}</small><br><span class="text-sm font-bold text-white opacity-50">--</span></div>`;
-                return `<div>
-                    <small class="uppercase tracking-widest text-zinc-400 text-[0.6rem] leading-tight block truncate">${label}</small>
-                    <span class="text-lg font-bold text-white leading-tight">${val}</span>
-                    <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-1 text-[0.55rem] bg-zinc-800 text-white px-1.5 py-0.5 rounded opacity-80 hover:opacity-100 transition-opacity uppercase">View</button>
+                if (!route) return `<div class="flex flex-col justify-between h-full bg-[#111] p-3 rounded-xl border border-zinc-800/80"><span class="uppercase tracking-widest text-zinc-400 text-[0.7rem] leading-snug mb-2">${label}</span><span class="text-lg font-bold text-white opacity-30 mt-auto">--</span></div>`;
+                return `<div class="flex flex-col justify-between h-full bg-[#111] p-3 rounded-xl border border-zinc-800/80 shadow-inner">
+                    <span class="uppercase tracking-widest text-zinc-400 text-[0.7rem] leading-snug mb-3">${label}</span>
+                    <div class="flex items-end justify-between mt-auto">
+                        <span class="text-base font-bold text-white leading-none tracking-wide">${val}</span>
+                        <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-2 text-[0.65rem] bg-zinc-800 text-white px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform uppercase border border-zinc-700 shadow-sm whitespace-nowrap">View</button>
+                    </div>
                 </div>`;
             };
 
