@@ -530,8 +530,11 @@
                 </div>
             </div>
             <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Correct Distance (Miles)</label>
-                <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white outline-none text-sm font-digital tracking-widest mb-4 focus:border-neon-main transition-colors">
+                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Distance Correction (Miles)</label>
+                <div class="flex space-x-2 mb-4">
+                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white outline-none text-sm font-digital tracking-widest focus:border-neon-main transition-colors">
+                    <button id="btnAutoFix" class="bg-[#eab308] text-black font-bold rounded-lg font-digital uppercase tracking-widest text-[0.65rem] px-3 shadow-[0_0_10px_rgba(234,179,8,0.3)] whitespace-nowrap active:scale-95 transition-transform leading-tight text-center flex flex-col items-center justify-center">Auto-Fix<br>GPS</button>
+                </div>
                 
                 <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Ride Notes</label>
                 <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600 focus:border-neon-main transition-colors"></textarea>
@@ -1665,8 +1668,16 @@
                     showAlert("Map route data for this ride has been automatically archived to save storage space. Stats remain available.");
                     return;
                 }
-                loadedCompareRoutePoints = pts; drawCompareRoute(pts); map.fitBounds(L.polyline(pts).getBounds());
+                loadedCompareRoutePoints = pts; drawCompareRoute(pts); 
                 get('routeDetailModal').classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
+                
+                setTimeout(() => {
+                    if(map) {
+                        map.invalidateSize();
+                        let latlngs = pts.map(p => [p[0], p[1]]);
+                        if(latlngs.length > 0) map.fitBounds(L.polyline(latlngs).getBounds());
+                    }
+                }, 450);
             };
             
             const delBtn = get('btnDeleteRoute');
@@ -2104,22 +2115,26 @@
                     rts[routeIndex].name = get('detailNameInput').value;
                     rts[routeIndex].notes = get('detailNotesInput').value;
                     
-                    // --- GLITCH REPAIR LOGIC ---
-                    let newDist = parseFloat(get('detailDistanceInput').value);
-                    if (!isNaN(newDist) && newDist >= 0) {
-                        rts[routeIndex].distance = newDist.toFixed(2);
-                        if (rts[routeIndex].timeSec > 0) {
-                            rts[routeIndex].avgSpeed = (newDist / (rts[routeIndex].timeSec / 3600)).toFixed(1);
-                        }
-                    }
+                    // --- Distance Overwrite & Data Safeties ---
+                    let inputDist = parseFloat(get('detailDistanceInput').value);
+                    let originalDist = parseFloat(rts[routeIndex].distance);
                     
-                    // Automatically scrub astronomical top speeds/elevations caused by GPS jumps
-                    if (parseFloat(rts[routeIndex].topSpeed) > 100) rts[routeIndex].topSpeed = "0.0";
-                    if (parseFloat(rts[routeIndex].flatTopSpeed) > 100) rts[routeIndex].flatTopSpeed = "0.0";
-                    if (parseFloat(rts[routeIndex].ascentTopSpeed) > 100) rts[routeIndex].ascentTopSpeed = "0.0";
-                    if (parseFloat(rts[routeIndex].descentTopSpeed) > 100) rts[routeIndex].descentTopSpeed = "0.0";
-                    if (parseFloat(rts[routeIndex].ascent) > 20000) rts[routeIndex].ascent = 0;
-                    if (parseFloat(rts[routeIndex].descent) > 20000) rts[routeIndex].descent = 0;
+                    if (!isNaN(inputDist) && inputDist >= 0 && Math.abs(inputDist - originalDist) > 0.05) {
+                        if (!confirm("Changing the distance manually will overwrite your top speeds and elevation data to preserve chart integrity. Continue?")) return;
+                        
+                        rts[routeIndex].distance = inputDist.toFixed(2);
+                        if (rts[routeIndex].timeSec > 0) {
+                            rts[routeIndex].avgSpeed = (inputDist / (rts[routeIndex].timeSec / 3600)).toFixed(1);
+                        }
+                        
+                        // Scrub astronomical speeds/elevations since we just overwrote the mathematical baseline
+                        rts[routeIndex].topSpeed = "0.0";
+                        rts[routeIndex].flatTopSpeed = "0.0";
+                        rts[routeIndex].ascentTopSpeed = "0.0";
+                        rts[routeIndex].descentTopSpeed = "0.0";
+                        rts[routeIndex].ascent = 0;
+                        rts[routeIndex].descent = 0;
+                    }
 
                     localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
                     
@@ -2138,7 +2153,61 @@
                         btn.classList.add('bg-white');
                     }, 2000);
                     
-                    loadRoutes(); // Refresh background list
+                    loadRoutes(); 
+                }
+            });
+
+            click('btnAutoFix', () => {
+                if (!currentlyViewingRouteId) return;
+                if (!confirm("This will scan your map data to automatically remove massive GPS glitches (like the 6,000-mile jump). Your distance, speeds, and elevation will be recalculated based on the valid data left over. Proceed?")) return;
+                
+                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let routeIndex = rts.findIndex(r => r.id === currentlyViewingRouteId);
+                if (routeIndex > -1) {
+                    let r = rts[routeIndex];
+                    let pts = decodePoints(r.points);
+                    
+                    if (pts.length > 2) {
+                        let cleanPts = [pts[0]];
+                        let newDist = 0, newAsc = 0, newDesc = 0, topS = 0;
+                        
+                        for(let i=1; i<pts.length; i++) {
+                            let d = calculateDistance(cleanPts[cleanPts.length-1][0], cleanPts[cleanPts.length-1][1], pts[i][0], pts[i][1]);
+                            if (d < 0.5) { // Filter impossible > 0.5mi jumps
+                                cleanPts.push(pts[i]);
+                                newDist += d;
+                                let altDiff = (pts[i][2]||0) - (cleanPts[cleanPts.length-2][2]||0);
+                                if (altDiff > 0 && altDiff < 500) newAsc += altDiff;
+                                else if (altDiff < 0 && altDiff > -500) newDesc += Math.abs(altDiff);
+                                
+                                let spd = pts[i][3]||0;
+                                if (spd > 0 && spd <= 65 && spd > topS) topS = spd; // Cap realistically for a bike
+                            }
+                        }
+                        
+                        r.points = cleanPts.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)}`).join('|');
+                        r.distance = newDist.toFixed(2);
+                        r.ascent = newAsc;
+                        r.descent = newDesc;
+                        r.topSpeed = topS.toFixed(1);
+                        r.flatTopSpeed = topS.toFixed(1);
+                        r.ascentTopSpeed = "0.0";
+                        r.descentTopSpeed = "0.0";
+                        
+                        if (parseFloat(r.timeSec) > 0) {
+                            r.avgSpeed = (newDist / (parseFloat(r.timeSec) / 3600)).toFixed(1);
+                        }
+                        
+                        let newSplits = calculateQuartersFromData(cleanPts, newDist, parseFloat(r.timeSec)||0);
+                        r.splits = JSON.stringify(newSplits);
+                        
+                        localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                        showAlert("GPS Glitches repaired successfully! Ride stats have been rebuilt.");
+                        openRouteDetails(r); // Refresh modal UI
+                        loadRoutes(); // Refresh list
+                    } else {
+                        showAlert("Not enough map data left to perform an auto-fix.");
+                    }
                 }
             });
 
