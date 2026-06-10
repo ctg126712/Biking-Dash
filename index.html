@@ -530,7 +530,12 @@
                 </div>
             </div>
             <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600"></textarea>
+                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Correct Distance (Miles)</label>
+                <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white outline-none text-sm font-digital tracking-widest mb-4 focus:border-neon-main transition-colors">
+                
+                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Ride Notes</label>
+                <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600 focus:border-neon-main transition-colors"></textarea>
+                
                 <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save Updates</button>
                 <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors">Delete Route</button>
             </div>
@@ -884,6 +889,16 @@
             if (isTracking && !isAutoPaused) {
                 if (lastPosition) {
                     const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
+                    
+                    let dt = (now - lastGpsTimestamp) / 1000;
+                    let apparentSpeedMph = (dt > 0) ? (d / (dt / 3600)) : 0;
+                    
+                    // Automatically reject impossible GPS bounces (e.g., > 150 MPH spikes to Null Island)
+                    if (apparentSpeedMph > 150) {
+                        lastPosition = pos; // Re-anchor to prevent getting stuck
+                        lastGpsTimestamp = now;
+                        return; 
+                    }
                     
                     if (d > 0.0005) {
                         totalDistanceMiles += d; 
@@ -1378,18 +1393,18 @@
             get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
             
             const renderPR = (label, val, route) => {
-                if (!route) return `<div class="flex flex-col justify-between h-full bg-[#111] p-3 rounded-xl border border-zinc-800/80"><span class="uppercase tracking-widest text-zinc-400 text-[0.7rem] leading-snug mb-2">${label}</span><span class="text-lg font-bold text-white opacity-30 mt-auto">--</span></div>`;
-                return `<div class="flex flex-col justify-between h-full bg-[#111] p-3 rounded-xl border border-zinc-800/80 shadow-inner">
-                    <span class="uppercase tracking-widest text-zinc-400 text-[0.7rem] leading-snug mb-3">${label}</span>
+                if (!route) return `<div class="flex flex-col justify-between bg-[#111] p-3 rounded-xl border border-zinc-800/80 min-h-[5.5rem]"><span class="uppercase tracking-widest text-zinc-400 text-xs leading-snug mb-1">${label}</span><span class="text-lg font-bold text-white opacity-30 mt-auto">--</span></div>`;
+                return `<div class="flex flex-col justify-between bg-[#111] p-3 rounded-xl border border-zinc-800/80 shadow-inner min-h-[5.5rem]">
+                    <span class="uppercase tracking-widest text-zinc-400 text-xs leading-snug mb-2">${label}</span>
                     <div class="flex items-end justify-between mt-auto">
-                        <span class="text-base font-bold text-white leading-none tracking-wide">${val}</span>
-                        <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-2 text-[0.65rem] bg-zinc-800 text-white px-2.5 py-1.5 rounded-lg active:scale-95 transition-transform uppercase border border-zinc-700 shadow-sm whitespace-nowrap">View</button>
+                        <span class="text-lg font-bold text-white leading-none">${val}</span>
+                        <button onclick='window.loadSpecificRoute("${route.id}")' class="ml-2 text-[0.65rem] bg-zinc-800 text-white px-3 py-1.5 rounded-lg active:scale-95 transition-transform uppercase border border-zinc-700 shadow-sm whitespace-nowrap">View</button>
                     </div>
                 </div>`;
             };
 
             get('prContainer').innerHTML = 
-                renderPR('Longest Ride Time', maxT ? formatTime(maxT.timeSec) : '--', maxT) +
+                renderPR('Farthest', maxD ? parseFloat(maxD.distance).toFixed(1) + ' Mi' : '--', maxD) +
                 renderPR('Longest Distance', maxD ? parseFloat(maxD.distance).toFixed(1) + ' Mi' : '--', maxD) +
                 renderPR('Biggest Climb', maxA ? Math.round(parseFloat(maxA.ascent)*3.28084) + ' ft' : '--', maxA) +
                 renderPR('Highest Energy Burned', maxCal ? Math.round(parseFloat(maxCal.calories)) + ' kcal' : '--', maxCal) +
@@ -1629,14 +1644,11 @@
             get('detailTopDescent').innerText = r.descentTopSpeed || r.topSpeed || '0.0';
             get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); 
             get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
-            
-            get('detailCalories').innerText = Math.round(r.calories||0);
-            get('detailMax20m').innerText = Math.round(r.p20m||0);
-            
             get('detailConsistentTime').innerText = formatTime(r.maxConsistentSec||0);
             get('detailConsistentDist').innerText = (r.maxConsistentDist||0).toFixed(1);
             get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
             get('detailNotesInput').value = r.notes || "";
+            get('detailDistanceInput').value = r.distance || "0.0";
             
             let qSplits = [];
             try { qSplits = JSON.parse(r.splits); } catch(e){}
@@ -2091,7 +2103,29 @@
                 if (routeIndex > -1) {
                     rts[routeIndex].name = get('detailNameInput').value;
                     rts[routeIndex].notes = get('detailNotesInput').value;
+                    
+                    // --- GLITCH REPAIR LOGIC ---
+                    let newDist = parseFloat(get('detailDistanceInput').value);
+                    if (!isNaN(newDist) && newDist >= 0) {
+                        rts[routeIndex].distance = newDist.toFixed(2);
+                        if (rts[routeIndex].timeSec > 0) {
+                            rts[routeIndex].avgSpeed = (newDist / (rts[routeIndex].timeSec / 3600)).toFixed(1);
+                        }
+                    }
+                    
+                    // Automatically scrub astronomical top speeds/elevations caused by GPS jumps
+                    if (parseFloat(rts[routeIndex].topSpeed) > 100) rts[routeIndex].topSpeed = "0.0";
+                    if (parseFloat(rts[routeIndex].flatTopSpeed) > 100) rts[routeIndex].flatTopSpeed = "0.0";
+                    if (parseFloat(rts[routeIndex].ascentTopSpeed) > 100) rts[routeIndex].ascentTopSpeed = "0.0";
+                    if (parseFloat(rts[routeIndex].descentTopSpeed) > 100) rts[routeIndex].descentTopSpeed = "0.0";
+                    if (parseFloat(rts[routeIndex].ascent) > 20000) rts[routeIndex].ascent = 0;
+                    if (parseFloat(rts[routeIndex].descent) > 20000) rts[routeIndex].descent = 0;
+
                     localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                    
+                    // Update details UI instantly
+                    get('detailDistance').innerText = rts[routeIndex].distance;
+                    get('detailAvgSpeed').innerText = rts[routeIndex].avgSpeed;
                     
                     const btn = get('btnSaveNotes');
                     const originalText = btn.innerText;
