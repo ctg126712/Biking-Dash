@@ -73,7 +73,6 @@
         #dashboardContainer.carousel-mode { background-color: #0a0a0a; border: 1px solid #27272a; border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         #dashboardContainer.map-view-active { background-color: transparent !important; border-color: transparent !important; box-shadow: none !important; }
         
-        /* 2x2 Grid mode styles */
         #dashboardContainer.grid-mode { background: transparent !important; border-color: transparent !important; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 0.75rem; padding-top: 0.5rem; height: 100% !important; }
         #dashboardContainer.grid-mode > .dash-view { position: relative !important; opacity: 1 !important; pointer-events: auto !important; background: #0a0a0a; border: 1px solid #27272a; border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; }
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 140px; height: 140px; }
@@ -478,10 +477,14 @@
                 </div>
             </div>
             
-            <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Distance Correction (Miles)</label>
+            <div class="bg-[#0a0a0a] border border-red-900/50 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,0,0,0.05)]">
+                <label class="text-[0.65rem] text-red-500 font-bold uppercase tracking-widest block flex items-center mb-1">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Failsafe: Distance Override
+                </label>
+                <p class="text-[0.55rem] text-zinc-400 mb-3 leading-tight font-sans">Only use if the GPS completely failed. Overwriting the recorded distance will clear top speeds to protect charts.</p>
                 <div class="flex space-x-2 mb-4">
-                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white outline-none text-sm font-digital tracking-widest focus:border-neon-main transition-colors">
+                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-red-900/50 text-white outline-none text-sm font-digital tracking-widest focus:border-red-500 transition-colors" placeholder="e.g. 15.2">
                     <button id="btnAutoFix" class="bg-[#eab308] text-black font-bold rounded-lg font-digital uppercase tracking-widest text-[0.65rem] px-3 shadow-[0_0_10px_rgba(234,179,8,0.3)] whitespace-nowrap active:scale-95 transition-transform leading-tight text-center flex flex-col items-center justify-center">Auto-Fix<br>GPS</button>
                 </div>
                 
@@ -503,6 +506,7 @@
         <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)]">OK</button></div>
     </div>
 
+    <!-- Settings Modal -->
     <div id="settingsModal" class="hidden absolute inset-0 bg-black/95 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#050505] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-6 rounded-2xl w-full max-w-sm flex flex-col">
             <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest border-b border-zinc-800 pb-3 mb-4">Settings</h3>
@@ -569,7 +573,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- 1. GLOBALS & STATE ---
         const ROUTES_KEY = 'bikeTracker_routes_v1', STATE_KEY = 'bikeTracker_activeRide_v1';
         const themes = [
             { name: 'yellow', vars: { main: '#ffff00', bg: '#eab308', dark: '#ca8a04', dim: '#854d0e', gauge: '#0088ff' } },
@@ -612,7 +615,6 @@
             if (textEl) textEl.innerText = msg;
             const modalEl = get('alertModal');
             if (modalEl) modalEl.classList.remove('hidden');
-            
             click('closeAlertBtn', () => { get('alertModal').classList.add('hidden'); });
         }
 
@@ -837,13 +839,17 @@
             });
             const b = get('bottomDashboard'), dc = get('dashboardContainer');
             if (viewsIds[index] === 'view-map' && !isGridMode) {
-                b.classList.add('bg-transparent', 'border-transparent', 'shadow-none');
+                b.style.backgroundColor = 'transparent';
+                b.style.borderColor = 'transparent';
+                b.style.boxShadow = 'none';
                 dc.classList.add('map-view-active');
                 b.style.pointerEvents = 'none';
                 document.querySelectorAll('#bottomDashboard button').forEach(bt => bt.style.pointerEvents = 'auto');
                 dc.style.pointerEvents = 'none';
             } else {
-                b.classList.remove('bg-transparent', 'border-transparent', 'shadow-none');
+                b.style.backgroundColor = '';
+                b.style.borderColor = '';
+                b.style.boxShadow = '';
                 dc.classList.remove('map-view-active');
                 b.style.pointerEvents = 'auto';
                 dc.style.pointerEvents = 'auto';
@@ -1665,6 +1671,7 @@
             get('detailConsistentDist').innerText = (r.maxConsistentDist||0).toFixed(1);
             get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
             get('detailNotesInput').value = r.notes || "";
+            get('detailDistanceInput').value = ""; 
             
             let qSplits = [];
             try { qSplits = JSON.parse(r.splits); } catch(e){}
@@ -1678,19 +1685,19 @@
             get('btnLoadMap').onclick = () => {
                 const pts = decodePoints(r.points); 
                 if (!pts || pts.length === 0) {
-                    showAlert("Map route data for this ride has been automatically archived to save storage space. Stats remain available.");
+                    showAlert("Map route data for this ride is unavailable or has been archived.");
                     return;
                 }
                 
-                let validPts = pts.filter(p => Math.abs(p[0]) > 1 && Math.abs(p[1]) > 1);
-                if (validPts.length === 0) validPts = pts;
+                let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
+                if (validPts.length === 0) validPts = pts; 
 
                 loadedCompareRoutePoints = validPts; 
                 drawCompareRoute(validPts); 
                 
                 get('routeDetailModal').classList.add('hidden'); 
                 
-                layoutMode = 1;
+                layoutMode = 1; 
                 currentViewIndex = 4; 
                 applyLayoutMode(); 
                 showView(4);
@@ -1699,7 +1706,11 @@
                     if(map) {
                         map.invalidateSize();
                         let latlngs = validPts.map(p => [p[0], p[1]]);
-                        if(latlngs.length > 0) map.fitBounds(L.polyline(latlngs).getBounds(), {padding: [20, 20]});
+                        if(latlngs.length > 1) {
+                            map.fitBounds(L.polyline(latlngs).getBounds(), {padding: [20, 20], maxZoom: 16});
+                        } else if (latlngs.length === 1) {
+                            map.setView(latlngs[0], 16);
+                        }
                     }
                 }, 450);
             };
@@ -1981,15 +1992,14 @@
                     
                     rts = rts.map(r => {
                         let changed = false;
-                        const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
                         
-                        if (isOld && r.points && r.points.length > 0) {
-                            r.points = "";
-                            changed = true;
-                        } else if (!isOld && r.points && r.points.length > 0) {
+                        if (r.points && r.points.length > 0) {
                             let pts = decodePoints(r.points);
-                            if (pts.length > 400) {
-                                const step = Math.ceil(pts.length / 400);
+                            const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
+                            const limit = isOld ? 100 : 400; 
+                            
+                            if (pts.length > limit) {
+                                const step = Math.ceil(pts.length / limit);
                                 pts = pts.filter((_, idx) => idx % step === 0);
                                 changed = true;
                             }
@@ -2183,7 +2193,7 @@
 
             click('btnAutoFix', () => {
                 if (!currentlyViewingRouteId) return;
-                if (!confirm("This will scan your map data to automatically remove massive GPS glitches. Your distance, speeds, and elevation will be recalculated based on the valid data left over. Proceed?")) return;
+                if (!confirm("This will scan your map data to automatically remove massive GPS glitches. Proceed?")) return;
                 
                 let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 let routeIndex = rts.findIndex(r => r.id === currentlyViewingRouteId);
@@ -2191,80 +2201,62 @@
                     let r = rts[routeIndex];
                     let pts = decodePoints(r.points);
                     
-                    pts = pts.filter(p => Math.abs(p[0]) > 1 || Math.abs(p[1]) > 1);
+                    // Filter completely broken coords (NaNs and exact 0,0s)
+                    let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
 
-                    if (pts.length > 2) {
+                    if (validPts.length > 2) {
                         let cleanPts = [];
-                        let newDist = 0, newAsc = 0, newDesc = 0, topS = 0;
+                        let massiveGlitchDist = 0;
                         let lastValid = null;
-                        let distanceToSubtract = 0; // The surgical glitch remover
+                        let topS = 0;
                         
-                        for(let i=0; i<pts.length; i++) {
-                            let curr = pts[i];
+                        for(let i=0; i<validPts.length; i++) {
+                            let curr = validPts[i];
                             if (!lastValid) {
-                                distanceToSubtract = curr[5] || 0;
-                                curr[5] = 0;
                                 cleanPts.push(curr);
                                 lastValid = curr;
                             } else {
                                 let d = calculateDistance(lastValid[0], lastValid[1], curr[0], curr[1]);
-                                let dt = curr[4] - lastValid[4];
-                                let impSpd = dt > 1 ? (d / (dt / 3600)) : (d / (1 / 3600));
                                 
-                                // Detect impossible glitch
-                                if (impSpd > 150 || d > 10) { 
-                                    continue; // Skip this bad point entirely
-                                } else {
-                                    // Extract the original cumulative distance delta between these two valid points
-                                    let originalDelta = (curr[5] || 0) - (lastValid[5] || 0);
-                                    
-                                    // If the original recorded distance added a massive chunk that physically couldn't fit
-                                    // between these points, it means a glitch was embedded in the odometer!
-                                    if (originalDelta - d > 0.5) {
-                                        distanceToSubtract += (originalDelta - d);
-                                    }
-                                    
-                                    // Restore original high-accuracy distance minus the surgical glitch
-                                    curr[5] = (curr[5] || 0) - distanceToSubtract;
-                                    if (curr[5] < lastValid[5]) curr[5] = lastValid[5] + d; // Fallback
-                                    
-                                    newDist = curr[5];
-
-                                    let altDiff = (curr[2]||0) - (lastValid[2]||0);
-                                    if (altDiff > 0 && altDiff < 500) newAsc += altDiff;
-                                    else if (altDiff < 0 && altDiff > -500) newDesc += Math.abs(altDiff);
-                                    
-                                    let spd = curr[3]||0;
-                                    if (spd > 0 && spd <= 65 && spd > topS) topS = spd; 
-                                    
-                                    cleanPts.push(curr);
-                                    lastValid = curr;
+                                // Identify an impossible 2+ mile jump in a single tick as a glitch
+                                if (d > 2.0) { 
+                                    massiveGlitchDist += d;
+                                    continue; 
                                 }
+                                
+                                let spd = curr[3]||0;
+                                if (spd > 0 && spd <= 65 && spd > topS) topS = spd; 
+                                
+                                cleanPts.push(curr);
+                                lastValid = curr;
                             }
                         }
                         
+                        // SURGICAL REPAIR: We subtract only the gap caused by the glitch 
+                        // from the original recorded tracking distance.
+                        let correctedDist = parseFloat(r.distance) - massiveGlitchDist;
+                        if (correctedDist < 0) correctedDist = 0;
+                        if (isNaN(correctedDist)) correctedDist = parseFloat(r.distance) || 0;
+                        
                         r.points = cleanPts.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
-                        r.distance = newDist.toFixed(2);
-                        r.ascent = newAsc;
-                        r.descent = newDesc;
-                        r.topSpeed = topS.toFixed(1);
-                        r.flatTopSpeed = topS.toFixed(1);
-                        r.ascentTopSpeed = "0.0";
-                        r.descentTopSpeed = "0.0";
+                        r.distance = correctedDist.toFixed(2);
                         
                         if (parseFloat(r.timeSec) > 0) {
-                            r.avgSpeed = (newDist / (parseFloat(r.timeSec) / 3600)).toFixed(1);
+                            r.avgSpeed = (correctedDist / (parseFloat(r.timeSec) / 3600)).toFixed(1);
                         }
                         
-                        let newSplits = calculateQuartersFromData(cleanPts, newDist, parseFloat(r.timeSec)||0);
+                        r.topSpeed = topS.toFixed(1);
+                        r.flatTopSpeed = topS.toFixed(1);
+                        
+                        let newSplits = calculateQuartersFromData(cleanPts, correctedDist, parseFloat(r.timeSec)||0);
                         r.splits = JSON.stringify(newSplits);
                         
                         localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-                        showAlert("GPS Glitches repaired! Original valid distance perfectly restored.");
+                        showAlert("GPS Glitches repaired! Original valid distance properly restored.");
                         openRouteDetails(r);
                         loadRoutes();
                     } else {
-                        showAlert("Not enough map data left to perform an auto-fix.");
+                        showAlert("Not enough valid map data left to perform an auto-fix.");
                     }
                 }
             });
@@ -2314,7 +2306,6 @@
             navigator.geolocation.getCurrentPosition(p => { lastPosition = p; map.setView([p.coords.latitude, p.coords.longitude], 14); checkNearbyRoutes(p.coords.latitude, p.coords.longitude); });
             updateMainButtons();
             
-            // Pre-load voices for seamless playback
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.getVoices();
                 if (window.speechSynthesis.onvoiceschanged !== undefined) {
