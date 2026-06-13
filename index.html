@@ -378,7 +378,13 @@
             <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
             <p class="text-white opacity-80 text-xs mb-4 uppercase tracking-widest font-digital">Dist: <span id="saveDistancePreview" class="text-white font-bold text-lg"></span> mi</p>
             <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white mb-4 outline-none font-digital text-lg tracking-widest">
-            <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-6 font-digital text-sm tracking-widest"></textarea>
+            <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 font-digital text-sm tracking-widest"></textarea>
+            
+            <div class="flex items-center justify-center mb-6 space-x-2">
+                <input type="checkbox" id="saveMapDataCheck" class="w-4 h-4 accent-neon-main bg-black border-zinc-800 rounded cursor-pointer">
+                <label for="saveMapDataCheck" class="text-[0.65rem] text-zinc-400 uppercase tracking-widest cursor-pointer font-digital pt-1">Save GPS Map Data</label>
+            </div>
+
             <div class="flex space-x-3">
                 <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg border border-zinc-800 text-white opacity-80 uppercase font-digital tracking-widest">Cancel</button>
                 <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-white text-black font-bold uppercase font-digital tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save</button>
@@ -943,7 +949,6 @@
                         let dt = (now - lastGpsTimestamp) / 1000;
                         let impSpd = dt > 1 ? (d / (dt / 3600)) : (d / (1 / 3600));
                         
-                        // PERFECTED GPS GLITCH SHIELD
                         if (impSpd > 150 || d > 2) {
                             return; 
                         }
@@ -956,7 +961,6 @@
                         currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
                         currentRoutePolyline.setLatLngs(currentRouteCoords);
 
-                        // 30 Min Sliding Distance Window
                         dist30mBuffer.push({ t: rideSeconds, d: totalDistanceMiles });
                         while (dist30mBuffer.length > 0 && rideSeconds - dist30mBuffer[0].t > 1800) {
                             dist30mBuffer.shift();
@@ -1083,7 +1087,6 @@
                     uiTimer = setInterval(() => { 
                         if(isTracking && watchId !== null){ 
                             
-                            // Estimate Power (Watts) & Energy
                             if (!isAutoPaused && currentSpeed > 0) {
                                 let grade = 0;
                                 if (currentRouteCoords.length >= 2) {
@@ -1095,8 +1098,8 @@
                                     }
                                 }
 
-                                let v = currentSpeed * 0.44704; // m/s
-                                let m = 85; // kg
+                                let v = currentSpeed * 0.44704; 
+                                let m = 85; 
                                 let p_roll = m * 9.81 * 0.005 * v;
                                 let p_grav = m * 9.81 * grade * v;
                                 let p_aero = 0.5 * 1.225 * 0.32 * Math.pow(v, 3);
@@ -1498,15 +1501,21 @@
                     avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
                 }
                 
+                const shouldSaveMap = get('saveMapDataCheck') ? get('saveMapDataCheck').checked : true;
+                localStorage.setItem('bikeTracker_saveMapPref', shouldSaveMap);
+                
                 let compressedCoords = currentRouteCoords;
-                if (compressedCoords.length > 400) {
-                    const step = Math.ceil(compressedCoords.length / 400);
-                    compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
+                let encodedPoints = "";
+                
+                if (shouldSaveMap) {
+                    if (compressedCoords.length > 400) {
+                        const step = Math.ceil(compressedCoords.length / 400);
+                        compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
+                    }
+                    encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
                 }
                 
                 let compressedSplits = calculateQuartersFromData(currentRouteCoords, totalDistanceMiles, rideSeconds);
-                
-                const encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
 
                 rts.push({ 
                     id: Date.now().toString(), 
@@ -1531,7 +1540,8 @@
                     maxDist30m: maxDist30m.toFixed(2),
                     splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
-                    timestamp: Date.now() 
+                    timestamp: Date.now(),
+                    notes: get('routeNotesInput').value || ""
                 });
                 
                 let size = JSON.stringify(rts).length;
@@ -1685,7 +1695,7 @@
             get('btnLoadMap').onclick = () => {
                 const pts = decodePoints(r.points); 
                 if (!pts || pts.length === 0) {
-                    showAlert("Map route data for this ride is unavailable or has been archived.");
+                    showAlert("Map route data for this ride is unavailable. You must enable 'Save GPS Map Data' when saving a ride to view or challenge it later.");
                     return;
                 }
                 
@@ -2086,6 +2096,10 @@
                 nameInput.value = "";
                 nameInput.placeholder = "Loading location...";
                 
+                const pref = localStorage.getItem('bikeTracker_saveMapPref');
+                const checkEl = get('saveMapDataCheck');
+                if (checkEl) checkEl.checked = (pref !== 'false');
+                
                 let isRecord = false;
                 let curAvgSpd = rideSeconds > 0 ? (totalDistanceMiles/(rideSeconds/3600)) : 0;
                 let curTopSpd = topSpeedMph;
@@ -2201,7 +2215,6 @@
                     let r = rts[routeIndex];
                     let pts = decodePoints(r.points);
                     
-                    // Filter completely broken coords (NaNs and exact 0,0s)
                     let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
 
                     if (validPts.length > 2) {
@@ -2218,7 +2231,6 @@
                             } else {
                                 let d = calculateDistance(lastValid[0], lastValid[1], curr[0], curr[1]);
                                 
-                                // Identify an impossible 2+ mile jump in a single tick as a glitch
                                 if (d > 2.0) { 
                                     massiveGlitchDist += d;
                                     continue; 
@@ -2232,8 +2244,6 @@
                             }
                         }
                         
-                        // SURGICAL REPAIR: We subtract only the gap caused by the glitch 
-                        // from the original recorded tracking distance.
                         let correctedDist = parseFloat(r.distance) - massiveGlitchDist;
                         if (correctedDist < 0) correctedDist = 0;
                         if (isNaN(correctedDist)) correctedDist = parseFloat(r.distance) || 0;
