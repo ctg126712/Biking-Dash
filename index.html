@@ -380,6 +380,14 @@
             <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white mb-4 outline-none font-digital text-lg tracking-widest">
             <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 font-digital text-sm tracking-widest"></textarea>
             
+            <div id="challengePrompt" class="hidden mb-4 p-4 bg-[#1a1a00] border border-neon-main rounded-xl shadow-neon-sm">
+                <p class="text-neon-main font-bold uppercase tracking-widest text-[0.75rem] mb-3 animate-pulse text-center">🏆 New Personal Record!</p>
+                <div class="flex items-center justify-center space-x-2">
+                    <input type="checkbox" id="saveAsChallengeCheck" class="w-4 h-4 accent-neon-main bg-black border-zinc-800 rounded cursor-pointer">
+                    <label for="saveAsChallengeCheck" class="text-[0.65rem] text-white uppercase tracking-widest cursor-pointer font-digital pt-1">Save Map as Challenge</label>
+                </div>
+            </div>
+
             <div class="flex items-center justify-center mb-6 space-x-2">
                 <input type="checkbox" id="saveMapDataCheck" class="w-4 h-4 accent-neon-main bg-black border-zinc-800 rounded cursor-pointer">
                 <label for="saveMapDataCheck" class="text-[0.65rem] text-zinc-400 uppercase tracking-widest cursor-pointer font-digital pt-1">Save GPS Map Data</label>
@@ -695,6 +703,16 @@
             if (intensity > 0.87 && intensity <= 0.94) return "Zone 4 (Threshold)";
             if (intensity > 0.94) return "Zone 5 (VO2 Max)";
             return "";
+        }
+
+        function getTrainingZoneNum(avgSpd, maxAvgSpd) {
+            if (!maxAvgSpd || maxAvgSpd <= 0 || avgSpd <= 0) return 1;
+            let intensity = avgSpd / maxAvgSpd;
+            if (intensity < 0.56) return 1;
+            if (intensity >= 0.56 && intensity <= 0.75) return 2;
+            if (intensity > 0.75 && intensity <= 0.87) return 3;
+            if (intensity > 0.87 && intensity <= 0.94) return 4;
+            return 5;
         }
 
         function speakText(text) {
@@ -1501,8 +1519,19 @@
                     avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
                 }
                 
-                const shouldSaveMap = get('saveMapDataCheck') ? get('saveMapDataCheck').checked : true;
-                localStorage.setItem('bikeTracker_saveMapPref', shouldSaveMap);
+                const curAvgNum = parseFloat(avgSpd) || 0;
+                let allTimeMaxAvg = curAvgNum;
+                if (rts.length > 0) {
+                    let prevMaxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
+                    if (prevMaxAvg > allTimeMaxAvg) allTimeMaxAvg = prevMaxAvg;
+                }
+
+                const isChallenge = get('saveAsChallengeCheck') && get('saveAsChallengeCheck').checked && !get('challengePrompt').classList.contains('hidden');
+                const shouldSaveMap = isChallenge || (get('saveMapDataCheck') ? get('saveMapDataCheck').checked : true);
+                
+                if (!isChallenge) {
+                    localStorage.setItem('bikeTracker_saveMapPref', shouldSaveMap);
+                }
                 
                 let compressedCoords = currentRouteCoords;
                 let encodedPoints = "";
@@ -1541,7 +1570,9 @@
                     splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
                     timestamp: Date.now(),
-                    notes: get('routeNotesInput').value || ""
+                    notes: get('routeNotesInput').value || "",
+                    isChallenge: isChallenge,
+                    zoneNum: getTrainingZoneNum(curAvgNum, allTimeMaxAvg)
                 });
                 
                 let size = JSON.stringify(rts).length;
@@ -1601,14 +1632,21 @@
             const sRank = [...rts].sort((a,b) => b._s - a._s);
             const tsRank = [...rts].sort((a,b) => b._ts - a._ts);
 
+            let allTimeMaxAvg = Math.max(...rts.map(r => r._s));
+            if (allTimeMaxAvg <= 0) allTimeMaxAvg = 1;
+
             rts.forEach(r => {
                 r.mDist = getMedal(r, dRank, '_d');
                 r.mTime = getMedal(r, tRank, '_t');
                 r.mSpeed = getMedal(r, sRank, '_s');
                 r.mTopSpeed = getMedal(r, tsRank, '_ts');
+                if (!r.zoneNum) r.zoneNum = getTrainingZoneNum(r._s, allTimeMaxAvg);
             });
 
             rts.sort((a,b) => {
+                if (a.isChallenge && !b.isChallenge) return -1;
+                if (!a.isChallenge && b.isChallenge) return 1;
+
                 if(sort === 'proximity') return a._distAway - b._distAway;
                 if(sort === 'performance') return (b._d - a._d) || (b._t - a._t) || (b._s - a._s);
                 return b.timestamp - a.timestamp;
@@ -1627,17 +1665,23 @@
                 if (r.mSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">⚡ AVG SPD</span>`;
                 if (r.mTopSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">🚀 TOP SPD</span>`;
 
-                const distTxt = r._distAway !== Infinity ? `<div class="text-[0.65rem] text-white opacity-60 mt-1 tracking-widest">${r._distAway.toFixed(1)} MI AWAY</div>` : '';
-                
+                let chBadge = r.isChallenge ? `<span class="bg-neon-main text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_var(--neon-main)]">🏆 CHALLENGE</span>` : '';
+                let proxIndicator = (r.isChallenge && r._distAway < 0.05) 
+                    ? `<div class="text-[0.65rem] text-neon-main font-bold mt-1 tracking-widest animate-pulse">🏁 START NEARBY (${r._distAway.toFixed(1)} MI)</div>` 
+                    : (r._distAway !== Infinity ? `<div class="text-[0.65rem] text-white opacity-60 mt-1 tracking-widest">${r._distAway.toFixed(1)} MI AWAY</div>` : '');
+
                 btn.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <div class="truncate pr-2">
-                            <b class="text-lg uppercase text-white font-bold tracking-widest">${r.name}</b>
-                            <div class="flex flex-wrap mt-1.5">${badge}</div>
+                        <div class="flex items-start pr-2 overflow-hidden flex-1">
+                            <span class="w-6 h-6 rounded-full border border-white text-white flex items-center justify-center text-[0.75rem] shrink-0 font-bold mr-2 mt-0.5 shadow-[0_0_5px_rgba(255,255,255,0.4)]" style="${r.zoneNum >= 4 ? 'border-color:var(--neon-main); color:var(--neon-main); box-shadow: 0 0 5px var(--neon-main);' : ''}">${r.zoneNum}</span>
+                            <div class="truncate">
+                                <b class="text-lg uppercase text-white font-bold tracking-widest truncate block">${r.name}</b>
+                                <div class="flex flex-wrap mt-1.5">${chBadge}${badge}</div>
+                            </div>
                         </div>
-                        <small class="text-white opacity-70 whitespace-nowrap">${new Date(r.timestamp).toLocaleDateString()}</small>
+                        <small class="text-white opacity-70 whitespace-nowrap ml-2">${new Date(r.timestamp).toLocaleDateString()}</small>
                     </div>
-                    ${distTxt}
+                    ${proxIndicator}
                     <div class="grid grid-cols-4 gap-1 text-center mt-3 pt-3 border-t border-zinc-800">
                         <div class="flex flex-col">
                             <span class="text-[0.55rem] text-white opacity-70 tracking-widest">DIST</span>
@@ -1692,11 +1736,23 @@
             
             drawElevationProfile(decodePoints(r.points), 'detailElevationCanvas');
             
-            get('btnLoadMap').onclick = () => {
+            const btnLoadMap = get('btnLoadMap');
+            if (r.isChallenge && r.points) {
+                btnLoadMap.innerText = "Load Challenge";
+                btnLoadMap.className = "flex-1 py-3.5 bg-neon-main text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-neon-md border border-neon-main";
+            } else if (r.points && r.points.length > 0) {
+                btnLoadMap.innerText = "Load Map Route";
+                btnLoadMap.className = "flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+            } else {
+                btnLoadMap.innerText = "Free Ride";
+                btnLoadMap.className = "flex-1 py-3.5 bg-zinc-800 text-white font-bold font-digital rounded-xl tracking-widest uppercase border border-zinc-700 shadow-none";
+            }
+            
+            btnLoadMap.onclick = () => {
                 const pts = decodePoints(r.points); 
                 if (!pts || pts.length === 0) {
-                    showAlert("Map route data for this ride is unavailable. You must enable 'Save GPS Map Data' when saving a ride to view or challenge it later.");
-                    return;
+                    get('routeDetailModal').classList.add('hidden'); 
+                    return; 
                 }
                 
                 let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
@@ -2105,13 +2161,14 @@
                 let curTopSpd = topSpeedMph;
                 
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                let allTimeMaxAvg = 0;
+                let allTimeMaxAvg = curAvgSpd;
                 
                 if (rts.length > 0) {
                     let maxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
                     let maxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
                     let maxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
-                    allTimeMaxAvg = maxAvg;
+                    if(maxAvg > allTimeMaxAvg) allTimeMaxAvg = maxAvg;
+                    
                     let maxTop = Math.max(...rts.map(r => parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0));
                     
                     if (totalDistanceMiles > maxDist || rideSeconds > maxTime || curAvgSpd > maxAvg || curTopSpd > maxTop) {
@@ -2119,7 +2176,14 @@
                     }
                 } else if (totalDistanceMiles > 0.1) {
                     isRecord = true;
-                    allTimeMaxAvg = curAvgSpd;
+                }
+
+                if (isRecord) {
+                    get('challengePrompt').classList.remove('hidden');
+                    get('saveAsChallengeCheck').checked = true;
+                } else {
+                    get('challengePrompt').classList.add('hidden');
+                    if (get('saveAsChallengeCheck')) get('saveAsChallengeCheck').checked = false;
                 }
 
                 let prefix = isRecord ? "Record " : "";
