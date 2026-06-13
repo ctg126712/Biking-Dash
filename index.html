@@ -651,47 +651,41 @@
         let currentSpeed = 0, stoppedSeconds = 0, currentConsistentSec = 0, currentConsistentDist = 0, consistentSpeedRef = 0, lastGpsTimestamp = 0, consistentStartAlt = 0;
         let splits = [], lastSplitDist = 0, lastSplitTime = 0, totalAscentMeters = 0, totalDescentMeters = 0;
         let p1m = 0, p5m = 0, p20m = 0, calories = 0, longestContPower = 0, currentContPower = 0;
-        let maxDist30m = 0, dist30mBuffer = []; 
+        let maxDist30m = 0, dist30mBuffer = []; // Farthest 30 min globals
         let isAutoPaused = false, isAutoPauseEnabled = true, isFirstFix = true;
         let goalType = 'distance', raceGoalValue = 0, currentlyViewingRouteId = null;
         let tireSizeMm = 2136, frontTeeth = 42, rearTeeth = 13, gearRatio = 3.23;
         let voiceEnabled = true, lastAnnouncedMile = 0;
+        
         let prevMaxDist = 0, prevMaxTime = 0, prevMaxSpeed = 0;
         let announcedPRDist = false, announcedPRTime = false, announcedPRSpeed = false;
+        
         let wakeLock = null;
         let isTracking = false;
-        
-        let powerSum = 0; 
-        let powerBuffer = [];
-        let globalFTP = 200; 
+        let speedBuffer = [], powerBuffer = [];
+        let globalFTP = 200; // Recalculated dynamically on load
 
-        // --- DOM Cache & Initialization ---
-        const DOM = {};
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
 
-        function initDOMCache() {
-            const ids = [
-                'speed', 'speedGauge', 'cadenceVal', 'compassRose', 'liveTimerText', 
-                'topSpeed', 'flatTopSpeed', 'avgSpeed', 'statusText', 'statusDot',
-                'upcomingHillIndicator', 'upcomingHillText', 'bottomDashboard', 
-                'dashboardContainer', 'mainActionBtn', 'liveSummaryBtn', 'saveRouteBtn',
-                'alertModal', 'alertText'
-            ];
-            ids.forEach(id => DOM[id] = get(id));
-        }
-
         function showAlert(msg) {
-            if (DOM.alertText) DOM.alertText.innerText = msg;
-            if (DOM.alertModal) DOM.alertModal.classList.remove('hidden');
+            const textEl = get('alertText');
+            if (textEl) textEl.innerText = msg;
+            const modalEl = get('alertModal');
+            if (modalEl) modalEl.classList.remove('hidden');
+            
+            // Add handler explicitly in case it was lost
+            click('closeAlertBtn', () => { get('alertModal').classList.add('hidden'); });
         }
 
+        // --- STREAMING_CHUNK:Defining decoding and data formatting tools... ---
         function decodePoints(ptsData) {
             if (!ptsData) return [];
             if (typeof ptsData === 'string') {
                 if (ptsData.includes('|') || (ptsData.includes(',') && !ptsData.includes('['))) {
                     return ptsData.split('|').filter(Boolean).map(s => {
                         const p = s.split(',');
+                        // Returns: [lat, lng, alt, speed]
                         return [parseFloat(p[0]), parseFloat(p[1]), parseFloat(p[2]||0), parseFloat(p[3]||0)];
                     });
                 }
@@ -733,6 +727,7 @@
             return "";
         }
 
+        // --- WAKE LOCK ENGINE ---
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try { wakeLock = await navigator.wakeLock.request('screen'); } 
@@ -747,10 +742,10 @@
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (isTracking && wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
+            if (isTracking && wakeLock !== null && document.visibilityState === 'visible') { requestWakeLock(); }
         });
 
-        // --- Layout Modes & Views ---
+        // --- STREAMING_CHUNK:Defining UI and Layout modes... ---
         function cycleTheme() {
             activeThemeIndex = (activeThemeIndex + 1) % themes.length;
             const t = themes[activeThemeIndex];
@@ -777,12 +772,13 @@
             else { lbl.innerText = "Max"; body.classList.add('br-max'); r.style.setProperty('--dimmer-opacity', '0'); }
             localStorage.setItem('bikeTracker_brightness', currentBrightnessLevel);
         }
-        
+
         function applyLayoutMode() {
             isGridMode = (layoutMode === 2);
-            DOM.bottomDashboard.classList.toggle('dash-expanded', layoutMode === 0);
-            DOM.bottomDashboard.classList.toggle('dash-full', layoutMode !== 0);
-            DOM.dashboardContainer.className = isGridMode ? "grid-mode relative flex-1 max-w-sm mx-auto mb-4 w-full" : "carousel-mode relative flex-1 max-w-sm mx-auto mb-6 w-full shadow-lg";
+            const b = get('bottomDashboard'), c = get('dashboardContainer');
+            b.classList.toggle('dash-expanded', layoutMode === 0);
+            b.classList.toggle('dash-full', layoutMode !== 0);
+            c.className = isGridMode ? "grid-mode relative flex-1 max-w-sm mx-auto mb-4 w-full" : "carousel-mode relative flex-1 max-w-sm mx-auto mb-6 w-full shadow-lg";
             showView(currentViewIndex); 
             setTimeout(() => { if(map) map.invalidateSize(); }, 400);
         }
@@ -806,17 +802,18 @@
                 dot.classList.toggle('shadow-neon-sm', i === index);
                 dot.classList.toggle('bg-zinc-800', i !== index);
             });
+            const b = get('bottomDashboard'), dc = get('dashboardContainer');
             if (viewsIds[index] === 'view-map' && !isGridMode) {
-                DOM.bottomDashboard.classList.add('bg-transparent', 'border-transparent', 'shadow-none');
-                DOM.dashboardContainer.classList.add('map-view-active');
-                DOM.bottomDashboard.style.pointerEvents = 'none';
+                b.classList.add('bg-transparent', 'border-transparent', 'shadow-none');
+                dc.classList.add('map-view-active');
+                b.style.pointerEvents = 'none';
                 document.querySelectorAll('#bottomDashboard button').forEach(bt => bt.style.pointerEvents = 'auto');
-                DOM.dashboardContainer.style.pointerEvents = 'none';
+                dc.style.pointerEvents = 'none';
             } else {
-                DOM.bottomDashboard.classList.remove('bg-transparent', 'border-transparent', 'shadow-none');
-                DOM.dashboardContainer.classList.remove('map-view-active');
-                DOM.bottomDashboard.style.pointerEvents = 'auto';
-                DOM.dashboardContainer.style.pointerEvents = 'auto';
+                b.classList.remove('bg-transparent', 'border-transparent', 'shadow-none');
+                dc.classList.remove('map-view-active');
+                b.style.pointerEvents = 'auto';
+                dc.style.pointerEvents = 'auto';
             }
         }
 
@@ -824,7 +821,10 @@
         function prevView() { const v = ['view-speed', 'view-distance', 'view-compass', 'view-cadence', 'view-map']; currentViewIndex = (currentViewIndex - 1 + v.length) % v.length; showView(currentViewIndex); }
 
         function updateMainButtons() {
-            const mBtn = DOM.mainActionBtn, sBtn = DOM.liveSummaryBtn, svBtn = DOM.saveRouteBtn;
+            const mBtn = get('mainActionBtn');
+            const sBtn = get('liveSummaryBtn');
+            const svBtn = get('saveRouteBtn');
+
             if (rideSeconds === 0 && !isTracking) {
                 if(mBtn) { mBtn.innerText = "START RIDE"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]"; }
                 if(sBtn) { sBtn.disabled = false; sBtn.innerText = "TOTALS"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]"; }
@@ -835,8 +835,8 @@
                 if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600"; }
             } else {
                 if(mBtn) { mBtn.innerText = "RESUME"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]"; }
-                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; }
-                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; }
+                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]"; }
+                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600"; }
             }
         }
 
@@ -851,6 +851,7 @@
             activeBtn.classList.add('bg-white', 'text-black'); 
         }
 
+        // --- STREAMING_CHUNK:Defining core geolocation and GPS logic... ---
         function formatTime(s) { 
             const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); 
             return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`; 
@@ -860,10 +861,6 @@
             const R = 3958.8, dLat = (l2-l1)*Math.PI/180, dLon = (o2-o1)*Math.PI/180, a = Math.sin(dLat/2)**2 + Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dLon/2)**2; 
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
         }
-
-        // --- Core Update Loop ---
-        let rawSpdBuffer = [];
-        let rawSpdSum = 0;
 
         function updatePosition(pos) {
             if (pos.coords.accuracy > 150) return; 
@@ -882,21 +879,24 @@
             }
             if (rawSpd > 150) rawSpd = 0; 
             
-            // Optimized Rolling Average Speed
-            rawSpdBuffer.push(rawSpd);
-            rawSpdSum += rawSpd;
-            if (rawSpdBuffer.length > 3) rawSpdSum -= rawSpdBuffer.shift();
-            let spd = rawSpdSum / rawSpdBuffer.length;
+            speedBuffer.push(rawSpd);
+            if (speedBuffer.length > 3) speedBuffer.shift();
+            let spd = speedBuffer.reduce((a, b) => a + b, 0) / speedBuffer.length;
             if (spd < 0.5) spd = 0;
             
             currentSpeed = spd;
             
-            if (DOM.speed) DOM.speed.innerText = Math.round(spd).toString().padStart(2, '0');
-            if (DOM.speedGauge) DOM.speedGauge.style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
+            get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
+            get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
 
-            let cadence = (spd > 1.5) ? ((spd * 26822.4) / tireSizeMm) / gearRatio : 0;
-            if (DOM.cadenceVal) DOM.cadenceVal.innerText = Math.round(cadence).toString().padStart(2, '0');
-            if (pos.coords.heading !== null && DOM.compassRose) DOM.compassRose.style.transform = `rotate(${-pos.coords.heading}deg)`;
+            let cadence = 0;
+            if (spd > 1.5) {
+                let wheelRpm = (spd * 26822.4) / tireSizeMm;
+                cadence = wheelRpm / gearRatio;
+            }
+            get('cadenceVal').innerText = Math.round(cadence).toString().padStart(2, '0');
+            
+            if(pos.coords.heading !== null) get('compassRose').style.transform = `rotate(${-pos.coords.heading}deg)`;
             
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
@@ -906,46 +906,85 @@
                 if (lastPosition) {
                     const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                     
+                    // Critical GPS filter for Null Island jumps (Distance < 0.1mi per tick ~ 360mph max impossible threshold)
                     if (d > 0.0005 && d < 0.1) {
                         totalDistanceMiles += d; 
                         updateOdometer(totalDistanceMiles);
                         const da = alt - (lastPosition.coords.altitude || 0);
                         if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
                         
+                        // Push full 6-element array for live ride quarters calc
                         currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
                         currentRoutePolyline.setLatLngs(currentRouteCoords);
 
+                        // 30 Min Sliding Distance Window
                         dist30mBuffer.push({ t: rideSeconds, d: totalDistanceMiles });
-                        while (dist30mBuffer.length > 0 && rideSeconds - dist30mBuffer[0].t > 1800) dist30mBuffer.shift();
+                        while (dist30mBuffer.length > 0 && rideSeconds - dist30mBuffer[0].t > 1800) {
+                            dist30mBuffer.shift();
+                        }
                         if (dist30mBuffer.length > 0) {
                             let d30 = totalDistanceMiles - dist30mBuffer[0].d;
                             if (d30 > maxDist30m) maxDist30m = d30;
                         }
 
-                        if (spd > topSpeedMph) topSpeedMph = spd; 
+                        if (spd > topSpeedMph) { topSpeedMph = spd; }
                         
+                        // Calculate 3 category top speeds
                         if (currentRouteCoords.length >= 10) {
                             let recentAlts = currentRouteCoords.slice(-5).map(p => p[2] || 0);
                             let avgAlt = recentAlts.reduce((a,b)=>a+b,0) / recentAlts.length;
+                            
                             let pastAlts = currentRouteCoords.slice(-10, -5).map(p => p[2] || 0);
                             let pastAvgAlt = pastAlts.reduce((a,b)=>a+b,0) / pastAlts.length;
+                            
                             let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
                             let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
                             
                             if (dPast > 10) {
                                 let grade = ((avgAlt - pastAvgAlt) / dPast) * 100;
-                                if (grade >= 2.0 && spd > topSpeedAscent) topSpeedAscent = spd;
-                                else if (grade <= -2.0 && spd > topSpeedDescent) topSpeedDescent = spd;
-                                else if (spd > topSpeedFlat) topSpeedFlat = spd;
+                                if (grade >= 2.0) { 
+                                    if (spd > topSpeedAscent) topSpeedAscent = spd;
+                                } else if (grade <= -2.0) {
+                                    if (spd > topSpeedDescent) topSpeedDescent = spd;
+                                } else {
+                                    if (spd > topSpeedFlat) topSpeedFlat = spd;
+                                }
                             }
-                        } else if (spd > topSpeedFlat) topSpeedFlat = spd; 
+                        } else {
+                            if (spd > topSpeedFlat) topSpeedFlat = spd; 
+                        }
                         
+                        // PR Check: Speed
+                        if (prevMaxSpeed > 0 && topSpeedMph > prevMaxSpeed && !announcedPRSpeed) {
+                            announcedPRSpeed = true;
+                            if (voiceEnabled && 'speechSynthesis' in window) {
+                                let msg = new SpeechSynthesisUtterance("New personal record for top speed!");
+                                msg.volume = 1.0;
+                                window.speechSynthesis.speak(msg);
+                            }
+                        }
+                        
+                        // PR Check: Distance
+                        if (prevMaxDist > 0 && totalDistanceMiles > prevMaxDist && !announcedPRDist) {
+                            announcedPRDist = true;
+                            if (voiceEnabled && 'speechSynthesis' in window) {
+                                let msg = new SpeechSynthesisUtterance("Congratulations. New personal record for longest distance.");
+                                msg.volume = 1.0;
+                                let voices = window.speechSynthesis.getVoices();
+                                let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK'))) || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
+                                if (britVoice) msg.voice = britVoice;
+                                window.speechSynthesis.speak(msg);
+                            }
+                        }
+
                         if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
                             currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
+                            
                             let elevationDropFt = (consistentStartAlt - alt) * 3.28084;
                             if (elevationDropFt <= 15) {
                                 let currentScore = currentConsistentSec * consistentSpeedRef;
                                 let longestScore = longestConsistentSec * longestConsistentSpeed;
+                                
                                 if(currentScore > longestScore) { 
                                     longestConsistentSec = currentConsistentSec; 
                                     longestConsistentDist = currentConsistentDist; 
@@ -956,6 +995,7 @@
                             }
                         } else { consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; consistentStartAlt = alt; }
 
+                        // 1/2 Mile Live Splits
                         if(totalDistanceMiles - lastSplitDist >= 0.5) {
                             splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
                             lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
@@ -969,34 +1009,43 @@
                                 let currentAvg = (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1);
                                 let msg = new SpeechSynthesisUtterance(`Mile ${currentWholeMile} completed. Average speed, ${currentAvg} miles per hour.`);
                                 msg.volume = 1.0;
+                                
                                 let voices = window.speechSynthesis.getVoices();
                                 let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK'))) || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
                                 if (britVoice) msg.voice = britVoice;
+
                                 window.speechSynthesis.speak(msg);
                             }
                         }
+
+                        lastPosition = pos;
+                        lastGpsTimestamp = now;
                     }
                 } else {
+                    lastPosition = pos;
+                    lastGpsTimestamp = now;
                     consistentStartAlt = alt;
                     currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
                     currentRoutePolyline.setLatLngs(currentRouteCoords);
                 }
-            } 
+            } else if (!isTracking) {
+                lastPosition = pos;
+            }
             
-            lastPosition = pos;
-            lastGpsTimestamp = now;
-            
-            if (DOM.topSpeed) DOM.topSpeed.innerText = topSpeedMph.toFixed(1);
-            if (DOM.flatTopSpeed) DOM.flatTopSpeed.innerText = topSpeedFlat.toFixed(1);
-            if (DOM.avgSpeed) DOM.avgSpeed.innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+            get('topSpeed').innerText = topSpeedMph.toFixed(1);
+            get('flatTopSpeed').innerText = topSpeedFlat.toFixed(1);
+            get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
             
             checkNearbyRoutes(lat, lng);
             updateUpcomingHill(lat, lng);
         }
 
+        // --- STREAMING_CHUNK:Executing ride tracking loop and power calculation... ---
         function toggleTracking() {
             if (!isTracking) {
                 if (!navigator.geolocation) return showAlert("GPS not supported.");
+                
+                // Unlock Web Speech API
                 if (voiceEnabled && 'speechSynthesis' in window) {
                     let unlockMsg = new SpeechSynthesisUtterance('');
                     unlockMsg.volume = 0;
@@ -1004,17 +1053,28 @@
                 }
 
                 requestWakeLock();
-                isAutoPaused = false; stoppedSeconds = 0; isTracking = true;
-                lastPosition = null; lastGpsTimestamp = 0;
-                rawSpdBuffer = []; rawSpdSum = 0;
-
-                updateMainButtons(); updateStatus("Recording...", "bg-neon-main");
+                isAutoPaused = false;
+                stoppedSeconds = 0;
+                isTracking = true;
                 
-                watchId = navigator.geolocation.watchPosition(updatePosition, (err) => console.warn(err), { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 });
+                lastPosition = null; 
+                lastGpsTimestamp = 0;
+                speedBuffer = [];
+
+                updateMainButtons();
+                updateStatus("Recording...", "bg-neon-main");
+                
+                watchId = navigator.geolocation.watchPosition(updatePosition, (err) => console.warn(err), {
+                    enableHighAccuracy: true,
+                    maximumAge: 2000,
+                    timeout: 10000
+                });
                 
                 if(!uiTimer) {
                     uiTimer = setInterval(() => { 
-                        if(isTracking && watchId !== null) { 
+                        if(isTracking && watchId !== null){ 
+                            
+                            // Estimate Power (Watts) & Energy
                             if (!isAutoPaused && currentSpeed > 0) {
                                 let grade = 0;
                                 if (currentRouteCoords.length >= 2) {
@@ -1026,66 +1086,99 @@
                                     }
                                 }
 
-                                let v = currentSpeed * 0.44704; 
-                                let m = 85; 
-                                let watts = Math.max(0, ((m * 9.81 * 0.005 * v) + (m * 9.81 * grade * v) + (0.5 * 1.225 * 0.32 * Math.pow(v, 3))) / 0.96);
+                                let v = currentSpeed * 0.44704; // m/s
+                                let m = 85; // kg (assumed rider+bike mass)
+                                let p_roll = m * 9.81 * 0.005 * v;
+                                let p_grav = m * 9.81 * grade * v;
+                                let p_aero = 0.5 * 1.225 * 0.32 * Math.pow(v, 3);
+                                let watts = Math.max(0, (p_roll + p_grav + p_aero) / 0.96);
 
-                                // Optimized Power Buffer (Running Sum logic)
                                 powerBuffer.push(watts);
-                                powerSum += watts;
-                                if (powerBuffer.length > 1200) { powerSum -= powerBuffer.shift(); }
+                                if (powerBuffer.length > 1200) powerBuffer.shift();
 
-                                const getAvgFast = (len) => {
+                                const getAvg = (len) => {
                                     if (powerBuffer.length < len) return 0;
-                                    if (len === powerBuffer.length) return powerSum / len;
-                                    let sum = 0; for(let i=powerBuffer.length-len; i<powerBuffer.length; i++) sum += powerBuffer[i];
+                                    let sum = 0;
+                                    for(let i=powerBuffer.length-len; i<powerBuffer.length; i++) sum += powerBuffer[i];
                                     return sum/len;
                                 };
 
-                                let cur1m = getAvgFast(60), cur5m = getAvgFast(300), cur20m = getAvgFast(1200);
-                                if (cur1m > p1m) p1m = cur1m; if (cur5m > p5m) p5m = cur5m; if (cur20m > p20m) p20m = cur20m;
+                                let cur1m = getAvg(60);
+                                let cur5m = getAvg(300);
+                                let cur20m = getAvg(1200);
+
+                                if (cur1m > p1m) p1m = cur1m;
+                                if (cur5m > p5m) p5m = cur5m;
+                                if (cur20m > p20m) p20m = cur20m;
+
+                                // 1 kJ of work ~ 1 kcal of human burn
                                 calories += watts / 1000;
 
                                 if (globalFTP > 0 && watts >= globalFTP) {
                                     currentContPower++;
                                     if (currentContPower > longestContPower) longestContPower = currentContPower;
-                                } else currentContPower = 0;
+                                } else {
+                                    currentContPower = 0;
+                                }
                             }
                             
-                            // Auto Pause Routine
+                            // Auto Pause Logic
                             if (isAutoPauseEnabled) {
                                 if (currentSpeed < 1.0) {
                                     if (!isAutoPaused) {
                                         stoppedSeconds++;
                                         if (stoppedSeconds >= 30) {
-                                            isAutoPaused = true; rideSeconds = Math.max(0, rideSeconds - 30);
+                                            isAutoPaused = true;
+                                            rideSeconds = Math.max(0, rideSeconds - 30);
                                             updateStatus("Paused", "bg-orange-500");
-                                            if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds);
+                                            get('liveTimerText').innerText = formatTime(rideSeconds);
                                         }
                                     }
                                 } else if (currentSpeed > 1.5) {
                                     stoppedSeconds = 0;
-                                    if (isAutoPaused) { isAutoPaused = false; updateStatus("Recording...", "bg-neon-main"); }
+                                    if (isAutoPaused) {
+                                        isAutoPaused = false;
+                                        updateStatus("Recording...", "bg-neon-main");
+                                    }
+                                }
+                            } else {
+                                stoppedSeconds = 0;
+                                if (isAutoPaused) { 
+                                    isAutoPaused = false;
+                                    updateStatus("Recording...", "bg-neon-main");
                                 }
                             }
 
                             if (!isAutoPaused) {
                                 rideSeconds++; 
-                                if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds); 
+                                get('liveTimerText').innerText = formatTime(rideSeconds); 
+                                
+                                // PR Check: Time
+                                if (prevMaxTime > 0 && rideSeconds > prevMaxTime && !announcedPRTime) {
+                                    announcedPRTime = true;
+                                    if (voiceEnabled && 'speechSynthesis' in window) {
+                                        let msg = new SpeechSynthesisUtterance("New personal record for longest ride time.");
+                                        msg.volume = 1.0;
+                                        window.speechSynthesis.speak(msg);
+                                    }
+                                }
                             }
                             
-                            // Throttled storage save
-                            if (rideSeconds % 5 === 0) saveRideState(true); 
+                            saveRideState(true); 
                         }
                     }, 1000);
                 }
             } else {
                 if(watchId !== null) navigator.geolocation.clearWatch(watchId); 
-                watchId = null; isTracking = false;
-                updateMainButtons(); saveRideState(false); updateStatus("Paused", "bg-orange-500");
+                watchId = null;
+                isTracking = false;
+                updateMainButtons();
+                saveRideState(false);
+                updateStatus("Paused", "bg-orange-500");
             }
         }
 
+        // --- STREAMING_CHUNK:Saving and recovering dynamic active state... ---
         function saveRideState(active) {
             try { 
                 let compressedCoords = currentRouteCoords;
@@ -1134,11 +1227,11 @@
                         lastAnnouncedMile = Math.floor(totalDistanceMiles);
 
                         updateOdometer(totalDistanceMiles); 
-                        if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds);
-                        if (DOM.speed) DOM.speed.innerText = "00";
-                        if (DOM.topSpeed) DOM.topSpeed.innerText = topSpeedMph.toFixed(1);
-                        if (DOM.flatTopSpeed) DOM.flatTopSpeed.innerText = topSpeedFlat.toFixed(1);
-                        if (DOM.avgSpeed) DOM.avgSpeed.innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+                        get('liveTimerText').innerText = formatTime(rideSeconds);
+                        get('speed').innerText = "00";
+                        get('topSpeed').innerText = topSpeedMph.toFixed(1);
+                        get('flatTopSpeed').innerText = topSpeedFlat.toFixed(1);
+                        get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
 
                         if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
                         
@@ -1151,8 +1244,8 @@
         }
 
         function resetRide() {
-            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; topSpeedFlat = 0; topSpeedAscent = 0; topSpeedDescent = 0; longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); if (DOM.liveTimerText) DOM.liveTimerText.innerText = "00:00"; if (DOM.speed) DOM.speed.innerText="00"; if (DOM.topSpeed) DOM.topSpeed.innerText="0.0"; if (DOM.flatTopSpeed) DOM.flatTopSpeed.innerText="0.0"; if (DOM.avgSpeed) DOM.avgSpeed.innerText="0.0"; updateStatus("Ready to ride", "text-white");
-            p1m = 0; p5m = 0; p20m = 0; calories = 0; longestContPower = 0; currentContPower = 0; powerBuffer = []; powerSum = 0; maxDist30m = 0; dist30mBuffer = [];
+            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; topSpeedFlat = 0; topSpeedAscent = 0; topSpeedDescent = 0; longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); get('liveTimerText').innerText = "00:00"; get('speed').innerText="00"; get('topSpeed').innerText="0.0"; get('flatTopSpeed').innerText="0.0"; get('avgSpeed').innerText="0.0"; updateStatus("Ready to ride", "text-white");
+            p1m = 0; p5m = 0; p20m = 0; calories = 0; longestContPower = 0; currentContPower = 0; powerBuffer = []; maxDist30m = 0; dist30mBuffer = [];
             isTracking = false;
             currentSpeed = 0;
             stoppedSeconds = 0;
@@ -1160,11 +1253,11 @@
             lastPosition = null;
             consistentStartAlt = 0;
             lastAnnouncedMile = 0;
-            rawSpdBuffer = [];
-            rawSpdSum = 0;
+            speedBuffer = [];
             updateMainButtons();
         }
 
+        // --- STREAMING_CHUNK:Evaluating totals, history, and rendering UI components... ---
         function toggleAutoPause() { 
             isAutoPauseEnabled = !isAutoPauseEnabled; 
             stoppedSeconds = 0;
@@ -1385,7 +1478,8 @@
 
             get('totalsModal').classList.remove('hidden');
         }
-
+        
+        // --- STREAMING_CHUNK:Finalizing save routines and map visualization features... ---
         window.loadSpecificRoute = function(id) {
             const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
             const route = rts.find(r => r.id === id);
@@ -1395,7 +1489,7 @@
             }
         };
 
-        async function saveRide() {
+        function saveRide() {
             try {
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
                 
@@ -1442,7 +1536,7 @@
                     timestamp: Date.now() 
                 });
                 
-                // Auto-Pruning Failsafe
+                // Auto-Pruning Failsafe: If near 4.5MB limit, gracefully archive map data of oldest rides first
                 let size = JSON.stringify(rts).length;
                 if (size > 4500000 && rts.length > 1) {
                     rts.sort((a,b) => a.timestamp - b.timestamp);
@@ -1470,6 +1564,8 @@
                 }
             }
         }
+
+        // --- 5. CATEGORIES & MEDALS SYSTEM ---
 
         function getMedal(route, rankArray, prop) {
             if (!route[prop] || route[prop] <= 0) return '';
@@ -1638,6 +1734,8 @@
             };
         }
 
+        // --- UTILS ---
+
         function updateOdometer(m) {
             const s = m.toFixed(2).split('.'), i = s[0], o1=get('odo1'), o2=get('odo2'), o3=get('odo3');
             get('odo4').innerText = s[1][0]; get('odo5').innerText = s[1][1];
@@ -1646,6 +1744,7 @@
             else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
         }
 
+        // --- STREAMING_CHUNK:Finalizing UI drawing tools and events... ---
         function drawElevationProfile(points, canvasId) {
             const canvas = document.getElementById(canvasId); if (!canvas) return;
             const ctx = canvas.getContext('2d'); const rect = canvas.getBoundingClientRect();
@@ -1723,8 +1822,8 @@
         }
 
         function updateUpcomingHill(lat, lng) {
-            const hInd = DOM.upcomingHillIndicator, hText = DOM.upcomingHillText;
-            if (!loadedCompareRoutePoints || loadedCompareRoutePoints.length < 5 || !hInd) return;
+            const hInd = get('upcomingHillIndicator'), hText = get('upcomingHillText');
+            if (!loadedCompareRoutePoints || loadedCompareRoutePoints.length < 5) { hInd.classList.add('hidden'); return; }
             let closestIdx = 0, minDist = Infinity;
             for(let i=0; i<loadedCompareRoutePoints.length; i++) {
                 const d = calculateDistance(lat, lng, loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1]);
@@ -1743,7 +1842,7 @@
             } else hInd.classList.add('hidden');
         }
 
-        function updateStatus(t, c) { if (DOM.statusText) DOM.statusText.innerText = t; if (DOM.statusDot) DOM.statusDot.className = `w-2 h-2 rounded-full mr-3 animate-pulse ${c}`; }
+        function updateStatus(t, c) { get('statusText').innerText = t; get('statusDot').className = `w-2 h-2 rounded-full mr-3 animate-pulse ${c}`; }
 
         function checkNearbyRoutes(lat, lng) {
             try {
@@ -1769,24 +1868,21 @@
         }
 
         // --- 6. INITIALIZATION ---
+
         window.onload = () => {
-            initDOMCache();
-            
-            const dc = DOM.dashboardContainer;
-            if (dc) {
-                let tSX = 0, tSY = 0;
-                dc.addEventListener('touchstart', e => { tSX = e.changedTouches[0].screenX; tSY = e.changedTouches[0].screenY; }, {passive: true});
-                dc.addEventListener('touchend', e => {
-                    const dx = tSX - e.changedTouches[0].screenX, dy = tSY - e.changedTouches[0].screenY;
-                    if(Math.abs(dx) > Math.abs(dy)) { if(!isGridMode && Math.abs(dx) > 40) { if(dx > 40) nextView(); else prevView(); } }
-                    else { if(Math.abs(dy) > 40) { if(dy > 40) { if(layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if(layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
-                }, {passive: true});
-                dc.onclick = e => {
-                    if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-                    const vs = ['view-speed', 'view-distance', 'view-compass', 'view-cadence', 'view-map'];
-                    if(isGridMode) { const cv = e.target.closest('.dash-view'); if(cv) { currentViewIndex = vs.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
-                };
-            }
+            const dc = get('dashboardContainer');
+            let tSX = 0, tSY = 0;
+            dc.addEventListener('touchstart', e => { tSX = e.changedTouches[0].screenX; tSY = e.changedTouches[0].screenY; }, {passive: true});
+            dc.addEventListener('touchend', e => {
+                const dx = tSX - e.changedTouches[0].screenX, dy = tSY - e.changedTouches[0].screenY;
+                if(Math.abs(dx) > Math.abs(dy)) { if(!isGridMode && Math.abs(dx) > 40) { if(dx > 40) nextView(); else prevView(); } }
+                else { if(Math.abs(dy) > 40) { if(dy > 40) { if(layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if(layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
+            }, {passive: true});
+            dc.onclick = e => {
+                if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+                const vs = ['view-speed', 'view-distance', 'view-compass', 'view-cadence', 'view-map'];
+                if(isGridMode) { const cv = e.target.closest('.dash-view'); if(cv) { currentViewIndex = vs.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
+            };
 
             click('themeBtn', cycleTheme);
             click('brightnessBtn', cycleBrightness);
@@ -1818,21 +1914,18 @@
                 get('settingsModal').classList.remove('hidden');
             });
 
-            const tirePresetEl = get('tireSizePreset');
-            if (tirePresetEl) {
-                tirePresetEl.onchange = () => {
-                    if (tirePresetEl.value === 'custom') get('tireSizeInput').classList.remove('hidden');
-                    else get('tireSizeInput').classList.add('hidden');
-                };
-            }
+            get('tireSizePreset').onchange = () => {
+                if (get('tireSizePreset').value === 'custom') get('tireSizeInput').classList.remove('hidden');
+                else get('tireSizeInput').classList.add('hidden');
+            };
 
             const updateRatioDisp = () => {
                 const f = parseFloat(get('frontTeethInput').value) || 0;
                 const r = parseFloat(get('rearTeethInput').value) || 0;
                 get('ratioDisplayPreview').innerText = r > 0 ? (f/r).toFixed(2) : "0.00";
             };
-            if (get('frontTeethInput')) get('frontTeethInput').oninput = updateRatioDisp;
-            if (get('rearTeethInput')) get('rearTeethInput').oninput = updateRatioDisp;
+            get('frontTeethInput').oninput = updateRatioDisp;
+            get('rearTeethInput').oninput = updateRatioDisp;
 
             click('closeSettingsBtn', () => {
                 tireSizeMm = get('tireSizePreset').value === 'custom' ? (parseFloat(get('tireSizeInput').value) || 2136) : parseFloat(get('tireSizePreset').value);
@@ -1862,34 +1955,31 @@
 
             click('importProxyBtn', () => get('importFileInput').click());
 
-            const importFileEl = get('importFileInput');
-            if (importFileEl) {
-                importFileEl.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if(!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        try {
-                            const imported = JSON.parse(ev.target.result);
-                            if(Array.isArray(imported)) {
-                                const existing = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                                const merged = [...existing];
-                                imported.forEach(imp => {
-                                    if(!merged.find(x => x.id === imp.id)) merged.push(imp);
-                                });
-                                localStorage.setItem(ROUTES_KEY, JSON.stringify(merged));
-                                showAlert("Data imported successfully!");
-                            } else {
-                                showAlert("Invalid backup format.");
-                            }
-                        } catch(err) {
-                            showAlert("Could not parse file.");
+            get('importFileInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if(Array.isArray(imported)) {
+                            const existing = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                            const merged = [...existing];
+                            imported.forEach(imp => {
+                                if(!merged.find(x => x.id === imp.id)) merged.push(imp);
+                            });
+                            localStorage.setItem(ROUTES_KEY, JSON.stringify(merged));
+                            showAlert("Data imported successfully!");
+                        } else {
+                            showAlert("Invalid backup format.");
                         }
-                        e.target.value = ''; 
-                    };
-                    reader.readAsText(file);
-                });
-            }
+                    } catch(err) {
+                        showAlert("Could not parse file.");
+                    }
+                    e.target.value = ''; 
+                };
+                reader.readAsText(file);
+            });
 
             click('compressHistoryBtn', () => {
                 try {
@@ -1951,16 +2041,12 @@
             
             function updateVoiceUI() {
                 [get('voiceOnBtn'), get('voiceOffBtn')].forEach(b => {
-                    if (b) {
-                        b.classList.remove('bg-white', 'text-black');
-                        b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
-                    }
+                    b.classList.remove('bg-white', 'text-black');
+                    b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
                 });
                 const activeBtn = get(voiceEnabled ? 'voiceOnBtn' : 'voiceOffBtn');
-                if (activeBtn) {
-                    activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
-                    activeBtn.classList.add('bg-white', 'text-black');
-                }
+                activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
+                activeBtn.classList.add('bg-white', 'text-black');
             }
             updateVoiceUI();
             
@@ -2181,13 +2267,10 @@
             rearTeeth = parseFloat(localStorage.getItem('bikeTracker_rearTeeth')) || 13;
             gearRatio = frontTeeth / rearTeeth;
 
-            const mapEl = get('map');
-            if (mapEl) {
-                map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
-                compareRouteGroup = L.layerGroup().addTo(map);
-            }
+            map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
+            compareRouteGroup = L.layerGroup().addTo(map);
 
             const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
             if (rts.length > 0) {
@@ -2204,14 +2287,7 @@
             const st = localStorage.getItem('bikeTracker_theme');
             if(st) { activeThemeIndex = parseInt(st)-1; cycleTheme(); } else cycleTheme();
             applyLayoutMode();
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(p => { 
-                    lastPosition = p; 
-                    if (map) map.setView([p.coords.latitude, p.coords.longitude], 14); 
-                    checkNearbyRoutes(p.coords.latitude, p.coords.longitude); 
-                });
-            }
+            navigator.geolocation.getCurrentPosition(p => { lastPosition = p; map.setView([p.coords.latitude, p.coords.longitude], 14); checkNearbyRoutes(p.coords.latitude, p.coords.longitude); });
             updateMainButtons();
         };
     </script>
