@@ -1448,6 +1448,7 @@
             };
 
             get('prContainer').innerHTML = 
+                renderPR('Longest Distance', maxD ? parseFloat(maxD.distance).toFixed(1) + ' Mi' : '--', maxD) +
                 renderPR('Longest Ride Time', maxT ? formatTime(maxT.timeSec) : '--', maxT) +
                 renderPR('Farthest 30 Min', maxD30 ? parseFloat(maxD30.maxDist30m).toFixed(1) + ' Mi' : '--', maxD30) +
                 renderPR('Biggest Climb', maxA ? Math.round(parseFloat(maxA.ascent)*3.28084) + ' ft' : '--', maxA) +
