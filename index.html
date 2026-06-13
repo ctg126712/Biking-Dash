@@ -38,7 +38,7 @@
         }
     </script>
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
     <style>
         @import url('https://fonts.cdnfonts.com/css/ds-digital');
@@ -72,9 +72,13 @@
         .leaflet-layer { filter: invert(100%) grayscale(100%) contrast(120%) brightness(80%); transition: filter 0.3s ease; }
 
         #dimmerOverlay {
-            position: fixed; inset: 0; background: black;
-            opacity: var(--dimmer-opacity); pointer-events: none;
-            z-index: 5000; transition: opacity 0.3s ease;
+            position: fixed;
+            inset: 0;
+            background: black;
+            opacity: var(--dimmer-opacity);
+            pointer-events: none;
+            z-index: 5000;
+            transition: opacity 0.3s ease;
         }
 
         .font-digital { font-family: 'DS-Digital', sans-serif; }
@@ -90,31 +94,48 @@
             50% { box-shadow: 0 0 25px var(--neon-gauge); border-color: #fff; }
             100% { box-shadow: 0 0 8px var(--neon-gauge); border-color: var(--neon-gauge); }
         }
-        .nearby-pulse { animation: pulse-nearby 1.5s infinite ease-in-out; color: #fff !important; }
+        .nearby-pulse {
+            animation: pulse-nearby 1.5s infinite ease-in-out;
+            color: #fff !important;
+        }
 
         body.br-bright { --dimmer-opacity: 0.25; --glow-spread-1: 3px; --glow-spread-2: 6px; }
         body.br-max { --dimmer-opacity: 0; --glow-spread-1: 4px; --glow-spread-2: 8px; }
 
         #dashboardContainer.carousel-mode {
-            background-color: #0a0a0a; border: 1px solid #27272a;
-            border-radius: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            background-color: #0a0a0a;
+            border: 1px solid #27272a;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
         }
         
         #dashboardContainer.map-view-active {
-            background-color: transparent !important; border-color: transparent !important; box-shadow: none !important;
+            background-color: transparent !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
         }
 
         #dashboardContainer.grid-mode {
-            background: transparent !important; border-color: transparent !important;
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr); gap: 0.75rem;
-            padding-top: 0.5rem; height: 100% !important;
+            background: transparent !important;
+            border-color: transparent !important;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0.75rem;
+            padding-top: 0.5rem;
+            height: 100% !important;
         }
         
         #dashboardContainer.grid-mode > .dash-view {
-            position: relative !important; opacity: 1 !important; pointer-events: auto !important;
-            background: #0a0a0a; border: 1px solid #27272a; border-radius: 1.25rem;
-            display: flex; align-items: center; justify-content: center;
+            position: relative !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            background: #0a0a0a;
+            border: 1px solid #27272a;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #dashboardContainer.grid-mode #speedGaugeContainer { width: 140px; height: 140px; }
@@ -181,6 +202,7 @@
             <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
             <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
+            <!-- 1. Speed -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center space-y-4 py-2 opacity-100 z-10 transition-opacity">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center bg-black rounded-full border-[4px] border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)_inset] transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -200,6 +222,7 @@
                 </div>
             </div>
 
+            <!-- 2. Distance -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="odoScale" class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-6">Total Distance</div>
@@ -210,6 +233,7 @@
                 </div>
             </div>
 
+            <!-- 3. Compass -->
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="compassScale" class="flex flex-col items-center">
                     <div id="headingDir" class="text-5xl font-digital neon-glow mb-6 text-neon-main">--</div>
@@ -222,6 +246,7 @@
                 </div>
             </div>
 
+            <!-- 4. Goal -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6">
                 <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-white text-black uppercase">Miles</button>
@@ -233,6 +258,7 @@
                 </div>
             </div>
 
+            <!-- 6. Cadence -->
             <div id="view-cadence" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-4">Est. Pedal Cadence</div>
@@ -241,9 +267,11 @@
                 </div>
             </div>
             
+            <!-- 5. Map -->
             <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
+        <!-- Master Control Buttons (2x2 Grid Layout) -->
         <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0">
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
             <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
@@ -252,10 +280,356 @@
         </div>
     </div>
 
+    <!-- Totals Modal -->
+    <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
+        <h2 class="text-3xl font-digital text-white font-bold mb-4 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-4 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[75vh] overflow-y-auto p-5 font-digital text-white text-left space-y-5">
+            
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">Personal Records</h3>
+                <div id="prContainer" class="grid grid-cols-2 gap-y-4 gap-x-2"></div>
+            </div>
+
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">Custom Range</h3>
+                <div class="flex space-x-2 mb-3">
+                    <input type="date" id="totCustomStart" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none">
+                    <input type="date" id="totCustomEnd" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totCustomDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totCustomTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totCustomCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totCustomAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Week</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totWeekDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totWeekTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totWeekCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totWeekAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+            <div class="border-b border-zinc-800 pb-3">
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Month</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totMonthDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totMonthTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totMonthCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totMonthAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">This Year</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totYearDist" class="text-xl font-bold">0.0 Mi</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Time</small><br><span id="totYearTime" class="text-xl font-bold">00:00</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Rides</small><br><span id="totYearCount" class="text-xl font-bold">0</span></div>
+                    <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Ascent</small><br><span id="totYearAscent" class="text-xl font-bold">0 ft</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="flex w-full max-w-sm shrink-0">
+            <button id="closeTotalsBtn" class="w-full py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95 transition-transform">Close</button>
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
+        <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
+        <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)] flex-1 max-h-[70vh]">
+            <div class="p-6 relative z-10 h-full overflow-y-auto space-y-6 text-left font-digital text-white">
+                <div class="flex justify-between border-b border-zinc-800 pb-3">
+                    <span class="uppercase tracking-widest text-zinc-300">Distance</span>
+                    <span class="text-2xl font-bold"><span id="sumDistance">0.0</span> Mi</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
+                    <div>
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Avg Speed</small>
+                        <span class="text-2xl font-bold"><span id="sumAvgSpeed">0.0</span> MPH</span>
+                    </div>
+                    <div class="text-right">
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">Top Speeds</small>
+                        <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Ascent: <span id="sumTopAscent" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                        <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Flat: <span id="sumTopFlat" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                        <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Descent: <span id="sumTopDescent" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
+                    <div>
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Total Ascent</small>
+                        <span class="text-2xl font-bold"><span id="sumAscent">0</span> ft</span>
+                    </div>
+                    <div class="text-right">
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">Total Descent</small>
+                        <span class="text-2xl font-bold block text-right"><span id="sumDescent">0</span> ft</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 border-b border-zinc-800 pb-3">
+                    <div>
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Est Calories</small>
+                        <span class="text-2xl font-bold"><span id="sumCalories">0</span> kcal</span>
+                    </div>
+                    <div class="text-right">
+                        <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1 text-right">20-Min Max Pwr</small>
+                        <span class="text-2xl font-bold block text-right"><span id="sumMax20m">0</span> W</span>
+                    </div>
+                </div>
+                
+                <div class="border-b border-zinc-800 pb-4">
+                    <small class="uppercase tracking-widest block text-zinc-300 text-[0.65rem] mb-1">Max Consistent</small>
+                    <div class="flex justify-between items-end mt-1">
+                        <span id="sumConsistentTime" class="text-3xl font-bold">00:00</span>
+                        <span class="text-sm pb-1 text-white opacity-90 font-bold"><span id="sumConsistentDist">0.0</span> Mi @ <span id="sumConsistentSpeed">0.0</span> MPH</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 pb-4 border-b border-zinc-800">
+                    <small class="uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-2 flex flex-col sm:flex-row justify-between">
+                        <span class="mb-1 sm:mb-0">Elevation & Speed Zones</span>
+                        <span class="text-[0.55rem] space-x-1">
+                            <span style="color:#00ffff">0-6</span>
+                            <span style="color:#39ff14">6-12</span>
+                            <span style="color:#ffff00">12-18</span>
+                            <span style="color:#ffaa00">18-24</span>
+                            <span style="color:#ff0000">24-30</span>
+                            <span style="color:#ff00ff">30+</span>
+                            <span class="text-zinc-500 ml-1">MPH</span>
+                        </span>
+                    </small>
+                    <div class="w-full h-32 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
+                        <canvas id="summaryElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <small id="sumSplitsTitle" class="uppercase tracking-widest block mb-3 text-white opacity-80 text-[0.65rem]">1/2 MILE SPLITS</small>
+                    <div id="sumSplitsList" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex w-full max-w-sm space-x-3 shrink-0">
+            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_10px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Return</button>
+            <div class="flex flex-col space-y-2 flex-1">
+                <button id="saveRideFromSummaryBtn" class="w-full py-2 rounded-lg font-digital font-bold text-black bg-[#2ecc71] uppercase tracking-widest text-sm shadow-[0_0_10px_rgba(46,204,113,0.4)] active:scale-95 transition-transform border border-[#2ecc71]">Save Ride</button>
+                <button id="discardRideBtn" class="w-full py-2 rounded-lg font-digital font-bold text-red-500 bg-[#111] border border-red-900 uppercase tracking-widest text-sm active:scale-95 transition-transform">Discard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Discard Modal -->
+    <div id="confirmDiscardModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
+            <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
+            <div class="flex space-x-3">
+                <button id="cancelDiscardBtn" class="flex-1 py-3 bg-zinc-900 text-white opacity-80 font-bold tracking-widest uppercase rounded-lg">No</button>
+                <button id="confirmDiscardBtn" class="flex-1 py-3 bg-red-600 text-black font-bold tracking-widest uppercase rounded-lg">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for saving and browsing routes -->
+    <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
+            <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
+            <p class="text-white opacity-80 text-xs mb-4 uppercase tracking-widest font-digital">Dist: <span id="saveDistancePreview" class="text-white font-bold text-lg"></span> mi</p>
+            <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white mb-4 outline-none font-digital text-lg tracking-widest">
+            <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-6 font-digital text-sm tracking-widest"></textarea>
+            <div class="flex space-x-3">
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg border border-zinc-800 text-white opacity-80 uppercase font-digital tracking-widest">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-white text-black font-bold uppercase font-digital tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadModal" class="hidden absolute inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4">
+        <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-end border-b border-zinc-800 pb-3 mb-4">
+                <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest">Routes</h3>
+                <div class="flex space-x-1">
+                    <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="all">All</option><option value="25">Top 25</option></select>
+                    <select id="routeSortSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
+                </div>
+            </div>
+            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+            <button id="closeLoadBtn" class="mt-6 w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)]">Close</button>
+        </div>
+    </div>
+
+    <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto backdrop-blur-md">
+        <div class="mt-12 w-full max-w-sm">
+            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest" style="text-shadow: 0 0 15px rgba(255,255,255,0.5);" />
+            <div class="bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                
+                <div class="space-y-4 relative z-10 font-digital text-white">
+                    <div class="flex justify-between border-b border-zinc-800 pb-2">
+                        <span class="uppercase tracking-widest text-zinc-300">Distance</span>
+                        <span class="text-xl font-bold"><span id="detailDistance">0.0</span> Mi</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
+                        <div>
+                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Avg Speed</small>
+                            <span class="text-xl font-bold"><span id="detailAvgSpeed">0.0</span> MPH</span>
+                        </div>
+                        <div class="text-right">
+                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">Top Speeds</small>
+                            <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Ascent: <span id="detailTopAscent" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                            <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Flat: <span id="detailTopFlat" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                            <span class="text-[0.75rem] font-bold block text-right text-zinc-400">Descent: <span id="detailTopDescent" class="text-white text-[0.85rem]">0.0</span> MPH</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
+                        <div>
+                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Ascent</small>
+                            <span class="text-xl font-bold"><span id="detailAscent">0</span> ft</span>
+                        </div>
+                        <div class="text-right">
+                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">Descent</small>
+                            <span class="text-xl font-bold block text-right"><span id="detailDescent">0</span> ft</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 border-b border-zinc-800 pb-2">
+                        <div>
+                            <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Est Calories</small>
+                            <span class="text-xl font-bold"><span id="detailCalories">0</span> kcal</span>
+                        </div>
+                        <div class="text-right">
+                            <small class="block uppercase tracking-widest text-right text-zinc-300 text-[0.65rem] mb-1">20-Min Max Pwr</small>
+                            <span class="text-xl font-bold block text-right"><span id="detailMax20m">0</span> W</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <small class="block uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-1">Max Consistent</small>
+                        <div class="flex justify-between items-end mt-1">
+                            <span id="detailConsistentTime" class="text-2xl font-bold">00:00</span>
+                            <span class="text-[0.8rem] font-bold"><span id="detailConsistentDist">0.0</span> Mi @ <span id="detailConsistentSpeed">0.0</span> MPH</span>
+                        </div>
+                    </div>
+                    <div class="pt-2 pb-2 border-b border-zinc-800">
+                        <small class="uppercase tracking-widest text-zinc-300 text-[0.65rem] mb-2 flex flex-col sm:flex-row justify-between">
+                            <span class="mb-1 sm:mb-0">Elevation & Speed Zones</span>
+                            <span class="text-[0.55rem] space-x-1">
+                                <span style="color:#00ffff">0-6</span>
+                                <span style="color:#39ff14">6-12</span>
+                                <span style="color:#ffff00">12-18</span>
+                                <span style="color:#ffaa00">18-24</span>
+                                <span style="color:#ff0000">24-30</span>
+                                <span style="color:#ff00ff">30+</span>
+                                <span class="text-zinc-500 ml-1">MPH</span>
+                            </span>
+                        </small>
+                        <div class="w-full h-32 bg-[#050505] border border-zinc-800 rounded-lg relative overflow-hidden shadow-inner">
+                            <canvas id="detailElevationCanvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <small id="detailSplitsTitle" class="block mb-2 uppercase tracking-widest text-zinc-300 text-[0.65rem]">1/4 Splits</small>
+                        <div id="detailSplitsList" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-[#0a0a0a] border border-zinc-700 p-5 rounded-2xl mb-8 text-left shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Distance Correction (Miles)</label>
+                <div class="flex space-x-2 mb-4">
+                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white outline-none text-sm font-digital tracking-widest focus:border-neon-main transition-colors">
+                    <button id="btnAutoFix" class="bg-[#eab308] text-black font-bold rounded-lg font-digital uppercase tracking-widest text-[0.65rem] px-3 shadow-[0_0_10px_rgba(234,179,8,0.3)] whitespace-nowrap active:scale-95 transition-transform leading-tight text-center flex flex-col items-center justify-center">Auto-Fix<br>GPS</button>
+                </div>
+                
+                <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Ride Notes</label>
+                <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600 focus:border-neon-main transition-colors"></textarea>
+                
+                <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save Updates</button>
+                <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors">Delete Route</button>
+            </div>
+            
+            <div class="flex space-x-3 mb-10">
+                <button id="btnLoadMap" class="flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Load Map Route</button>
+                <button id="btnCloseDetails" class="flex-1 py-3.5 bg-zinc-900 border border-zinc-700 text-white font-digital rounded-xl tracking-widest uppercase">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="alertModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)]">OK</button></div>
     </div>
-    
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden absolute inset-0 bg-black/95 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#050505] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-6 rounded-2xl w-full max-w-sm flex flex-col">
+            <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest border-b border-zinc-800 pb-3 mb-4">Settings</h3>
+            
+            <div class="space-y-4 mb-6 text-left max-h-[60vh] overflow-y-auto pr-1">
+                
+                <div class="border-b border-zinc-800 pb-4">
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Goal</label>
+                    <div class="flex space-x-1 mb-2">
+                        <button id="btnGoalDistance" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase">Mi</button>
+                        <button id="btnGoalTime" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Min</button>
+                    </div>
+                    <input type="number" id="goalInput" class="w-full bg-black p-2 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="0.0">
+                </div>
+
+                <div class="border-b border-zinc-800 pb-4">
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Voice Announcements (Per Mile)</label>
+                    <div class="flex space-x-1">
+                        <button id="voiceOnBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase">On</button>
+                        <button id="voiceOffBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Off</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Tire Size</label>
+                    <select id="tireSizePreset" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest mb-2 cursor-pointer">
+                        <option value="2096">700x23c</option>
+                        <option value="2105">700x25c</option>
+                        <option value="2136">700x28c</option>
+                        <option value="2155">700x32c</option>
+                        <option value="2288">29x2.1"</option>
+                        <option value="2326">29x2.25"</option>
+                        <option value="2148">27.5x2.1"</option>
+                        <option value="2182">27.5x2.25"</option>
+                        <option value="2055">26x2.0"</option>
+                        <option value="custom">Custom (mm)</option>
+                    </select>
+                    <input type="number" id="tireSizeInput" class="hidden w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest" placeholder="2136">
+                </div>
+                <div>
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Gearing (Front Ring / Rear Cog)</label>
+                    <div class="flex space-x-2 items-center">
+                        <input type="number" id="frontTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="42">
+                        <span class="text-white opacity-50 font-digital text-xl">/</span>
+                        <input type="number" id="rearTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="13">
+                    </div>
+                    <small class="text-white opacity-60 text-[0.6rem] font-digital uppercase tracking-widest mt-2 block">Ratio: <span id="ratioDisplayPreview" class="text-neon-main font-bold">3.23</span></small>
+                </div>
+                
+                <div class="pt-4 border-t border-zinc-800">
+                    <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Backup & Restore</label>
+                    <div class="flex space-x-2 mb-3">
+                        <button id="exportBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Export</button>
+                        <button id="importProxyBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Import</button>
+                        <input type="file" id="importFileInput" accept=".json" class="hidden">
+                    </div>
+                    <button id="compressHistoryBtn" class="w-full py-2.5 rounded-lg bg-[#111] border border-orange-900 text-orange-500 font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(234,179,8,0.1)] active:scale-95 transition-transform">Compress History Data</button>
+                </div>
+            </div>
+            
+            <button id="closeSettingsBtn" class="w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Save & Close</button>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // --- 1. GLOBALS & STATE ---
@@ -287,11 +661,11 @@
         let wakeLock = null;
         let isTracking = false;
         
-        let powerSum = 0; // Optimized buffer logic
+        let powerSum = 0; 
         let powerBuffer = [];
         let globalFTP = 200; 
 
-        // Optimized DOM Cache
+        // --- DOM Cache & Initialization ---
         const DOM = {};
         const get = id => document.getElementById(id);
         const click = (id, fn) => { const el = get(id); if (el) el.onclick = fn; };
@@ -377,8 +751,32 @@
         });
 
         // --- Layout Modes & Views ---
-        function cycleTheme() { /* (Remains identical) */ }
-        function cycleBrightness() { /* (Remains identical) */ }
+        function cycleTheme() {
+            activeThemeIndex = (activeThemeIndex + 1) % themes.length;
+            const t = themes[activeThemeIndex];
+            const r = document.documentElement;
+            r.style.setProperty('--neon-main', t.vars.main);
+            r.style.setProperty('--neon-bg', t.vars.bg);
+            r.style.setProperty('--neon-dark', t.vars.dark);
+            r.style.setProperty('--neon-dim', t.vars.dim);
+            r.style.setProperty('--neon-gauge', t.vars.gauge);
+            localStorage.setItem('bikeTracker_theme', activeThemeIndex);
+            if(currentRoutePolyline) currentRoutePolyline.setStyle({color: t.vars.main});
+            if(currentMarker) currentMarker.setStyle({fillColor: t.vars.main});
+            if(loadedCompareRoutePoints) drawCompareRoute(loadedCompareRoutePoints);
+        }
+
+        function cycleBrightness() {
+            currentBrightnessLevel = (currentBrightnessLevel + 1) % 3;
+            const r = document.documentElement;
+            const lbl = get('brightnessLabel');
+            const body = document.body;
+            body.classList.remove('br-bright', 'br-max');
+            if(currentBrightnessLevel === 0) { lbl.innerText = "Norm"; r.style.setProperty('--dimmer-opacity', '0'); }
+            else if(currentBrightnessLevel === 1) { lbl.innerText = "Bright"; body.classList.add('br-bright'); r.style.setProperty('--dimmer-opacity', '0.25'); }
+            else { lbl.innerText = "Max"; body.classList.add('br-max'); r.style.setProperty('--dimmer-opacity', '0'); }
+            localStorage.setItem('bikeTracker_brightness', currentBrightnessLevel);
+        }
         
         function applyLayoutMode() {
             isGridMode = (layoutMode === 2);
@@ -442,6 +840,17 @@
             }
         }
 
+        function setGoalType(t) { 
+            goalType = t; 
+            [get('btnGoalDistance'), get('btnGoalTime')].forEach(b => {
+                b.classList.remove('bg-white', 'text-black');
+                b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
+            }); 
+            const activeBtn = get(t === 'distance' ? 'btnGoalDistance' : 'btnGoalTime');
+            activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
+            activeBtn.classList.add('bg-white', 'text-black'); 
+        }
+
         function formatTime(s) { 
             const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sc = Math.floor(s%60); 
             return h>0 ? `${h}:${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${sc.toString().padStart(2,'0')}`; 
@@ -486,7 +895,7 @@
             if (DOM.speedGauge) DOM.speedGauge.style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
 
             let cadence = (spd > 1.5) ? ((spd * 26822.4) / tireSizeMm) / gearRatio : 0;
-            if (DOM.cadence) DOM.cadence.innerText = Math.round(cadence).toString().padStart(2, '0');
+            if (DOM.cadenceVal) DOM.cadenceVal.innerText = Math.round(cadence).toString().padStart(2, '0');
             if (pos.coords.heading !== null && DOM.compassRose) DOM.compassRose.style.transform = `rotate(${-pos.coords.heading}deg)`;
             
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
@@ -516,7 +925,6 @@
                         if (spd > topSpeedMph) topSpeedMph = spd; 
                         
                         if (currentRouteCoords.length >= 10) {
-                            // Logic abstracted to reduce inline operations
                             let recentAlts = currentRouteCoords.slice(-5).map(p => p[2] || 0);
                             let avgAlt = recentAlts.reduce((a,b)=>a+b,0) / recentAlts.length;
                             let pastAlts = currentRouteCoords.slice(-10, -5).map(p => p[2] || 0);
@@ -551,6 +959,21 @@
                         if(totalDistanceMiles - lastSplitDist >= 0.5) {
                             splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
                             lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
+                        }
+
+                        // Mile Voice Announcement
+                        let currentWholeMile = Math.floor(totalDistanceMiles);
+                        if (currentWholeMile > lastAnnouncedMile && currentWholeMile >= 1) {
+                            lastAnnouncedMile = currentWholeMile;
+                            if (voiceEnabled && 'speechSynthesis' in window) {
+                                let currentAvg = (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1);
+                                let msg = new SpeechSynthesisUtterance(`Mile ${currentWholeMile} completed. Average speed, ${currentAvg} miles per hour.`);
+                                msg.volume = 1.0;
+                                let voices = window.speechSynthesis.getVoices();
+                                let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK'))) || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB');
+                                if (britVoice) msg.voice = britVoice;
+                                window.speechSynthesis.speak(msg);
+                            }
                         }
                     }
                 } else {
@@ -614,7 +1037,6 @@
 
                                 const getAvgFast = (len) => {
                                     if (powerBuffer.length < len) return 0;
-                                    // Fallback loop if needed, but running sum handles 20m easily
                                     if (len === powerBuffer.length) return powerSum / len;
                                     let sum = 0; for(let i=powerBuffer.length-len; i<powerBuffer.length; i++) sum += powerBuffer[i];
                                     return sum/len;
@@ -638,7 +1060,7 @@
                                         if (stoppedSeconds >= 30) {
                                             isAutoPaused = true; rideSeconds = Math.max(0, rideSeconds - 30);
                                             updateStatus("Paused", "bg-orange-500");
-                                            if (DOM.timer) DOM.timer.innerText = formatTime(rideSeconds);
+                                            if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds);
                                         }
                                     }
                                 } else if (currentSpeed > 1.5) {
@@ -649,7 +1071,7 @@
 
                             if (!isAutoPaused) {
                                 rideSeconds++; 
-                                if (DOM.timer) DOM.timer.innerText = formatTime(rideSeconds); 
+                                if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds); 
                             }
                             
                             // Throttled storage save
@@ -680,12 +1102,1117 @@
             } catch(e) {}
         }
 
-        // Rest of the application (Render graphs, Show Totals/Summaries) remains identical.
-        // Ensure to call initDOMCache() within window.onload
-        
+        function restoreRideState() {
+            try {
+                const s = localStorage.getItem(STATE_KEY);
+                if(s) {
+                    const st = JSON.parse(s);
+                    if(st.rideSeconds > 2) {
+                        rideSeconds = st.rideSeconds || 0; 
+                        totalDistanceMiles = st.totalDistanceMiles || 0; 
+                        topSpeedMph = st.topSpeedMph || 0;
+                        topSpeedFlat = st.topSpeedFlat || 0;
+                        topSpeedAscent = st.topSpeedAscent || 0;
+                        topSpeedDescent = st.topSpeedDescent || 0;
+                        longestConsistentSec = st.longestConsistentSec || 0;
+                        longestConsistentDist = st.longestConsistentDist || 0;
+                        longestConsistentSpeed = st.longestConsistentSpeed || 0;
+                        splits = st.splits || [];
+                        lastSplitDist = st.lastSplitDist || 0;
+                        lastSplitTime = st.lastSplitTime || 0;
+                        totalAscentMeters = st.ascent || 0;
+                        totalDescentMeters = st.descent || 0;
+                        currentRouteCoords = st.coords || [];
+                        
+                        p1m = st.p1m || 0;
+                        p5m = st.p5m || 0;
+                        p20m = st.p20m || 0;
+                        calories = st.calories || 0;
+                        longestContPower = st.longestContPower || 0;
+                        maxDist30m = st.maxDist30m || 0;
+
+                        lastAnnouncedMile = Math.floor(totalDistanceMiles);
+
+                        updateOdometer(totalDistanceMiles); 
+                        if (DOM.liveTimerText) DOM.liveTimerText.innerText = formatTime(rideSeconds);
+                        if (DOM.speed) DOM.speed.innerText = "00";
+                        if (DOM.topSpeed) DOM.topSpeed.innerText = topSpeedMph.toFixed(1);
+                        if (DOM.flatTopSpeed) DOM.flatTopSpeed.innerText = topSpeedFlat.toFixed(1);
+                        if (DOM.avgSpeed) DOM.avgSpeed.innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+
+                        if(currentRoutePolyline) currentRoutePolyline.setLatLngs(currentRouteCoords);
+                        
+                        isTracking = false;
+                        updateMainButtons();
+                        updateStatus("Recovered", "bg-zinc-500");
+                    }
+                }
+            } catch(e){}
+        }
+
+        function resetRide() {
+            localStorage.removeItem(STATE_KEY); rideSeconds = 0; totalDistanceMiles = 0; currentRouteCoords = []; totalAscentMeters = 0; totalDescentMeters = 0; topSpeedMph = 0; topSpeedFlat = 0; topSpeedAscent = 0; topSpeedDescent = 0; longestConsistentSec = 0; longestConsistentDist = 0; longestConsistentSpeed = 0; splits = []; currentRoutePolyline.setLatLngs([]); if(currentMarker) map.removeLayer(currentMarker); currentMarker = null; updateOdometer(0); if (DOM.liveTimerText) DOM.liveTimerText.innerText = "00:00"; if (DOM.speed) DOM.speed.innerText="00"; if (DOM.topSpeed) DOM.topSpeed.innerText="0.0"; if (DOM.flatTopSpeed) DOM.flatTopSpeed.innerText="0.0"; if (DOM.avgSpeed) DOM.avgSpeed.innerText="0.0"; updateStatus("Ready to ride", "text-white");
+            p1m = 0; p5m = 0; p20m = 0; calories = 0; longestContPower = 0; currentContPower = 0; powerBuffer = []; powerSum = 0; maxDist30m = 0; dist30mBuffer = [];
+            isTracking = false;
+            currentSpeed = 0;
+            stoppedSeconds = 0;
+            isFirstFix = true;
+            lastPosition = null;
+            consistentStartAlt = 0;
+            lastAnnouncedMile = 0;
+            rawSpdBuffer = [];
+            rawSpdSum = 0;
+            updateMainButtons();
+        }
+
+        function toggleAutoPause() { 
+            isAutoPauseEnabled = !isAutoPauseEnabled; 
+            stoppedSeconds = 0;
+            const btn = get('autoPauseToggle');
+            if (isAutoPauseEnabled) {
+                btn.innerText = "Auto Pause: ON";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-green-500 text-green-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(34,197,94,0.3)]";
+            } else {
+                btn.innerText = "Auto Pause: OFF";
+                btn.className = "pointer-events-auto px-3 py-1.5 rounded bg-black border border-red-500 text-red-500 font-digital text-[0.7rem] uppercase tracking-widest transition-all shadow-[0_0_8px_rgba(239,68,68,0.3)]";
+                if (isAutoPaused) {
+                    isAutoPaused = false;
+                    if(isTracking) updateStatus("Recording...", "bg-neon-main");
+                    else updateStatus("Ready to ride", "text-white");
+                }
+            }
+        }
+
+        function showSummary() {
+            get('sumDistance').innerText = totalDistanceMiles.toFixed(2);
+            get('sumAscent').innerText = Math.round(totalAscentMeters * 3.28084);
+            get('sumDescent').innerText = Math.round(totalDescentMeters * 3.28084);
+            get('sumAvgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
+            
+            get('sumTopAscent').innerText = topSpeedAscent.toFixed(1);
+            get('sumTopFlat').innerText = topSpeedFlat.toFixed(1);
+            get('sumTopDescent').innerText = topSpeedDescent.toFixed(1);
+            
+            get('sumCalories').innerText = Math.round(calories);
+            get('sumMax20m').innerText = Math.round(p20m);
+
+            get('sumConsistentTime').innerText = formatTime(longestConsistentSec);
+            get('sumConsistentDist').innerText = longestConsistentDist.toFixed(1);
+            get('sumConsistentSpeed').innerText = longestConsistentSpeed.toFixed(1);
+            
+            get('sumSplitsTitle').innerText = "1/2 MILE SPLITS";
+            const sl = get('sumSplitsList'); sl.innerHTML = '';
+            splits.forEach((s, i) => sl.innerHTML += `<div class="flex justify-between bg-black border border-zinc-800 p-2 rounded mb-1 font-digital text-sm text-white font-bold"><span class="text-zinc-500">${s.dist.toFixed(1)} Mi</span><span>${formatTime(s.time)}</span><span>${s.avg.toFixed(1)} MPH</span></div>`);
+            
+            get('summaryModal').classList.remove('hidden');
+            drawElevationProfile(currentRouteCoords, 'summaryElevationCanvas');
+        }
+
+        function showTotals() {
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            const now = new Date();
+            const dayOfWeek = now.getDay(); 
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+
+            let wD=0, wT=0, wC=0, wA=0;
+            let mD=0, mT=0, mC=0, mA=0;
+            let yD=0, yT=0, yC=0, yA=0;
+            
+            let maxD = null, maxT = null, maxA = null, maxCal = null;
+            let max1 = null, max5 = null, max20 = null;
+            let maxAsc = null, maxFlat = null, maxDesc = null;
+            let maxAvgS = null, maxSeg = null, maxCont = null, maxD30 = null;
+            
+            let days = [];
+
+            rts.forEach(r => {
+                const ts = r.timestamp || 0;
+                const d = parseFloat(r.distance) || 0;
+                const t = parseFloat(r.timeSec) || 0;
+                const a = parseFloat(r.ascent) || 0;
+
+                if (ts > 0) {
+                    let rideDay = new Date(ts);
+                    days.push(new Date(rideDay.getFullYear(), rideDay.getMonth(), rideDay.getDate()).getTime());
+                }
+
+                if (ts >= startOfWeek) { wD+=d; wT+=t; wC++; wA+=a; }
+                if (ts >= startOfMonth) { mD+=d; mT+=t; mC++; mA+=a; }
+                if (ts >= startOfYear) { yD+=d; yT+=t; yC++; yA+=a; }
+                
+                if (!maxD || d > (parseFloat(maxD.distance)||0)) maxD = r;
+                if (!maxT || t > (parseFloat(maxT.timeSec)||0)) maxT = r;
+                if (!maxA || a > (parseFloat(maxA.ascent)||0)) maxA = r;
+                
+                let cal = parseFloat(r.calories)||0;
+                if (!maxCal || cal > (parseFloat(maxCal.calories)||0)) maxCal = r;
+                
+                let w1 = parseFloat(r.p1m)||0;
+                if (!max1 || w1 > (parseFloat(max1.p1m)||0)) max1 = r;
+                
+                let w5 = parseFloat(r.p5m)||0;
+                if (!max5 || w5 > (parseFloat(max5.p5m)||0)) max5 = r;
+                
+                let w20 = parseFloat(r.p20m)||0;
+                if (!max20 || w20 > (parseFloat(max20.p20m)||0)) max20 = r;
+                
+                let ascS = parseFloat(r.ascentTopSpeed)||0;
+                if (!maxAsc || ascS > (parseFloat(maxAsc.ascentTopSpeed)||0)) maxAsc = r;
+                
+                let fltS = parseFloat(r.flatTopSpeed)||0;
+                if (!maxFlat || fltS > (parseFloat(maxFlat.flatTopSpeed)||0)) maxFlat = r;
+                
+                let dscS = parseFloat(r.descentTopSpeed)||0;
+                if (!maxDesc || dscS > (parseFloat(maxDesc.descentTopSpeed)||0)) maxDesc = r;
+                
+                let avgS = parseFloat(r.avgSpeed)||0;
+                if (!maxAvgS || avgS > (parseFloat(maxAvgS.avgSpeed)||0)) maxAvgS = r;
+                
+                let segS = parseFloat(r.maxConsistentSpeed)||0;
+                if (!maxSeg || segS > (parseFloat(maxSeg.maxConsistentSpeed)||0)) maxSeg = r;
+                
+                let lcp = parseFloat(r.longestContPower)||0;
+                if (!maxCont || lcp > (parseFloat(maxCont.longestContPower)||0)) maxCont = r;
+
+                let d30 = parseFloat(r.maxDist30m)||0;
+                if (!maxD30 || d30 > (parseFloat(maxD30.maxDist30m)||0)) maxD30 = r;
+            });
+            
+            // Calculate Streaks
+            days = [...new Set(days)].sort((a,b) => a-b);
+            let longestStreak = 0, currentStreak = 0, curr = 0;
+            const ONE_DAY = 86400000;
+            for(let i=0; i<days.length; i++) {
+                if(i===0) { curr=1; }
+                else {
+                    let diff = Math.round((days[i] - days[i-1])/ONE_DAY);
+                    if(diff === 1) curr++; else curr = 1;
+                }
+                if(curr > longestStreak) longestStreak = curr;
+            }
+            
+            let today = new Date();
+            today = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+            if (days.length > 0) {
+                let diffToToday = Math.round((today - days[days.length-1])/ONE_DAY);
+                if (diffToToday <= 1) {
+                    currentStreak = 1;
+                    for(let i=days.length-1; i>0; i--) {
+                        if (Math.round((days[i] - days[i-1])/ONE_DAY) === 1) currentStreak++;
+                        else break;
+                    }
+                }
+            }
+
+            get('totWeekDist').innerText = wD.toFixed(1) + ' Mi';
+            get('totWeekTime').innerText = formatTime(wT);
+            get('totWeekCount').innerText = wC;
+            get('totWeekAscent').innerText = Math.round(wA * 3.28084) + ' ft';
+
+            get('totMonthDist').innerText = mD.toFixed(1) + ' Mi';
+            get('totMonthTime').innerText = formatTime(mT);
+            get('totMonthCount').innerText = mC;
+            get('totMonthAscent').innerText = Math.round(mA * 3.28084) + ' ft';
+
+            get('totYearDist').innerText = yD.toFixed(1) + ' Mi';
+            get('totYearTime').innerText = formatTime(yT);
+            get('totYearCount').innerText = yC;
+            get('totYearAscent').innerText = Math.round(yA * 3.28084) + ' ft';
+            
+            const renderPR = (label, val, route) => {
+                if (!route) return `<div class="bg-black border border-zinc-800 rounded-lg p-2 flex flex-col justify-between h-full"><span class="uppercase tracking-widest text-zinc-400 text-[0.75rem] font-bold">${label}</span><span class="text-sm font-bold text-white opacity-50 mt-1">--</span></div>`;
+                return `<div class="bg-black border border-zinc-800 rounded-lg p-2 flex flex-col justify-between h-full">
+                    <span class="uppercase tracking-widest text-zinc-400 text-[0.75rem] leading-tight font-bold mb-1">${label}</span>
+                    <div class="flex justify-between items-end mt-auto">
+                        <span class="text-lg font-digital font-bold text-white leading-none">${val}</span>
+                        <button onclick='window.loadSpecificRoute("${route.id}")' class="text-[0.65rem] bg-zinc-800 text-white px-2 py-1 rounded opacity-80 hover:opacity-100 transition-opacity uppercase font-bold active:scale-95">View</button>
+                    </div>
+                </div>`;
+            };
+
+            get('prContainer').innerHTML = 
+                renderPR('Longest Ride Time', maxT ? formatTime(maxT.timeSec) : '--', maxT) +
+                renderPR('Farthest 30 Min', maxD30 ? parseFloat(maxD30.maxDist30m).toFixed(1) + ' Mi' : '--', maxD30) +
+                renderPR('Biggest Climb', maxA ? Math.round(parseFloat(maxA.ascent)*3.28084) + ' ft' : '--', maxA) +
+                renderPR('Highest Energy Burned', maxCal ? Math.round(parseFloat(maxCal.calories)) + ' kcal' : '--', maxCal) +
+                renderPR('1-Min Power', max1 ? Math.round(parseFloat(max1.p1m)) + ' W' : '--', max1) +
+                renderPR('5-Min Power', max5 ? Math.round(parseFloat(max5.p5m)) + ' W' : '--', max5) +
+                renderPR('20-Min Power', max20 ? Math.round(parseFloat(max20.p20m)) + ' W' : '--', max20) +
+                renderPR('Best FTP', max20 ? Math.round(parseFloat(max20.p20m)*0.95) + ' W' : '--', max20) +
+                renderPR('Fastest Ascent', maxAsc ? parseFloat(maxAsc.ascentTopSpeed).toFixed(1) + ' MPH' : '--', maxAsc) +
+                renderPR('Fastest Flat', maxFlat ? parseFloat(maxFlat.flatTopSpeed).toFixed(1) + ' MPH' : '--', maxFlat) +
+                renderPR('Fastest Descent', maxDesc ? parseFloat(maxDesc.descentTopSpeed).toFixed(1) + ' MPH' : '--', maxDesc) +
+                renderPR('Fastest Avg Speed', maxAvgS ? parseFloat(maxAvgS.avgSpeed).toFixed(1) + ' MPH' : '--', maxAvgS) +
+                renderPR('Fastest Segment', maxSeg ? parseFloat(maxSeg.maxConsistentSpeed).toFixed(1) + ' MPH' : '--', maxSeg) +
+                renderPR('Longest Power Output', maxCont ? formatTime(maxCont.longestContPower) : '--', maxCont) +
+                renderPR('Best Pace', maxAvgS ? (60/parseFloat(maxAvgS.avgSpeed)).toFixed(1) + ' Min/Mi' : '--', maxAvgS) +
+                `<div class="bg-black border border-zinc-800 rounded-lg p-2 flex flex-col justify-between h-full"><span class="uppercase tracking-widest text-zinc-400 text-[0.75rem] font-bold leading-tight mb-1">Longest Streak</span><span class="text-lg font-digital font-bold text-white leading-none mt-auto">${longestStreak} Days</span></div>` +
+                `<div class="bg-black border border-zinc-800 rounded-lg p-2 flex flex-col justify-between h-full"><span class="uppercase tracking-widest text-zinc-400 text-[0.75rem] font-bold leading-tight mb-1">Current Streak</span><span class="text-lg font-digital font-bold text-white leading-none mt-auto">${currentStreak} Days</span></div>`;
+
+            window.updateCustomTotals = function() {
+                const routes = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let sDate = get('totCustomStart').value;
+                let eDate = get('totCustomEnd').value;
+                
+                let cD=0, cT=0, cC=0, cA=0;
+
+                if (sDate || eDate) {
+                    let sTime = sDate ? new Date(sDate + 'T00:00:00').getTime() : 0;
+                    let eTime = eDate ? new Date(eDate + 'T23:59:59').getTime() : Infinity;
+
+                    routes.forEach(r => {
+                        const ts = r.timestamp || 0;
+                        if (ts >= sTime && ts <= eTime) {
+                            cD += parseFloat(r.distance) || 0;
+                            cT += parseFloat(r.timeSec) || 0;
+                            cC++;
+                            cA += parseFloat(r.ascent) || 0;
+                        }
+                    });
+                }
+
+                get('totCustomDist').innerText = cD.toFixed(1) + ' Mi';
+                get('totCustomTime').innerText = formatTime(cT);
+                get('totCustomCount').innerText = cC;
+                get('totCustomAscent').innerText = Math.round(cA * 3.28084) + ' ft';
+            };
+
+            get('totCustomStart').onchange = window.updateCustomTotals;
+            get('totCustomEnd').onchange = window.updateCustomTotals;
+            window.updateCustomTotals();
+
+            get('totalsModal').classList.remove('hidden');
+        }
+
+        window.loadSpecificRoute = function(id) {
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            const route = rts.find(r => r.id === id);
+            if (route) {
+                get('totalsModal').classList.add('hidden');
+                openRouteDetails(route);
+            }
+        };
+
+        async function saveRide() {
+            try {
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                
+                let avgSpd = "0.0";
+                if (rideSeconds > 0) {
+                    avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
+                }
+                
+                // Ultra-Compression Engine to protect LocalStorage limits
+                let compressedCoords = currentRouteCoords;
+                if (compressedCoords.length > 400) {
+                    const step = Math.ceil(compressedCoords.length / 400);
+                    compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
+                }
+                
+                let compressedSplits = calculateQuartersFromData(currentRouteCoords, totalDistanceMiles, rideSeconds);
+                
+                // Serialize as flat string to eliminate JSON array/bracket bloat
+                const encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)}`).join('|');
+
+                rts.push({ 
+                    id: Date.now().toString(), 
+                    name: get('routeNameInput').value || "Ride", 
+                    distance: totalDistanceMiles.toFixed(2), 
+                    timeSec: rideSeconds, 
+                    ascent: totalAscentMeters, 
+                    descent: totalDescentMeters, 
+                    avgSpeed: avgSpd, 
+                    topSpeed: topSpeedMph.toFixed(1), 
+                    flatTopSpeed: topSpeedFlat.toFixed(1), 
+                    ascentTopSpeed: topSpeedAscent.toFixed(1),
+                    descentTopSpeed: topSpeedDescent.toFixed(1),
+                    maxConsistentSec: longestConsistentSec, 
+                    maxConsistentDist: longestConsistentDist, 
+                    maxConsistentSpeed: longestConsistentSpeed, 
+                    p1m: p1m.toFixed(1),
+                    p5m: p5m.toFixed(1),
+                    p20m: p20m.toFixed(1),
+                    calories: calories.toFixed(1),
+                    longestContPower: longestContPower,
+                    maxDist30m: maxDist30m.toFixed(2),
+                    splits: JSON.stringify(compressedSplits), 
+                    points: encodedPoints, 
+                    timestamp: Date.now() 
+                });
+                
+                // Auto-Pruning Failsafe
+                let size = JSON.stringify(rts).length;
+                if (size > 4500000 && rts.length > 1) {
+                    rts.sort((a,b) => a.timestamp - b.timestamp);
+                    for (let i = 0; i < rts.length; i++) {
+                        if (rts[i].points && rts[i].points.length > 0) {
+                            rts[i].points = ""; // Archive huge map data, but keep stats
+                            if (JSON.stringify(rts).length <= 4500000) break;
+                        }
+                    }
+                    while (JSON.stringify(rts).length > 4500000 && rts.length > 1) {
+                        rts.shift(); 
+                    }
+                }
+                
+                localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                
+                releaseWakeLock();
+                localStorage.removeItem(STATE_KEY); 
+                location.reload();
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.message.includes('quota')) {
+                    showAlert("Storage full! Please go to Settings and Compress History or Export a backup.");
+                } else {
+                    showAlert("Error saving ride: " + e.message);
+                }
+            }
+        }
+
+        function getMedal(route, rankArray, prop) {
+            if (!route[prop] || route[prop] <= 0) return '';
+            const uniqueVals = [...new Set(rankArray.map(x => x[prop]))].filter(x => x > 0).sort((a,b) => b - a);
+            const rank = uniqueVals.indexOf(route[prop]);
+            if (rank === 0) return '🥇';
+            if (rank === 1) return '🥈';
+            if (rank === 2) return '🥉';
+            return '';
+        }
+
+        function loadRoutes() {
+            const list = get('routesList'), sort = get('routeSortSelect').value, lim = get('routeLimitSelect').value;
+            const lat = lastPosition?.coords.latitude, lng = lastPosition?.coords.longitude;
+            let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            
+            rts.forEach(r => {
+                r._distAway = Infinity;
+                if(lat && r.points) { try { const p = decodePoints(r.points); if(p.length) r._distAway = calculateDistance(lat, lng, p[0][0], p[0][1]); } catch(e){} }
+                r._d = parseFloat(r.distance) || 0; 
+                r._t = parseFloat(r.timeSec) || 0; 
+                r._s = parseFloat(r.avgSpeed) || 0;
+                r._ts = parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0;
+            });
+
+            const dRank = [...rts].sort((a,b) => b._d - a._d);
+            const tRank = [...rts].sort((a,b) => b._t - a._t);
+            const sRank = [...rts].sort((a,b) => b._s - a._s);
+            const tsRank = [...rts].sort((a,b) => b._ts - a._ts);
+
+            rts.forEach(r => {
+                r.mDist = getMedal(r, dRank, '_d');
+                r.mTime = getMedal(r, tRank, '_t');
+                r.mSpeed = getMedal(r, sRank, '_s');
+                r.mTopSpeed = getMedal(r, tsRank, '_ts');
+            });
+
+            rts.sort((a,b) => {
+                if(sort === 'proximity') return a._distAway - b._distAway;
+                if(sort === 'performance') return (b._d - a._d) || (b._t - a._t) || (b._s - a._s);
+                return b.timestamp - a.timestamp;
+            });
+
+            if(lim === '25') rts = rts.slice(0, 25);
+            list.innerHTML = rts.length ? '' : '<p class="text-center opacity-50 font-digital mt-4 text-white opacity-80">No routes found.</p>';
+            
+            rts.forEach(r => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-black border border-white shadow-[0_0_5px_rgba(255,255,255,0.2)] p-4 rounded-xl mb-3 font-digital hover:bg-[#111] transition-colors text-white";
+                
+                let badge = "";
+                if (r.mDist === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">🏆 DISTANCE</span>`;
+                if (r.mTime === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">⏳ ENDURANCE</span>`;
+                if (r.mSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">⚡ AVG SPD</span>`;
+                if (r.mTopSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">🚀 TOP SPD</span>`;
+
+                const distTxt = r._distAway !== Infinity ? `<div class="text-[0.65rem] text-white opacity-60 mt-1 tracking-widest">${r._distAway.toFixed(1)} MI AWAY</div>` : '';
+                
+                btn.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="truncate pr-2">
+                            <b class="text-lg uppercase text-white font-bold tracking-widest">${r.name}</b>
+                            <div class="flex flex-wrap mt-1.5">${badge}</div>
+                        </div>
+                        <small class="text-white opacity-70 whitespace-nowrap">${new Date(r.timestamp).toLocaleDateString()}</small>
+                    </div>
+                    ${distTxt}
+                    <div class="grid grid-cols-4 gap-1 text-center mt-3 pt-3 border-t border-zinc-800">
+                        <div class="flex flex-col">
+                            <span class="text-[0.55rem] text-white opacity-70 tracking-widest">DIST</span>
+                            <span class="text-white font-bold mt-1 text-[0.85rem]">${r.distance} ${r.mDist}</span>
+                        </div>
+                        <div class="flex flex-col border-l border-zinc-800">
+                            <span class="text-[0.55rem] text-white opacity-70 tracking-widest">TIME</span>
+                            <span class="text-white font-bold mt-1 text-[0.85rem]">${formatTime(r._t)} ${r.mTime}</span>
+                        </div>
+                        <div class="flex flex-col border-l border-zinc-800">
+                            <span class="text-[0.55rem] text-white opacity-70 tracking-widest">AVG SPD</span>
+                            <span class="text-white font-bold mt-1 text-[0.85rem]">${r.avgSpeed} ${r.mSpeed}</span>
+                        </div>
+                        <div class="flex flex-col border-l border-zinc-800">
+                            <span class="text-[0.55rem] text-white opacity-70 tracking-widest">TOP SPD</span>
+                            <span class="text-white font-bold mt-1 text-[0.85rem]">${(r.topSpeed || r.flatTopSpeed || '0.0')} ${r.mTopSpeed}</span>
+                        </div>
+                    </div>
+                `;
+                btn.onclick = () => openRouteDetails(r);
+                list.appendChild(btn);
+            });
+        }
+
+        function openRouteDetails(r) {
+            get('loadModal').classList.add('hidden'); get('routeDetailModal').classList.remove('hidden');
+            currentlyViewingRouteId = r.id;
+            get('detailNameInput').value = r.name; 
+            get('detailDistance').innerText = r.distance;
+            get('detailAvgSpeed').innerText = r.avgSpeed || '0.0';
+            get('detailTopAscent').innerText = r.ascentTopSpeed || r.topSpeed || '0.0';
+            get('detailTopFlat').innerText = r.flatTopSpeed || r.topSpeed || '0.0';
+            get('detailTopDescent').innerText = r.descentTopSpeed || r.topSpeed || '0.0';
+            get('detailAscent').innerText = Math.round((r.ascent||0)*3.28084); 
+            get('detailDescent').innerText = Math.round((r.descent||0)*3.28084);
+            
+            get('detailCalories').innerText = Math.round(r.calories||0);
+            get('detailMax20m').innerText = Math.round(r.p20m||0);
+            
+            get('detailConsistentTime').innerText = formatTime(r.maxConsistentSec||0);
+            get('detailConsistentDist').innerText = (r.maxConsistentDist||0).toFixed(1);
+            get('detailConsistentSpeed').innerText = (r.maxConsistentSpeed||0).toFixed(1);
+            get('detailNotesInput').value = r.notes || "";
+            
+            let qSplits = [];
+            try { qSplits = JSON.parse(r.splits); } catch(e){}
+            if(!Array.isArray(qSplits) || qSplits.length !== 4) qSplits = calculateQuartersFromData([], parseFloat(r.distance)||0, parseFloat(r.timeSec)||0);
+            
+            const dl = get('detailSplitsList'); dl.innerHTML = '';
+            qSplits.forEach((s,i) => dl.innerHTML += `<div class="flex justify-between bg-black border border-zinc-800 p-2 rounded mb-1 font-digital text-sm text-white font-bold"><span class="text-zinc-500">Q${i+1}</span><span>${formatTime(s.time)}</span><span>${s.avg.toFixed(1)} MPH</span></div>`);
+            
+            drawElevationProfile(decodePoints(r.points), 'detailElevationCanvas');
+            
+            get('btnLoadMap').onclick = () => {
+                const pts = decodePoints(r.points); 
+                if (!pts || pts.length === 0) {
+                    showAlert("Map route data for this ride has been automatically archived to save storage space. Stats remain available.");
+                    return;
+                }
+                loadedCompareRoutePoints = pts; drawCompareRoute(pts); 
+                get('routeDetailModal').classList.add('hidden'); currentViewIndex = 4; applyLayoutMode(); showView(4);
+                
+                setTimeout(() => {
+                    if(map) {
+                        map.invalidateSize();
+                        let latlngs = pts.map(p => [p[0], p[1]]);
+                        if(latlngs.length > 0) map.fitBounds(L.polyline(latlngs).getBounds());
+                    }
+                }, 450);
+            };
+            
+            const delBtn = get('btnDeleteRoute');
+            delBtn.innerText = "Delete Route";
+            delBtn.className = "w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors";
+            
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (delBtn.innerText === "Delete Route" || delBtn.innerText === "DELETE ROUTE") {
+                    delBtn.innerText = "CONFIRM DELETE";
+                    delBtn.classList.replace('text-red-500', 'text-white');
+                    delBtn.classList.replace('bg-[#111]', 'bg-red-700');
+                    setTimeout(() => {
+                        delBtn.innerText = "Delete Route";
+                        delBtn.classList.replace('text-white', 'text-red-500');
+                        delBtn.classList.replace('bg-red-700', 'bg-[#111]');
+                    }, 3000);
+                } else {
+                    let all = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                    all = all.filter(x => x.id !== r.id);
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(all));
+                    get('routeDetailModal').classList.add('hidden'); 
+                    
+                    delBtn.innerText = "Delete Route";
+                    delBtn.classList.replace('text-white', 'text-red-500');
+                    delBtn.classList.replace('bg-red-700', 'bg-[#111]');
+                    loadRoutes();
+                    get('loadModal').classList.remove('hidden');
+                }
+            };
+        }
+
+        function updateOdometer(m) {
+            const s = m.toFixed(2).split('.'), i = s[0], o1=get('odo1'), o2=get('odo2'), o3=get('odo3');
+            get('odo4').innerText = s[1][0]; get('odo5').innerText = s[1][1];
+            if (i.length>=3) { o1.classList.remove('hidden'); o2.classList.remove('hidden'); o1.innerText=i[i.length-3]; o2.innerText=i[i.length-2]; o3.innerText=i[i.length-1]; }
+            else if (i.length===2) { o1.classList.add('hidden'); o2.classList.remove('hidden'); o2.innerText=i[0]; o3.innerText=i[1]; }
+            else { o1.classList.add('hidden'); o2.classList.add('hidden'); o3.innerText=i[0]; }
+        }
+
+        function drawElevationProfile(points, canvasId) {
+            const canvas = document.getElementById(canvasId); if (!canvas) return;
+            const ctx = canvas.getContext('2d'); const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio; canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            if (!points || points.length < 2) return;
+            
+            const alts = points.map(p => p[2] || 0), minAlt = Math.min(...alts), maxAlt = Math.max(...alts), rangeAlt = Math.max(maxAlt - minAlt, 1);
+            const spds = points.map(p => p[3] || 0);
+            
+            // Draw Elevation (Filled Base)
+            ctx.beginPath(); ctx.moveTo(0, rect.height);
+            for(let i=0; i<points.length; i++) {
+                const x = (i / (points.length - 1)) * rect.width;
+                const y = rect.height - ((alts[i] - minAlt) / rangeAlt) * (rect.height * 0.7); 
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(rect.width, rect.height); ctx.closePath();
+            ctx.fillStyle = '#1a1a1a'; ctx.fill(); 
+            
+            // Speed Color Mapping
+            const getSpeedColor = (mph) => {
+                if (mph <= 6) return '#00ffff';
+                if (mph <= 12) return '#39ff14';
+                if (mph <= 18) return '#ffff00';
+                if (mph <= 24) return '#ffaa00';
+                if (mph <= 30) return '#ff0000';
+                return '#ff00ff';
+            };
+
+            // Draw Speed Colored Stroke
+            ctx.lineWidth = 2.5;
+            for(let i=1; i<points.length; i++) {
+                const x1 = ((i-1) / (points.length - 1)) * rect.width;
+                const y1 = rect.height - ((alts[i-1] - minAlt) / rangeAlt) * (rect.height * 0.7);
+                const x2 = (i / (points.length - 1)) * rect.width;
+                const y2 = rect.height - ((alts[i] - minAlt) / rangeAlt) * (rect.height * 0.7);
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = getSpeedColor(spds[i]);
+                ctx.stroke();
+            }
+
+            // Draw Quarter Splits Markers
+            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.font = "bold 10px 'DS-Digital', sans-serif";
+            ctx.textAlign = "center";
+            
+            for(let i=1; i<=3; i++) {
+                let idx = Math.floor(points.length * (i/4));
+                if(idx > 0 && idx < points.length) {
+                    const x = (idx / (points.length - 1)) * rect.width;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, rect.height);
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(x - 8, 2, 16, 14);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(`Q${i}`, x, 12);
+                }
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawCompareRoute(pts) {
+            compareRouteGroup.clearLayers();
+            L.polyline(pts, {color: themes[activeThemeIndex].vars.gauge, weight: 3, opacity: 0.9}).addTo(compareRouteGroup);
+        }
+
+        function updateUpcomingHill(lat, lng) {
+            const hInd = DOM.upcomingHillIndicator, hText = DOM.upcomingHillText;
+            if (!loadedCompareRoutePoints || loadedCompareRoutePoints.length < 5 || !hInd) return;
+            let closestIdx = 0, minDist = Infinity;
+            for(let i=0; i<loadedCompareRoutePoints.length; i++) {
+                const d = calculateDistance(lat, lng, loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1]);
+                if(d < minDist) { minDist = d; closestIdx = i; }
+            }
+            if (minDist > 0.05) { hInd.classList.add('hidden'); return; }
+            let lookDist = 0, lookIdx = closestIdx;
+            for(let i=closestIdx; i<loadedCompareRoutePoints.length-1; i++) {
+                lookDist += calculateDistance(loadedCompareRoutePoints[i][0], loadedCompareRoutePoints[i][1], loadedCompareRoutePoints[i+1][0], loadedCompareRoutePoints[i+1][1]);
+                lookIdx = i+1; if(lookDist >= 0.062) break;
+            }
+            const g = ((loadedCompareRoutePoints[lookIdx][2] - loadedCompareRoutePoints[closestIdx][2]) / (lookDist * 1609.34)) * 100;
+            if (Math.abs(g) >= 2.5) {
+                hInd.classList.remove('hidden'); hInd.style.boxShadow = `0 0 10px ${g > 0 ? '#ff1493' : '#39ff14'}`;
+                hText.innerHTML = `<span style="color:${g > 0 ? '#ff1493' : '#39ff14'}">${g > 0 ? '▲ UP' : '▼ DN'} ${Math.abs(g).toFixed(1)}%</span>`;
+            } else hInd.classList.add('hidden');
+        }
+
+        function updateStatus(t, c) { if (DOM.statusText) DOM.statusText.innerText = t; if (DOM.statusDot) DOM.statusDot.className = `w-2 h-2 rounded-full mr-3 animate-pulse ${c}`; }
+
+        function checkNearbyRoutes(lat, lng) {
+            try {
+                const btn = get('openRoutesBtn');
+                if (!btn) return;
+                
+                if (isTracking || rideSeconds > 0) {
+                    btn.classList.remove('nearby-pulse');
+                    btn.innerText = "ROUTES";
+                    return;
+                }
+
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let near = false;
+                for(let r of rts) {
+                    const pts = decodePoints(r.points);
+                    if(pts.length > 0 && calculateDistance(lat, lng, pts[0][0], pts[0][1]) < 0.05) { near = true; break; }
+                }
+                
+                if(near) { btn.classList.add('nearby-pulse'); btn.innerText = "📍 NEARBY"; }
+                else { btn.classList.remove('nearby-pulse'); btn.innerText = "ROUTES"; }
+            } catch(e){}
+        }
+
+        // --- 6. INITIALIZATION ---
         window.onload = () => {
             initDOMCache();
-            // ... (rest of standard bindings & init methods)
+            
+            const dc = DOM.dashboardContainer;
+            if (dc) {
+                let tSX = 0, tSY = 0;
+                dc.addEventListener('touchstart', e => { tSX = e.changedTouches[0].screenX; tSY = e.changedTouches[0].screenY; }, {passive: true});
+                dc.addEventListener('touchend', e => {
+                    const dx = tSX - e.changedTouches[0].screenX, dy = tSY - e.changedTouches[0].screenY;
+                    if(Math.abs(dx) > Math.abs(dy)) { if(!isGridMode && Math.abs(dx) > 40) { if(dx > 40) nextView(); else prevView(); } }
+                    else { if(Math.abs(dy) > 40) { if(dy > 40) { if(layoutMode < 2) { layoutMode++; applyLayoutMode(); } } else { if(layoutMode > 0) { layoutMode--; applyLayoutMode(); } } } }
+                }, {passive: true});
+                dc.onclick = e => {
+                    if (e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+                    const vs = ['view-speed', 'view-distance', 'view-compass', 'view-cadence', 'view-map'];
+                    if(isGridMode) { const cv = e.target.closest('.dash-view'); if(cv) { currentViewIndex = vs.indexOf(cv.id); layoutMode = 1; applyLayoutMode(); } }
+                };
+            }
+
+            click('themeBtn', cycleTheme);
+            click('brightnessBtn', cycleBrightness);
+            click('reloadBtn', () => location.reload());
+            click('toggleBtn', toggleDashboardMode);
+            click('navLeft', prevView);
+            click('navRight', nextView);
+            
+            click('settingsBtn', () => {
+                let matched = false;
+                Array.from(get('tireSizePreset').options).forEach(opt => {
+                    if (opt.value == tireSizeMm) {
+                        get('tireSizePreset').value = tireSizeMm;
+                        matched = true;
+                    }
+                });
+                if (!matched) {
+                    get('tireSizePreset').value = 'custom';
+                    get('tireSizeInput').classList.remove('hidden');
+                    get('tireSizeInput').value = tireSizeMm;
+                } else {
+                    get('tireSizeInput').classList.add('hidden');
+                }
+
+                get('frontTeethInput').value = frontTeeth;
+                get('rearTeethInput').value = rearTeeth;
+                get('ratioDisplayPreview').innerText = gearRatio.toFixed(2);
+
+                get('settingsModal').classList.remove('hidden');
+            });
+
+            const tirePresetEl = get('tireSizePreset');
+            if (tirePresetEl) {
+                tirePresetEl.onchange = () => {
+                    if (tirePresetEl.value === 'custom') get('tireSizeInput').classList.remove('hidden');
+                    else get('tireSizeInput').classList.add('hidden');
+                };
+            }
+
+            const updateRatioDisp = () => {
+                const f = parseFloat(get('frontTeethInput').value) || 0;
+                const r = parseFloat(get('rearTeethInput').value) || 0;
+                get('ratioDisplayPreview').innerText = r > 0 ? (f/r).toFixed(2) : "0.00";
+            };
+            if (get('frontTeethInput')) get('frontTeethInput').oninput = updateRatioDisp;
+            if (get('rearTeethInput')) get('rearTeethInput').oninput = updateRatioDisp;
+
+            click('closeSettingsBtn', () => {
+                tireSizeMm = get('tireSizePreset').value === 'custom' ? (parseFloat(get('tireSizeInput').value) || 2136) : parseFloat(get('tireSizePreset').value);
+                frontTeeth = parseFloat(get('frontTeethInput').value) || 42;
+                rearTeeth = parseFloat(get('rearTeethInput').value) || 13;
+                gearRatio = frontTeeth / rearTeeth;
+                
+                localStorage.setItem('bikeTracker_tireSize', tireSizeMm);
+                localStorage.setItem('bikeTracker_frontTeeth', frontTeeth);
+                localStorage.setItem('bikeTracker_rearTeeth', rearTeeth);
+                
+                get('settingsModal').classList.add('hidden');
+            });
+
+            click('exportBtn', () => {
+                const data = localStorage.getItem(ROUTES_KEY) || '[]';
+                const blob = new Blob([data], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bike_neon_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            click('importProxyBtn', () => get('importFileInput').click());
+
+            const importFileEl = get('importFileInput');
+            if (importFileEl) {
+                importFileEl.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        try {
+                            const imported = JSON.parse(ev.target.result);
+                            if(Array.isArray(imported)) {
+                                const existing = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                                const merged = [...existing];
+                                imported.forEach(imp => {
+                                    if(!merged.find(x => x.id === imp.id)) merged.push(imp);
+                                });
+                                localStorage.setItem(ROUTES_KEY, JSON.stringify(merged));
+                                showAlert("Data imported successfully!");
+                            } else {
+                                showAlert("Invalid backup format.");
+                            }
+                        } catch(err) {
+                            showAlert("Could not parse file.");
+                        }
+                        e.target.value = ''; 
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            click('compressHistoryBtn', () => {
+                try {
+                    let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                    let compressedCount = 0;
+                    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+                    const now = Date.now();
+                    
+                    rts = rts.map(r => {
+                        let changed = false;
+                        const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
+                        
+                        if (isOld && r.points && r.points.length > 0) {
+                            r.points = "";
+                            changed = true;
+                        } else if (!isOld && r.points && r.points.length > 0) {
+                            let pts = decodePoints(r.points);
+                            if (pts.length > 400) {
+                                const step = Math.ceil(pts.length / 400);
+                                pts = pts.filter((_, idx) => idx % step === 0);
+                                changed = true;
+                            }
+                            
+                            let newEncoded = pts.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)}`).join('|');
+                            if (r.points !== newEncoded) {
+                                r.points = newEncoded;
+                                changed = true;
+                            }
+                        }
+                        
+                        if (r.splits) {
+                            try {
+                                let sp = JSON.parse(r.splits);
+                                if (Array.isArray(sp) && sp.length > 4) { 
+                                    let dist = parseFloat(r.distance) || 0;
+                                    let time = parseFloat(r.timeSec) || 0;
+                                    let newSp = calculateQuartersFromData([], dist, time);
+                                    let newSpStr = JSON.stringify(newSp);
+                                    if (r.splits !== newSpStr) {
+                                        r.splits = newSpStr;
+                                        changed = true;
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+                        
+                        if (changed) compressedCount++;
+                        return r;
+                    });
+                    
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                    showAlert(`Successfully archived and compressed ${compressedCount} saved routes to free up storage!`);
+                } catch (e) {
+                    showAlert("Compression error: " + e.message);
+                }
+            });
+            
+            voiceEnabled = localStorage.getItem('bikeTracker_voice') !== 'false';
+            
+            function updateVoiceUI() {
+                [get('voiceOnBtn'), get('voiceOffBtn')].forEach(b => {
+                    if (b) {
+                        b.classList.remove('bg-white', 'text-black');
+                        b.classList.add('text-white', 'opacity-60', 'border', 'border-zinc-800');
+                    }
+                });
+                const activeBtn = get(voiceEnabled ? 'voiceOnBtn' : 'voiceOffBtn');
+                if (activeBtn) {
+                    activeBtn.classList.remove('text-white', 'opacity-60', 'border', 'border-zinc-800');
+                    activeBtn.classList.add('bg-white', 'text-black');
+                }
+            }
+            updateVoiceUI();
+            
+            click('voiceOnBtn', () => { voiceEnabled = true; localStorage.setItem('bikeTracker_voice', true); updateVoiceUI(); });
+            click('voiceOffBtn', () => { voiceEnabled = false; localStorage.setItem('bikeTracker_voice', false); updateVoiceUI(); });
+            
+            click('mainActionBtn', toggleTracking);
+
+            click('liveSummaryBtn', () => {
+                if (rideSeconds === 0 && !isTracking) {
+                    showTotals();
+                } else {
+                    showSummary();
+                }
+            });
+
+            click('openRoutesBtn', () => { get('loadModal').classList.remove('hidden'); loadRoutes(); });
+            click('closeLoadBtn', () => get('loadModal').classList.add('hidden'));
+            click('closeSummaryBtn', () => get('summaryModal').classList.add('hidden'));
+            click('closeTotalsBtn', () => get('totalsModal').classList.add('hidden'));
+            click('btnCloseDetails', () => get('routeDetailModal').classList.add('hidden'));
+            click('cancelSaveBtn', () => get('saveModal').classList.add('hidden'));
+            click('closeAlertBtn', () => get('alertModal').classList.add('hidden'));
+            
+            const triggerSaveFlow = async () => {
+                if(currentRouteCoords.length < 2 && rideSeconds < 5) { showAlert("Not enough data to save."); return; }
+                
+                const sModal = get('summaryModal');
+                if (sModal && !sModal.classList.contains('hidden')) sModal.classList.add('hidden');
+                
+                if (isTracking) toggleTracking(); 
+                
+                get('saveModal').classList.remove('hidden');
+                get('saveDistancePreview').innerText = totalDistanceMiles.toFixed(2);
+                
+                const nameInput = get('routeNameInput');
+                nameInput.value = "";
+                nameInput.placeholder = "Loading location...";
+                
+                let isRecord = false;
+                let curAvgSpd = rideSeconds > 0 ? (totalDistanceMiles/(rideSeconds/3600)) : 0;
+                let curTopSpd = topSpeedMph;
+                
+                const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let allTimeMaxAvg = 0;
+                
+                if (rts.length > 0) {
+                    let maxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
+                    let maxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
+                    let maxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
+                    allTimeMaxAvg = maxAvg;
+                    let maxTop = Math.max(...rts.map(r => parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0));
+                    
+                    if (totalDistanceMiles > maxDist || rideSeconds > maxTime || curAvgSpd > maxAvg || curTopSpd > maxTop) {
+                        isRecord = true;
+                    }
+                } else if (totalDistanceMiles > 0.1) {
+                    isRecord = true;
+                    allTimeMaxAvg = curAvgSpd;
+                }
+
+                let prefix = isRecord ? "Record " : "";
+                let baseName = prefix + "Ride";
+                let zoneStr = getTrainingZone(curAvgSpd, allTimeMaxAvg);
+                let zoneSuffix = zoneStr ? ` - ${zoneStr}` : "";
+                
+                try {
+                    if (currentRouteCoords.length > 0) {
+                        const startPt = currentRouteCoords[0];
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${startPt[0]}&lon=${startPt[1]}&format=json`);
+                        const data = await res.json();
+                        
+                        const addr = data.address || {};
+                        const landmark = addr.amenity || addr.leisure || addr.building || addr.park || addr.tourism || addr.shop;
+                        const road = addr.road || addr.pedestrian || addr.cycleway;
+                        const area = addr.neighbourhood || addr.suburb || addr.city || addr.town || addr.village;
+                        
+                        const locationName = landmark || road || area || "";
+                        
+                        if (locationName) {
+                            baseName = `${prefix}${locationName} Ride`;
+                        }
+                    }
+                } catch(e) {
+                    console.log("Location fetch failed", e);
+                }
+                
+                nameInput.value = baseName + zoneSuffix;
+            };
+
+            click('saveRouteBtn', () => {
+                if (isTracking) toggleTracking(); 
+                showSummary(); 
+            });
+            click('confirmSaveBtn', saveRide);
+            click('saveRideFromSummaryBtn', triggerSaveFlow);
+
+            click('btnSaveNotes', () => {
+                if (!currentlyViewingRouteId) return;
+                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let routeIndex = rts.findIndex(r => r.id === currentlyViewingRouteId);
+                if (routeIndex > -1) {
+                    rts[routeIndex].name = get('detailNameInput').value;
+                    rts[routeIndex].notes = get('detailNotesInput').value;
+                    
+                    let inputDist = parseFloat(get('detailDistanceInput').value);
+                    let originalDist = parseFloat(rts[routeIndex].distance);
+                    
+                    if (!isNaN(inputDist) && inputDist >= 0 && Math.abs(inputDist - originalDist) > 0.05) {
+                        if (!confirm("Changing the distance manually will overwrite your top speeds and elevation data to preserve chart integrity. Continue?")) return;
+                        
+                        rts[routeIndex].distance = inputDist.toFixed(2);
+                        if (rts[routeIndex].timeSec > 0) {
+                            rts[routeIndex].avgSpeed = (inputDist / (rts[routeIndex].timeSec / 3600)).toFixed(1);
+                        }
+                        
+                        rts[routeIndex].topSpeed = "0.0";
+                        rts[routeIndex].flatTopSpeed = "0.0";
+                        rts[routeIndex].ascentTopSpeed = "0.0";
+                        rts[routeIndex].descentTopSpeed = "0.0";
+                        rts[routeIndex].ascent = 0;
+                        rts[routeIndex].descent = 0;
+                    }
+
+                    localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                    
+                    get('detailDistance').innerText = rts[routeIndex].distance;
+                    get('detailAvgSpeed').innerText = rts[routeIndex].avgSpeed;
+                    
+                    const btn = get('btnSaveNotes');
+                    const originalText = btn.innerText;
+                    btn.innerText = "SAVED!";
+                    btn.classList.add('bg-green-500', 'text-black');
+                    btn.classList.remove('bg-white');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('bg-green-500', 'text-black');
+                        btn.classList.add('bg-white');
+                    }, 2000);
+                    
+                    loadRoutes(); 
+                }
+            });
+
+            click('btnAutoFix', () => {
+                if (!currentlyViewingRouteId) return;
+                if (!confirm("This will scan your map data to automatically remove massive GPS glitches. Your distance, speeds, and elevation will be recalculated based on the valid data left over. Proceed?")) return;
+                
+                let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+                let routeIndex = rts.findIndex(r => r.id === currentlyViewingRouteId);
+                if (routeIndex > -1) {
+                    let r = rts[routeIndex];
+                    let pts = decodePoints(r.points);
+                    
+                    if (pts.length > 2) {
+                        let cleanPts = [pts[0]];
+                        let newDist = 0, newAsc = 0, newDesc = 0, topS = 0;
+                        
+                        for(let i=1; i<pts.length; i++) {
+                            let d = calculateDistance(cleanPts[cleanPts.length-1][0], cleanPts[cleanPts.length-1][1], pts[i][0], pts[i][1]);
+                            if (d < 0.1) { // Filter impossible > 0.1mi per tick jumps
+                                cleanPts.push(pts[i]);
+                                newDist += d;
+                                let altDiff = (pts[i][2]||0) - (cleanPts[cleanPts.length-2][2]||0);
+                                if (altDiff > 0 && altDiff < 500) newAsc += altDiff;
+                                else if (altDiff < 0 && altDiff > -500) newDesc += Math.abs(altDiff);
+                                
+                                let spd = pts[i][3]||0;
+                                if (spd > 0 && spd <= 65 && spd > topS) topS = spd; // Cap realistically for a bike
+                            }
+                        }
+                        
+                        r.points = cleanPts.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)}`).join('|');
+                        r.distance = newDist.toFixed(2);
+                        r.ascent = newAsc;
+                        r.descent = newDesc;
+                        r.topSpeed = topS.toFixed(1);
+                        r.flatTopSpeed = topS.toFixed(1);
+                        r.ascentTopSpeed = "0.0";
+                        r.descentTopSpeed = "0.0";
+                        
+                        if (parseFloat(r.timeSec) > 0) {
+                            r.avgSpeed = (newDist / (parseFloat(r.timeSec) / 3600)).toFixed(1);
+                        }
+                        
+                        let newSplits = calculateQuartersFromData(cleanPts, newDist, parseFloat(r.timeSec)||0);
+                        r.splits = JSON.stringify(newSplits);
+                        
+                        localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                        showAlert("GPS Glitches repaired successfully! Ride stats have been rebuilt.");
+                        openRouteDetails(r);
+                        loadRoutes();
+                    } else {
+                        showAlert("Not enough map data left to perform an auto-fix.");
+                    }
+                }
+            });
+
+            click('returnToRideBtn', () => get('summaryModal').classList.add('hidden'));
+            
+            click('discardRideBtn', () => { get('confirmDiscardModal').classList.remove('hidden'); });
+            click('cancelDiscardBtn', () => { get('confirmDiscardModal').classList.add('hidden'); });
+            click('confirmDiscardBtn', () => {
+                get('confirmDiscardModal').classList.add('hidden');
+                get('summaryModal').classList.add('hidden');
+                if (isTracking) toggleTracking();
+                releaseWakeLock();
+                resetRide();
+            });
+
+            click('autoPauseToggle', toggleAutoPause);
+            
+            click('btnGoalDistance', () => setGoalType('distance'));
+            click('btnGoalTime', () => setGoalType('time'));
+
+            tireSizeMm = parseFloat(localStorage.getItem('bikeTracker_tireSize')) || 2136;
+            frontTeeth = parseFloat(localStorage.getItem('bikeTracker_frontTeeth')) || 42;
+            rearTeeth = parseFloat(localStorage.getItem('bikeTracker_rearTeeth')) || 13;
+            gearRatio = frontTeeth / rearTeeth;
+
+            const mapEl = get('map');
+            if (mapEl) {
+                map = L.map('map', { zoomControl: false }).setView([39.8, -98.5], 4);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                currentRoutePolyline = L.polyline([], {weight: 6, opacity: 0.9, lineCap: 'round'}).addTo(map);
+                compareRouteGroup = L.layerGroup().addTo(map);
+            }
+
+            const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
+            if (rts.length > 0) {
+                prevMaxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
+                prevMaxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
+                prevMaxSpeed = Math.max(...rts.map(r => parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0));
+                
+                let max20 = Math.max(...rts.map(r => parseFloat(r.p20m) || 0));
+                if (max20 > 0) globalFTP = max20 * 0.95;
+            }
+
+            restoreRideState();
+            currentBrightnessLevel = -1; cycleBrightness();
+            const st = localStorage.getItem('bikeTracker_theme');
+            if(st) { activeThemeIndex = parseInt(st)-1; cycleTheme(); } else cycleTheme();
+            applyLayoutMode();
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => { 
+                    lastPosition = p; 
+                    if (map) map.setView([p.coords.latitude, p.coords.longitude], 14); 
+                    checkNearbyRoutes(p.coords.latitude, p.coords.longitude); 
+                });
+            }
+            updateMainButtons();
         };
     </script>
 </body>
