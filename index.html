@@ -2197,10 +2197,12 @@
                         let cleanPts = [];
                         let newDist = 0, newAsc = 0, newDesc = 0, topS = 0;
                         let lastValid = null;
+                        let distanceToSubtract = 0; // The surgical glitch remover
                         
                         for(let i=0; i<pts.length; i++) {
                             let curr = pts[i];
                             if (!lastValid) {
+                                distanceToSubtract = curr[5] || 0;
                                 curr[5] = 0;
                                 cleanPts.push(curr);
                                 lastValid = curr;
@@ -2209,8 +2211,25 @@
                                 let dt = curr[4] - lastValid[4];
                                 let impSpd = dt > 1 ? (d / (dt / 3600)) : (d / (1 / 3600));
                                 
-                                if (impSpd < 150 && d < 10) { 
-                                    newDist += d;
+                                // Detect impossible glitch
+                                if (impSpd > 150 || d > 10) { 
+                                    continue; // Skip this bad point entirely
+                                } else {
+                                    // Extract the original cumulative distance delta between these two valid points
+                                    let originalDelta = (curr[5] || 0) - (lastValid[5] || 0);
+                                    
+                                    // If the original recorded distance added a massive chunk that physically couldn't fit
+                                    // between these points, it means a glitch was embedded in the odometer!
+                                    if (originalDelta - d > 0.5) {
+                                        distanceToSubtract += (originalDelta - d);
+                                    }
+                                    
+                                    // Restore original high-accuracy distance minus the surgical glitch
+                                    curr[5] = (curr[5] || 0) - distanceToSubtract;
+                                    if (curr[5] < lastValid[5]) curr[5] = lastValid[5] + d; // Fallback
+                                    
+                                    newDist = curr[5];
+
                                     let altDiff = (curr[2]||0) - (lastValid[2]||0);
                                     if (altDiff > 0 && altDiff < 500) newAsc += altDiff;
                                     else if (altDiff < 0 && altDiff > -500) newDesc += Math.abs(altDiff);
@@ -2218,7 +2237,6 @@
                                     let spd = curr[3]||0;
                                     if (spd > 0 && spd <= 65 && spd > topS) topS = spd; 
                                     
-                                    curr[5] = newDist;
                                     cleanPts.push(curr);
                                     lastValid = curr;
                                 }
@@ -2242,7 +2260,7 @@
                         r.splits = JSON.stringify(newSplits);
                         
                         localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-                        showAlert("GPS Glitches repaired successfully! Ride stats have been rebuilt.");
+                        showAlert("GPS Glitches repaired! Original valid distance perfectly restored.");
                         openRouteDetails(r);
                         loadRoutes();
                     } else {
