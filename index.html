@@ -79,9 +79,12 @@
         #dashboardContainer.grid-mode #speed { font-size: 4rem !important; }
         #dashboardContainer.grid-mode #speedExtra, #dashboardContainer.grid-mode #view-goal, #dashboardContainer.grid-mode #view-map { display: none !important; }
         #dashboardContainer.grid-mode #view-cadence { display: flex !important; opacity: 1 !important; z-index: 10 !important;}
+        
+        /* Force UI overrides for checkboxes */
+        input[type="checkbox"], label:has(input[type="checkbox"]) { position: relative; z-index: 9999 !important; pointer-events: auto !important; cursor: pointer !important; }
     </style>
 </head>
-<body class="flex flex-col h-full w-full no-select relative">
+<body class="flex flex-col h-full w-full no-select relative bg-black font-sans">
 
     <div id="dimmerOverlay"></div>
     <div id="map"></div>
@@ -130,14 +133,14 @@
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
                 <div class="view-dot w-2 h-2 rounded-full bg-zinc-800 transition-colors"></div>
             </div>
-            <button id="toggleBtn" class="absolute right-0 text-zinc-500 hover:text-white transition-colors">
+            <button id="toggleBtn" class="absolute right-0 text-zinc-500 hover:text-white transition-colors pointer-events-auto">
                 <svg id="toggleIcon" class="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
             </button>
         </div>
 
         <div id="dashboardContainer" class="carousel-mode relative flex-1 max-w-sm mx-auto mb-4 w-full shadow-lg">
-            <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
-            <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
+            <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
             <!-- 1. Speed -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center space-y-4 py-2 opacity-100 z-10 transition-opacity">
@@ -184,10 +187,10 @@
             </div>
 
             <!-- 4. Goal -->
-            <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6">
+            <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6 pointer-events-auto">
                 <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-white text-black uppercase">Miles</button>
-                    <button id="btnGoalTime" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Minutes</button>
+                    <button id="btnGoalTime" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg text-white opacity-60 hover:opacity-100 uppercase transition-opacity border border-zinc-800">Minutes</button>
                 </div>
                 <div class="bg-black p-3 rounded-2xl border border-zinc-800 w-full max-w-[250px] flex items-center justify-center mb-6 shadow-inner">
                     <input type="number" id="goalInput" class="w-24 bg-transparent text-neon-main text-center font-digital text-5xl outline-none neon-glow" placeholder="0.0">
@@ -209,7 +212,7 @@
         </div>
 
         <!-- Master Control Buttons -->
-        <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0">
+        <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0 pointer-events-auto">
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
             <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
             <button id="openRoutesBtn" class="w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-all">Routes</button>
@@ -230,8 +233,8 @@
             <div class="border-b border-zinc-800 pb-3">
                 <h3 class="text-xl text-neon-main mb-3 uppercase tracking-widest">Custom Range</h3>
                 <div class="flex space-x-2 mb-3">
-                    <input type="date" id="totCustomStart" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none">
-                    <input type="date" id="totCustomEnd" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none">
+                    <input type="date" id="totCustomStart" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none pointer-events-auto">
+                    <input type="date" id="totCustomEnd" class="flex-1 bg-black text-white p-2 border border-zinc-800 rounded font-sans text-xs outline-none pointer-events-auto">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><small class="uppercase tracking-widest text-zinc-400 text-[0.65rem]">Distance</small><br><span id="totCustomDist" class="text-xl font-bold">0.0 Mi</span></div>
@@ -270,7 +273,7 @@
             </div>
         </div>
         <div class="flex w-full max-w-sm shrink-0">
-            <button id="closeTotalsBtn" class="w-full py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95 transition-transform">Close</button>
+            <button id="closeTotalsBtn" class="w-full py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_15px_rgba(255,255,255,0.4)] active:scale-95 transition-transform pointer-events-auto">Close</button>
         </div>
     </div>
 
@@ -353,10 +356,10 @@
         </div>
         
         <div class="flex w-full max-w-sm space-x-3 shrink-0">
-            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_10px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Return</button>
+            <button id="returnToRideBtn" class="flex-1 py-4 rounded-xl font-digital font-bold text-black bg-white uppercase tracking-widest text-xl shadow-[0_0_10px_rgba(255,255,255,0.3)] active:scale-95 transition-transform pointer-events-auto">Return</button>
             <div class="flex flex-col space-y-2 flex-1">
-                <button id="saveRideFromSummaryBtn" class="w-full py-2 rounded-lg font-digital font-bold text-black bg-[#2ecc71] uppercase tracking-widest text-sm shadow-[0_0_10px_rgba(46,204,113,0.4)] active:scale-95 transition-transform border border-[#2ecc71]">Save Ride</button>
-                <button id="discardRideBtn" class="w-full py-2 rounded-lg font-digital font-bold text-red-500 bg-[#111] border border-red-900 uppercase tracking-widest text-sm active:scale-95 transition-transform">Discard</button>
+                <button id="saveRideFromSummaryBtn" class="w-full py-2 rounded-lg font-digital font-bold text-black bg-[#2ecc71] uppercase tracking-widest text-sm shadow-[0_0_10px_rgba(46,204,113,0.4)] active:scale-95 transition-transform border border-[#2ecc71] pointer-events-auto">Save Ride</button>
+                <button id="discardRideBtn" class="w-full py-2 rounded-lg font-digital font-bold text-red-500 bg-[#111] border border-red-900 uppercase tracking-widest text-sm active:scale-95 transition-transform pointer-events-auto">Discard</button>
             </div>
         </div>
     </div>
@@ -366,8 +369,8 @@
         <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
             <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
             <div class="flex space-x-3">
-                <button id="cancelDiscardBtn" class="flex-1 py-3 bg-zinc-900 text-white opacity-80 font-bold tracking-widest uppercase rounded-lg">No</button>
-                <button id="confirmDiscardBtn" class="flex-1 py-3 bg-red-600 text-black font-bold tracking-widest uppercase rounded-lg">Yes</button>
+                <button id="cancelDiscardBtn" class="flex-1 py-3 bg-zinc-900 text-white opacity-80 font-bold tracking-widest uppercase rounded-lg pointer-events-auto">No</button>
+                <button id="confirmDiscardBtn" class="flex-1 py-3 bg-red-600 text-black font-bold tracking-widest uppercase rounded-lg pointer-events-auto">Yes</button>
             </div>
         </div>
     </div>
@@ -377,25 +380,14 @@
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
             <p class="text-white opacity-80 text-xs mb-4 uppercase tracking-widest font-digital">Dist: <span id="saveDistancePreview" class="text-white font-bold text-lg"></span> mi</p>
-            <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white mb-4 outline-none font-digital text-lg tracking-widest">
-            <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 font-digital text-sm tracking-widest"></textarea>
+            <input type="text" id="routeNameInput" placeholder="Route Name" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white mb-4 outline-none font-digital text-lg tracking-widest pointer-events-auto">
+            <textarea id="routeNotesInput" placeholder="Ride notes..." class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 font-digital text-sm tracking-widest pointer-events-auto"></textarea>
             
-            <div id="challengePrompt" class="hidden mb-4 p-4 bg-[#1a1a00] border border-neon-main rounded-xl shadow-neon-sm">
-                <p class="text-neon-main font-bold uppercase tracking-widest text-[0.75rem] mb-3 animate-pulse text-center">🏆 New Personal Record!</p>
-                <div class="flex items-center justify-center space-x-2">
-                    <input type="checkbox" id="saveAsChallengeCheck" class="w-4 h-4 accent-neon-main bg-black border-zinc-800 rounded cursor-pointer">
-                    <label for="saveAsChallengeCheck" class="text-[0.65rem] text-white uppercase tracking-widest cursor-pointer font-digital pt-1">Save Map as Challenge</label>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-center mb-6 space-x-2">
-                <input type="checkbox" id="saveMapDataCheck" class="w-4 h-4 accent-neon-main bg-black border-zinc-800 rounded cursor-pointer">
-                <label for="saveMapDataCheck" class="text-[0.65rem] text-zinc-400 uppercase tracking-widest cursor-pointer font-digital pt-1">Save GPS Map Data</label>
-            </div>
+            <div id="challengeToggleContainer"></div>
 
             <div class="flex space-x-3">
-                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg border border-zinc-800 text-white opacity-80 uppercase font-digital tracking-widest">Cancel</button>
-                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-white text-black font-bold uppercase font-digital tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save</button>
+                <button id="cancelSaveBtn" class="flex-1 py-3 rounded-lg border border-zinc-800 text-white opacity-80 uppercase font-digital tracking-widest pointer-events-auto">Cancel</button>
+                <button id="confirmSaveBtn" class="flex-1 py-3 rounded-lg bg-white text-black font-bold uppercase font-digital tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)] pointer-events-auto">Save</button>
             </div>
         </div>
     </div>
@@ -405,18 +397,18 @@
             <div class="flex justify-between items-end border-b border-zinc-800 pb-3 mb-4">
                 <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest">Routes</h3>
                 <div class="flex space-x-1">
-                    <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="all">All</option><option value="25">Top 25</option></select>
-                    <select id="routeSortSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
+                    <select id="routeLimitSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer pointer-events-auto"><option value="all">All</option><option value="25">Top 25</option></select>
+                    <select id="routeSortSelect" class="bg-black border border-zinc-800 text-white font-digital tracking-widest text-xs p-1 rounded outline-none cursor-pointer pointer-events-auto"><option value="date">Newest</option><option value="proximity">Closest</option><option value="performance">Best</option></select>
                 </div>
             </div>
-            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
-            <button id="closeLoadBtn" class="mt-6 w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)]">Close</button>
+            <div id="routesList" class="flex-1 overflow-y-auto space-y-3 pr-1 pointer-events-auto"></div>
+            <button id="closeLoadBtn" class="mt-6 w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.3)] pointer-events-auto">Close</button>
         </div>
     </div>
 
     <div id="routeDetailModal" class="hidden absolute inset-0 bg-black/95 z-[2500] flex flex-col items-center p-4 text-center overflow-y-auto backdrop-blur-md">
         <div class="mt-12 w-full max-w-sm">
-            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest" style="text-shadow: 0 0 15px rgba(255,255,255,0.5);" />
+            <input type="text" id="detailNameInput" class="w-full bg-transparent text-center text-3xl font-digital text-white font-bold mb-6 uppercase outline-none tracking-widest pointer-events-auto" style="text-shadow: 0 0 15px rgba(255,255,255,0.5);" />
             <div class="bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 relative overflow-hidden text-left p-6 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
                 
                 <div class="space-y-4 relative z-10 font-digital text-white">
@@ -498,26 +490,26 @@
                 </label>
                 <p class="text-[0.55rem] text-zinc-400 mb-3 leading-tight font-sans">Only use if the GPS completely failed. Overwriting the recorded distance will clear top speeds to protect charts.</p>
                 <div class="flex space-x-2 mb-4">
-                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-red-900/50 text-white outline-none text-sm font-digital tracking-widest focus:border-red-500 transition-colors" placeholder="e.g. 15.2">
-                    <button id="btnAutoFix" class="bg-[#eab308] text-black font-bold rounded-lg font-digital uppercase tracking-widest text-[0.65rem] px-3 shadow-[0_0_10px_rgba(234,179,8,0.3)] whitespace-nowrap active:scale-95 transition-transform leading-tight text-center flex flex-col items-center justify-center">Auto-Fix<br>GPS</button>
+                    <input type="number" step="0.01" id="detailDistanceInput" class="w-full bg-black p-3 rounded-lg border border-red-900/50 text-white outline-none text-sm font-digital tracking-widest focus:border-red-500 transition-colors pointer-events-auto" placeholder="e.g. 15.2">
+                    <button id="btnAutoFix" class="bg-[#eab308] text-black font-bold rounded-lg font-digital uppercase tracking-widest text-[0.65rem] px-3 shadow-[0_0_10px_rgba(234,179,8,0.3)] whitespace-nowrap active:scale-95 transition-transform leading-tight text-center flex flex-col items-center justify-center pointer-events-auto">Auto-Fix<br>GPS</button>
                 </div>
                 
                 <label class="text-[0.65rem] text-zinc-400 uppercase tracking-widest mb-1 block">Ride Notes</label>
-                <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600 focus:border-neon-main transition-colors"></textarea>
+                <textarea id="detailNotesInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-white h-24 mb-4 outline-none text-sm font-digital tracking-widest placeholder-zinc-600 focus:border-neon-main transition-colors pointer-events-auto"></textarea>
                 
-                <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_10px_rgba(255,255,255,0.3)]">Save Updates</button>
-                <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors">Delete Route</button>
+                <button id="btnSaveNotes" class="w-full py-2.5 bg-white text-black font-bold rounded-lg font-digital uppercase tracking-widest text-sm mb-3 shadow-[0_0_10px_rgba(255,255,255,0.3)] pointer-events-auto">Save Updates</button>
+                <button id="btnDeleteRoute" class="w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors pointer-events-auto">Delete Route</button>
             </div>
             
             <div class="flex space-x-3 mb-10">
-                <button id="btnLoadMap" class="flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Load Map Route</button>
-                <button id="btnCloseDetails" class="flex-1 py-3.5 bg-zinc-900 border border-zinc-700 text-white font-digital rounded-xl tracking-widest uppercase">Close</button>
+                <button id="btnLoadMap" class="flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71] pointer-events-auto">Load Map Route</button>
+                <button id="btnCloseDetails" class="flex-1 py-3.5 bg-zinc-900 border border-zinc-700 text-white font-digital rounded-xl tracking-widest uppercase pointer-events-auto">Close</button>
             </div>
         </div>
     </div>
 
     <div id="alertModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)]">OK</button></div>
+        <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto">OK</button></div>
     </div>
 
     <!-- Settings Modal -->
@@ -530,23 +522,23 @@
                 <div class="border-b border-zinc-800 pb-4">
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Goal</label>
                     <div class="flex space-x-1 mb-2">
-                        <button id="btnGoalDistance" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase">Mi</button>
-                        <button id="btnGoalTime" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Min</button>
+                        <button id="btnGoalDistance" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase pointer-events-auto">Mi</button>
+                        <button id="btnGoalTime" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity pointer-events-auto">Min</button>
                     </div>
-                    <input type="number" id="goalInput" class="w-full bg-black p-2 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="0.0">
+                    <input type="number" id="goalInput" class="w-full bg-black p-2 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center pointer-events-auto" placeholder="0.0">
                 </div>
 
                 <div class="border-b border-zinc-800 pb-4">
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Voice Announcements & Navigation</label>
                     <div class="flex space-x-1">
-                        <button id="voiceOnBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase">On</button>
-                        <button id="voiceOffBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity">Off</button>
+                        <button id="voiceOnBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded bg-white text-black uppercase pointer-events-auto">On</button>
+                        <button id="voiceOffBtn" class="flex-1 py-1.5 text-xs font-digital tracking-widest rounded border border-zinc-800 text-white opacity-60 hover:opacity-100 uppercase transition-opacity pointer-events-auto">Off</button>
                     </div>
                 </div>
 
                 <div>
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Tire Size</label>
-                    <select id="tireSizePreset" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest mb-2 cursor-pointer">
+                    <select id="tireSizePreset" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest mb-2 cursor-pointer pointer-events-auto">
                         <option value="2096">700x23c</option>
                         <option value="2105">700x25c</option>
                         <option value="2136">700x28c</option>
@@ -558,14 +550,14 @@
                         <option value="2055">26x2.0"</option>
                         <option value="custom">Custom (mm)</option>
                     </select>
-                    <input type="number" id="tireSizeInput" class="hidden w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest" placeholder="2136">
+                    <input type="number" id="tireSizeInput" class="hidden w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest pointer-events-auto" placeholder="2136">
                 </div>
                 <div>
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-1">Gearing (Front Ring / Rear Cog)</label>
                     <div class="flex space-x-2 items-center">
-                        <input type="number" id="frontTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="42">
+                        <input type="number" id="frontTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center pointer-events-auto" placeholder="42">
                         <span class="text-white opacity-50 font-digital text-xl">/</span>
-                        <input type="number" id="rearTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center" placeholder="13">
+                        <input type="number" id="rearTeethInput" class="w-full bg-black p-3 rounded-lg border border-zinc-800 text-neon-main outline-none font-digital text-lg tracking-widest text-center pointer-events-auto" placeholder="13">
                     </div>
                     <small class="text-white opacity-60 text-[0.6rem] font-digital uppercase tracking-widest mt-2 block">Ratio: <span id="ratioDisplayPreview" class="text-neon-main font-bold">3.23</span></small>
                 </div>
@@ -573,15 +565,15 @@
                 <div class="pt-4 border-t border-zinc-800">
                     <label class="text-[0.7rem] text-white opacity-80 font-digital uppercase tracking-widest block mb-2">Backup & Restore</label>
                     <div class="flex space-x-2 mb-3">
-                        <button id="exportBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Export</button>
-                        <button id="importProxyBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform">Import</button>
+                        <button id="exportBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform pointer-events-auto">Export</button>
+                        <button id="importProxyBtn" class="flex-1 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(255,255,255,0.1)] active:scale-95 transition-transform pointer-events-auto">Import</button>
                         <input type="file" id="importFileInput" accept=".json" class="hidden">
                     </div>
-                    <button id="compressHistoryBtn" class="w-full py-2.5 rounded-lg bg-[#111] border border-orange-900 text-orange-500 font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(234,179,8,0.1)] active:scale-95 transition-transform">Compress History Data</button>
+                    <button id="compressHistoryBtn" class="w-full py-2.5 rounded-lg bg-[#111] border border-orange-900 text-orange-500 font-digital uppercase tracking-widest text-sm shadow-[0_0_5px_rgba(234,179,8,0.1)] active:scale-95 transition-transform pointer-events-auto">Compress History Data</button>
                 </div>
             </div>
             
-            <button id="closeSettingsBtn" class="w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-transform">Save & Close</button>
+            <button id="closeSettingsBtn" class="w-full py-3 rounded-lg bg-white text-black font-bold font-digital uppercase tracking-widest shadow-[0_0_5px_rgba(255,255,255,0.3)] active:scale-95 transition-transform pointer-events-auto">Save & Close</button>
         </div>
     </div>
 
@@ -694,25 +686,14 @@
             }
         }
 
-        function getTrainingZone(avgSpd, maxAvgSpd) {
-            if (!maxAvgSpd || maxAvgSpd <= 0 || avgSpd <= 0) return "";
+        function getTrainingZoneInfo(avgSpd, maxAvgSpd) {
+            if (!maxAvgSpd || maxAvgSpd <= 0 || avgSpd <= 0) return {num: 1, color: '#00ffff'}; // Cyan fallback
             let intensity = avgSpd / maxAvgSpd;
-            if (intensity < 0.56) return "Zone 1 (Recovery)";
-            if (intensity >= 0.56 && intensity <= 0.75) return "Zone 2 (Endurance)";
-            if (intensity > 0.75 && intensity <= 0.87) return "Zone 3 (Tempo)";
-            if (intensity > 0.87 && intensity <= 0.94) return "Zone 4 (Threshold)";
-            if (intensity > 0.94) return "Zone 5 (VO2 Max)";
-            return "";
-        }
-
-        function getTrainingZoneNum(avgSpd, maxAvgSpd) {
-            if (!maxAvgSpd || maxAvgSpd <= 0 || avgSpd <= 0) return 1;
-            let intensity = avgSpd / maxAvgSpd;
-            if (intensity < 0.56) return 1;
-            if (intensity >= 0.56 && intensity <= 0.75) return 2;
-            if (intensity > 0.75 && intensity <= 0.87) return 3;
-            if (intensity > 0.87 && intensity <= 0.94) return 4;
-            return 5;
+            if (intensity < 0.56) return {num: 1, color: '#00ffff'}; // Cyan
+            if (intensity <= 0.75) return {num: 2, color: '#39ff14'}; // Green
+            if (intensity <= 0.87) return {num: 3, color: '#ffff00'}; // Yellow
+            if (intensity <= 0.94) return {num: 4, color: '#ffaa00'}; // Orange
+            return {num: 5, color: '#ff0000'}; // Red
         }
 
         function speakText(text) {
@@ -889,17 +870,17 @@
             const svBtn = get('saveRouteBtn');
 
             if (rideSeconds === 0 && !isTracking) {
-                if(mBtn) { mBtn.innerText = "START RIDE"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]"; }
-                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "TOTALS"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]"; }
-                if(svBtn) { svBtn.disabled = true; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800"; }
+                if(mBtn) { mBtn.innerText = "START RIDE"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71] pointer-events-auto"; }
+                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "TOTALS"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto"; }
+                if(svBtn) { svBtn.disabled = true; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800 pointer-events-none"; }
             } else if (isTracking) {
-                if(mBtn) { mBtn.innerText = "PAUSE"; mBtn.className = "w-full bg-[#eab308] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#eab308]"; }
-                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]"; }
-                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600"; }
+                if(mBtn) { mBtn.innerText = "PAUSE"; mBtn.className = "w-full bg-[#eab308] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#eab308] pointer-events-auto"; }
+                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto"; }
+                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600 pointer-events-auto"; }
             } else {
-                if(mBtn) { mBtn.innerText = "RESUME"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]"; }
-                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)]"; }
-                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600"; }
+                if(mBtn) { mBtn.innerText = "RESUME"; mBtn.className = "w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71] pointer-events-auto"; }
+                if(sBtn) { sBtn.disabled = false; sBtn.innerText = "SUMMARY"; sBtn.className = "w-full bg-black border border-white text-white font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto"; }
+                if(svBtn) { svBtn.disabled = false; svBtn.innerText = "STOP / SAVE"; svBtn.className = "w-full bg-red-600 text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.4)] border border-red-600 pointer-events-auto"; }
             }
         }
 
@@ -960,20 +941,30 @@
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
             
             if (isTracking && !isAutoPaused) {
-                if (lastPosition) {
-                    const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
+            if (lastPosition) {
+                const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
+                let dt = (now - lastGpsTimestamp) / 1000;
+                
+                if (dt > 0 && d > 0.0002) {
+                    let impSpd = d / (dt / 3600);
                     
-                    if (d > 0.0005) {
-                        let dt = (now - lastGpsTimestamp) / 1000;
-                        let impSpd = dt > 1 ? (d / (dt / 3600)) : (d / (1 / 3600));
-                        
-                        if (impSpd > 150 || d > 2) {
-                            return; 
-                        }
+                    // PERFECTED PHYSICS SHIELD: Accurate math prevents rapid sub-second GPS updates from bloating distance
+                    if (impSpd > 65 || d > 2.0) {
+                        lastPosition = pos;
+                        lastGpsTimestamp = now;
+                        return; 
+                    }
 
-                        totalDistanceMiles += d; 
-                        updateOdometer(totalDistanceMiles);
-                        const da = alt - (lastPosition.coords.altitude || 0);
+                    // JITTER SHIELD: If stopped (speed < 1mph), ignore tiny sub-15ft coordinate bounces
+                    if (spd < 1.0 && d < 0.003) {
+                        lastPosition = pos;
+                        lastGpsTimestamp = now;
+                        return;
+                    }
+
+                    totalDistanceMiles += d; 
+                    updateOdometer(totalDistanceMiles);
+                    const da = alt - (lastPosition.coords.altitude || 0);
                         if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
                         
                         currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
@@ -1442,7 +1433,7 @@
                     <span class="uppercase tracking-widest text-zinc-400 text-[0.75rem] leading-tight font-bold mb-1">${label}</span>
                     <div class="flex justify-between items-end mt-auto">
                         <span class="text-lg font-digital font-bold text-white leading-none">${val}</span>
-                        <button onclick='window.loadSpecificRoute("${route.id}")' class="text-[0.65rem] bg-zinc-800 text-white px-2 py-1 rounded opacity-80 hover:opacity-100 transition-opacity uppercase font-bold active:scale-95">View</button>
+                        <button onclick='window.loadSpecificRoute("${route.id}")' class="text-[0.65rem] bg-zinc-800 text-white px-2 py-1 rounded opacity-80 hover:opacity-100 transition-opacity uppercase font-bold active:scale-95 pointer-events-auto">View</button>
                     </div>
                 </div>`;
             };
@@ -1520,25 +1511,13 @@
                     avgSpd = (totalDistanceMiles/(rideSeconds/3600)).toFixed(1);
                 }
                 
-                const curAvgNum = parseFloat(avgSpd) || 0;
-                let allTimeMaxAvg = curAvgNum;
-                if (rts.length > 0) {
-                    let prevMaxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
-                    if (prevMaxAvg > allTimeMaxAvg) allTimeMaxAvg = prevMaxAvg;
-                }
-
-                const isChallenge = get('saveAsChallengeCheck') && get('saveAsChallengeCheck').checked && !get('challengePrompt').classList.contains('hidden');
-                const shouldSaveMap = isChallenge || (get('saveMapDataCheck') ? get('saveMapDataCheck').checked : true);
-                
-                if (!isChallenge) {
-                    localStorage.setItem('bikeTracker_saveMapPref', shouldSaveMap);
-                }
+                const checkEl = get('saveMapDataCheck');
+                const shouldSaveMap = checkEl ? checkEl.checked : false;
                 
                 let compressedCoords = currentRouteCoords;
                 let encodedPoints = "";
                 
                 if (shouldSaveMap) {
-                    // Increased from 400 to 1200 for incredible map fidelity and auto-fix resolution
                     if (compressedCoords.length > 1200) {
                         const step = Math.ceil(compressedCoords.length / 1200);
                         compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
@@ -1571,10 +1550,9 @@
                     maxDist30m: maxDist30m.toFixed(2),
                     splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
-                    timestamp: Date.now(),
+                    isChallenge: shouldSaveMap,
                     notes: get('routeNotesInput').value || "",
-                    isChallenge: isChallenge,
-                    zoneNum: getTrainingZoneNum(curAvgNum, allTimeMaxAvg)
+                    timestamp: Date.now() 
                 });
                 
                 let size = JSON.stringify(rts).length;
@@ -1592,6 +1570,8 @@
                 }
                 
                 localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
+                if (!shouldSaveMap) localStorage.setItem('bikeTracker_saveMapPref', false);
+                else localStorage.setItem('bikeTracker_saveMapPref', true);
                 
                 releaseWakeLock();
                 localStorage.removeItem(STATE_KEY); 
@@ -1620,6 +1600,11 @@
             const lat = lastPosition?.coords.latitude, lng = lastPosition?.coords.longitude;
             let rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
             
+            let maxAvgS = 0;
+            if (rts.length > 0) {
+                maxAvgS = Math.max(...rts.map(x => parseFloat(x.avgSpeed) || 0));
+            }
+
             rts.forEach(r => {
                 r._distAway = Infinity;
                 if(lat && r.points) { try { const p = decodePoints(r.points); if(p.length) r._distAway = calculateDistance(lat, lng, p[0][0], p[0][1]); } catch(e){} }
@@ -1634,21 +1619,17 @@
             const sRank = [...rts].sort((a,b) => b._s - a._s);
             const tsRank = [...rts].sort((a,b) => b._ts - a._ts);
 
-            let allTimeMaxAvg = Math.max(...rts.map(r => r._s));
-            if (allTimeMaxAvg <= 0) allTimeMaxAvg = 1;
-
             rts.forEach(r => {
                 r.mDist = getMedal(r, dRank, '_d');
                 r.mTime = getMedal(r, tRank, '_t');
                 r.mSpeed = getMedal(r, sRank, '_s');
                 r.mTopSpeed = getMedal(r, tsRank, '_ts');
-                if (!r.zoneNum) r.zoneNum = getTrainingZoneNum(r._s, allTimeMaxAvg);
             });
 
             rts.sort((a,b) => {
                 if (a.isChallenge && !b.isChallenge) return -1;
                 if (!a.isChallenge && b.isChallenge) return 1;
-
+                
                 if(sort === 'proximity') return a._distAway - b._distAway;
                 if(sort === 'performance') return (b._d - a._d) || (b._t - a._t) || (b._s - a._s);
                 return b.timestamp - a.timestamp;
@@ -1659,7 +1640,7 @@
             
             rts.forEach(r => {
                 const btn = document.createElement('button');
-                btn.className = "w-full text-left bg-black border border-white shadow-[0_0_5px_rgba(255,255,255,0.2)] p-4 rounded-xl mb-3 font-digital hover:bg-[#111] transition-colors text-white";
+                btn.className = "w-full text-left bg-black border border-zinc-800 shadow-[0_0_5px_rgba(255,255,255,0.05)] p-4 rounded-xl mb-3 font-digital hover:bg-[#111] transition-colors text-white pointer-events-auto";
                 
                 let badge = "";
                 if (r.mDist === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">🏆 DISTANCE</span>`;
@@ -1667,23 +1648,33 @@
                 if (r.mSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">⚡ AVG SPD</span>`;
                 if (r.mTopSpeed === '🥇') badge += `<span class="bg-white text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_rgba(255,255,255,0.4)]">🚀 TOP SPD</span>`;
 
-                let chBadge = r.isChallenge ? `<span class="bg-neon-main text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_var(--neon-main)]">🏆 CHALLENGE</span>` : '';
-                let proxIndicator = (r.isChallenge && r._distAway < 0.05) 
-                    ? `<div class="text-[0.65rem] text-neon-main font-bold mt-1 tracking-widest animate-pulse">🏁 START NEARBY (${r._distAway.toFixed(1)} MI)</div>` 
-                    : (r._distAway !== Infinity ? `<div class="text-[0.65rem] text-white opacity-60 mt-1 tracking-widest">${r._distAway.toFixed(1)} MI AWAY</div>` : '');
+                let challengeIndicator = '';
+                if (r.isChallenge) {
+                    badge += `<span class="bg-neon-main text-black px-1.5 py-0.5 rounded text-[0.6rem] font-bold mr-1 mb-1 shadow-[0_0_5px_var(--neon-main)]">🏁 CHALLENGE MAP</span>`;
+                    if (r._distAway < 0.2) {
+                        challengeIndicator = `<div class="text-neon-main text-[0.65rem] animate-pulse font-bold mt-1 tracking-widest bg-neon-main/20 px-2 py-0.5 rounded inline-block">📍 START NEARBY</div>`;
+                    }
+                }
+                
+                let zInfo = getTrainingZoneInfo(r._s, maxAvgS);
 
                 btn.innerHTML = `
                     <div class="flex justify-between items-start">
-                        <div class="flex items-start pr-2 overflow-hidden flex-1">
-                            <span class="w-6 h-6 rounded-full border border-white text-white flex items-center justify-center text-[0.75rem] shrink-0 font-bold mr-2 mt-0.5 shadow-[0_0_5px_rgba(255,255,255,0.4)]" style="${r.zoneNum >= 4 ? 'border-color:var(--neon-main); color:var(--neon-main); box-shadow: 0 0 5px var(--neon-main);' : ''}">${r.zoneNum}</span>
-                            <div class="truncate">
-                                <b class="text-lg uppercase text-white font-bold tracking-widest truncate block">${r.name}</b>
-                                <div class="flex flex-wrap mt-1.5">${chBadge}${badge}</div>
+                        <div class="flex items-center space-x-3 truncate pr-2 w-full">
+                            <div class="w-8 h-8 shrink-0 rounded-full border-[2px] flex items-center justify-center font-digital text-xl font-bold" style="color: ${zInfo.color}; border-color: ${zInfo.color}; box-shadow: 0 0 8px ${zInfo.color}40;">
+                                ${zInfo.num}
+                            </div>
+                            <div class="truncate flex-1">
+                                <b class="text-lg uppercase text-white font-bold tracking-widest">${r.name}</b>
+                                <div class="flex flex-wrap mt-1">${badge}</div>
                             </div>
                         </div>
-                        <small class="text-white opacity-70 whitespace-nowrap ml-2">${new Date(r.timestamp).toLocaleDateString()}</small>
+                        <div class="text-right shrink-0">
+                            <small class="text-white opacity-70 whitespace-nowrap block mb-1">${new Date(r.timestamp).toLocaleDateString()}</small>
+                            ${challengeIndicator}
+                        </div>
                     </div>
-                    ${proxIndicator}
+                    
                     <div class="grid grid-cols-4 gap-1 text-center mt-3 pt-3 border-t border-zinc-800">
                         <div class="flex flex-col">
                             <span class="text-[0.55rem] text-white opacity-70 tracking-widest">DIST</span>
@@ -1738,54 +1729,46 @@
             
             drawElevationProfile(decodePoints(r.points), 'detailElevationCanvas');
             
-            const btnLoadMap = get('btnLoadMap');
-            if (r.isChallenge && r.points) {
-                btnLoadMap.innerText = "Load Challenge";
-                btnLoadMap.className = "flex-1 py-3.5 bg-neon-main text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-neon-md border border-neon-main";
-            } else if (r.points && r.points.length > 0) {
-                btnLoadMap.innerText = "Load Map Route";
-                btnLoadMap.className = "flex-1 py-3.5 bg-[#2ecc71] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_10px_rgba(46,204,113,0.4)] border border-[#2ecc71]";
+            const loadBtn = get('btnLoadMap');
+            if (!r.isChallenge || !r.points || r.points.length === 0 || r.points === "[]") {
+                loadBtn.innerText = "Free Ride";
+                loadBtn.className = "flex-1 py-3.5 bg-zinc-900 text-zinc-600 font-bold font-digital rounded-xl tracking-widest uppercase border border-zinc-800 pointer-events-none";
+                loadBtn.onclick = null;
             } else {
-                btnLoadMap.innerText = "Free Ride";
-                btnLoadMap.className = "flex-1 py-3.5 bg-zinc-800 text-white font-bold font-digital rounded-xl tracking-widest uppercase border border-zinc-700 shadow-none";
-            }
-            
-            btnLoadMap.onclick = () => {
-                const pts = decodePoints(r.points); 
-                if (!pts || pts.length === 0) {
-                    get('routeDetailModal').classList.add('hidden'); 
-                    return; 
-                }
-                
-                let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
-                if (validPts.length === 0) validPts = pts; 
+                loadBtn.innerText = "Load Challenge";
+                loadBtn.className = "flex-1 py-3.5 bg-[#eab308] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#eab308] pointer-events-auto";
+                loadBtn.onclick = () => {
+                    const pts = decodePoints(r.points); 
+                    let validPts = pts.filter(p => p && !isNaN(p[0]) && !isNaN(p[1]) && (Math.abs(p[0]) > 0.1 || Math.abs(p[1]) > 0.1));
+                    if (validPts.length === 0) validPts = pts; 
 
-                loadedCompareRoutePoints = validPts; 
-                drawCompareRoute(validPts); 
-                
-                get('routeDetailModal').classList.add('hidden'); 
-                
-                layoutMode = 1; 
-                currentViewIndex = 4; 
-                applyLayoutMode(); 
-                showView(4);
-                
-                setTimeout(() => {
-                    if(map) {
-                        map.invalidateSize();
-                        let latlngs = validPts.map(p => [p[0], p[1]]);
-                        if(latlngs.length > 1) {
-                            map.fitBounds(L.polyline(latlngs).getBounds(), {padding: [20, 20], maxZoom: 16});
-                        } else if (latlngs.length === 1) {
-                            map.setView(latlngs[0], 16);
+                    loadedCompareRoutePoints = validPts; 
+                    drawCompareRoute(validPts); 
+                    
+                    get('routeDetailModal').classList.add('hidden'); 
+                    
+                    layoutMode = 1; 
+                    currentViewIndex = 4; 
+                    applyLayoutMode(); 
+                    showView(4);
+                    
+                    setTimeout(() => {
+                        if(map) {
+                            map.invalidateSize();
+                            let latlngs = validPts.map(p => [p[0], p[1]]);
+                            if(latlngs.length > 1) {
+                                map.fitBounds(L.polyline(latlngs).getBounds(), {padding: [20, 20], maxZoom: 16});
+                            } else if (latlngs.length === 1) {
+                                map.setView(latlngs[0], 16);
+                            }
                         }
-                    }
-                }, 450);
-            };
+                    }, 450);
+                };
+            }
             
             const delBtn = get('btnDeleteRoute');
             delBtn.innerText = "Delete Route";
-            delBtn.className = "w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors";
+            delBtn.className = "w-full py-2.5 bg-[#111] border border-red-900 text-red-500 rounded-lg font-digital uppercase tracking-widest text-sm transition-colors pointer-events-auto";
             
             delBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -2061,11 +2044,9 @@
                     rts = rts.map(r => {
                         let changed = false;
                         
-                        if (r.points && r.points.length > 0) {
+                        if (r.points && r.points.length > 0 && r.points !== "[]") {
                             let pts = decodePoints(r.points);
                             const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
-                            
-                            // Challenges stay High-Res forever! Old mundane maps drop to 200 points.
                             let limit = isOld ? 200 : 1200; 
                             if (r.isChallenge) limit = 1200;
                             
@@ -2158,22 +2139,19 @@
                 nameInput.placeholder = "Loading location...";
                 
                 const pref = localStorage.getItem('bikeTracker_saveMapPref');
-                const checkEl = get('saveMapDataCheck');
-                if (checkEl) checkEl.checked = (pref !== 'false');
                 
                 let isRecord = false;
                 let curAvgSpd = rideSeconds > 0 ? (totalDistanceMiles/(rideSeconds/3600)) : 0;
                 let curTopSpd = topSpeedMph;
                 
                 const rts = JSON.parse(localStorage.getItem(ROUTES_KEY) || '[]');
-                let allTimeMaxAvg = curAvgSpd;
+                let allTimeMaxAvg = 0;
                 
                 if (rts.length > 0) {
                     let maxDist = Math.max(...rts.map(r => parseFloat(r.distance) || 0));
                     let maxTime = Math.max(...rts.map(r => parseFloat(r.timeSec) || 0));
                     let maxAvg = Math.max(...rts.map(r => parseFloat(r.avgSpeed) || 0));
-                    if(maxAvg > allTimeMaxAvg) allTimeMaxAvg = maxAvg;
-                    
+                    allTimeMaxAvg = maxAvg;
                     let maxTop = Math.max(...rts.map(r => parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0));
                     
                     if (totalDistanceMiles > maxDist || rideSeconds > maxTime || curAvgSpd > maxAvg || curTopSpd > maxTop) {
@@ -2181,20 +2159,34 @@
                     }
                 } else if (totalDistanceMiles > 0.1) {
                     isRecord = true;
+                    allTimeMaxAvg = curAvgSpd;
                 }
 
+                const challengeToggleHtml = get('challengeToggleContainer');
                 if (isRecord) {
-                    get('challengePrompt').classList.remove('hidden');
-                    get('saveAsChallengeCheck').checked = true;
+                    challengeToggleHtml.innerHTML = `
+                        <div class="bg-[#2a1a00] border border-[#eab308] rounded-xl p-4 mb-4 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                            <p class="text-[#eab308] font-digital uppercase tracking-widest text-lg mb-2 font-bold animate-pulse">🏆 Personal Record!</p>
+                            <p class="text-white opacity-80 text-xs font-sans mb-3 leading-tight">You crushed a record. Save this route map to challenge your ghost later?</p>
+                            <label class="flex items-center justify-center space-x-3 cursor-pointer pointer-events-auto" style="position:relative; z-index:10000;">
+                                <input type="checkbox" id="saveMapDataCheck" checked class="w-5 h-5 accent-[#eab308] cursor-pointer pointer-events-auto">
+                                <span class="text-white font-digital tracking-widest text-lg">Create Challenge</span>
+                            </label>
+                        </div>
+                    `;
                 } else {
-                    get('challengePrompt').classList.add('hidden');
-                    if (get('saveAsChallengeCheck')) get('saveAsChallengeCheck').checked = false;
+                    challengeToggleHtml.innerHTML = `
+                        <label class="flex items-center justify-center space-x-2 cursor-pointer opacity-60 pointer-events-auto mb-4" style="position:relative; z-index:10000;">
+                            <input type="checkbox" id="saveMapDataCheck" ${pref !== 'false' ? 'checked' : ''} class="w-4 h-4 accent-zinc-500 cursor-pointer pointer-events-auto">
+                            <span class="text-xs text-white font-digital tracking-widest">Save Map Data (Free Ride)</span>
+                        </label>
+                    `;
                 }
 
                 let prefix = isRecord ? "Record " : "";
                 let baseName = prefix + "Ride";
-                let zoneStr = getTrainingZone(curAvgSpd, allTimeMaxAvg);
-                let zoneSuffix = zoneStr ? ` - ${zoneStr}` : "";
+                let zInfo = getTrainingZoneInfo(curAvgSpd, allTimeMaxAvg);
+                let zoneSuffix = ` - Zone ${zInfo.num}`;
                 
                 try {
                     if (currentRouteCoords.length > 0) {
