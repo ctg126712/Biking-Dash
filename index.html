@@ -1538,8 +1538,9 @@
                 let encodedPoints = "";
                 
                 if (shouldSaveMap) {
-                    if (compressedCoords.length > 400) {
-                        const step = Math.ceil(compressedCoords.length / 400);
+                    // Increased from 400 to 1200 for incredible map fidelity and auto-fix resolution
+                    if (compressedCoords.length > 1200) {
+                        const step = Math.ceil(compressedCoords.length / 1200);
                         compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
                     }
                     encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
@@ -2063,7 +2064,10 @@
                         if (r.points && r.points.length > 0) {
                             let pts = decodePoints(r.points);
                             const isOld = (now - (r.timestamp || 0)) > thirtyDaysMs;
-                            const limit = isOld ? 100 : 400; 
+                            
+                            // Challenges stay High-Res forever! Old mundane maps drop to 200 points.
+                            let limit = isOld ? 200 : 1200; 
+                            if (r.isChallenge) limit = 1200;
                             
                             if (pts.length > limit) {
                                 const step = Math.ceil(pts.length / limit);
