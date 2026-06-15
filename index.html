@@ -901,7 +901,8 @@
         }
 
         function updatePosition(pos) {
-            if (pos.coords.accuracy > 150) return; 
+            // 1. Strict Accuracy Filter (Ignore severe garbage data)
+            if (pos.coords.accuracy > 100) return; 
 
             const lat = pos.coords.latitude, lng = pos.coords.longitude, alt = pos.coords.altitude || 0, now = Date.now();
             
@@ -915,7 +916,7 @@
                     rawSpd = calcDist / (dt / 3600);
                 }
             }
-            if (rawSpd > 150) rawSpd = 0; 
+            if (rawSpd > 65) rawSpd = 0; 
             
             speedBuffer.push(rawSpd);
             if (speedBuffer.length > 3) speedBuffer.shift();
@@ -941,111 +942,115 @@
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
             
             if (isTracking && !isAutoPaused) {
-            if (lastPosition) {
-                const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
-                let dt = (now - lastGpsTimestamp) / 1000;
-                
-                if (dt > 0) {
-                    let impSpd = d / (dt / 3600);
+                if (lastPosition) {
+                    const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
+                    let dt = (now - lastGpsTimestamp) / 1000;
                     
-                    // 1. PERFECTED PHYSICS SHIELD: Ignore impossible leaps (> 65 MPH or > 1 mile)
+                    // 1. THE DRIFT & JITTER SHIELD
+                    if (d < 0.003 && spd < 1.5) {
+                        return; 
+                    }
+
+                    // 2. THE PHYSICS SHIELD
+                    let impSpd = dt > 0 ? (d / (dt / 3600)) : 0;
                     if (impSpd > 65 || d > 1.0) {
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                         return; 
                     }
 
-                    // 2. ANTI-DRIFT SHIELD: Completely stop adding distance if stationary (< 1.0 MPH)
+                    // 3. ANTI-DRIFT SHIELD: Completely stop adding distance if stationary (< 1.0 MPH)
                     if (spd < 1.0) {
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                         return;
                     }
 
+                    // 4. VALID MOVEMENT - LOG IT
                     totalDistanceMiles += d; 
                     updateOdometer(totalDistanceMiles);
                     const da = alt - (lastPosition.coords.altitude || 0);
-                        if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
-                        
-                        currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
-                        currentRoutePolyline.setLatLngs(currentRouteCoords);
+                    if(da > 0) totalAscentMeters += da; else totalDescentMeters += Math.abs(da);
+                    
+                    lastPosition = pos;
+                    lastGpsTimestamp = now;
 
-                        dist30mBuffer.push({ t: rideSeconds, d: totalDistanceMiles });
-                        while (dist30mBuffer.length > 0 && rideSeconds - dist30mBuffer[0].t > 1800) {
-                            dist30mBuffer.shift();
-                        }
-                        if (dist30mBuffer.length > 0) {
-                            let d30 = totalDistanceMiles - dist30mBuffer[0].d;
-                            if (d30 > maxDist30m) maxDist30m = d30;
-                        }
+                    currentRouteCoords.push([lat, lng, alt, spd, rideSeconds, totalDistanceMiles]); 
+                    currentRoutePolyline.setLatLngs(currentRouteCoords);
 
-                        if (spd > topSpeedMph) { topSpeedMph = spd; }
+                    dist30mBuffer.push({ t: rideSeconds, d: totalDistanceMiles });
+                    while (dist30mBuffer.length > 0 && rideSeconds - dist30mBuffer[0].t > 1800) {
+                        dist30mBuffer.shift();
+                    }
+                    if (dist30mBuffer.length > 0) {
+                        let d30 = totalDistanceMiles - dist30mBuffer[0].d;
+                        if (d30 > maxDist30m) maxDist30m = d30;
+                    }
+
+                    if (spd > topSpeedMph) { topSpeedMph = spd; }
+                    
+                    // FIX: Ensure Top Speeds (Flat, Ascent, Descent) are recorded accurately
+                    if (currentRouteCoords.length >= 10) {
+                        let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
+                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
+                        let altDiff = alt - (pastPt[2] || 0);
                         
-                        // FIX: Ensure Top Speeds (Flat, Ascent, Descent) are recorded accurately
-                        if (currentRouteCoords.length >= 10) {
-                            let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
-                            let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
-                            let altDiff = alt - (pastPt[2] || 0);
-                            
-                            if (dPast > 10) {
-                                let grade = (altDiff / dPast) * 100;
-                                if (grade >= 2.0) { 
-                                    if (spd > topSpeedAscent) topSpeedAscent = spd;
-                                } else if (grade <= -2.0) {
-                                    if (spd > topSpeedDescent) topSpeedDescent = spd;
-                                } else {
-                                    if (spd > topSpeedFlat) topSpeedFlat = spd;
-                                }
+                        if (dPast > 10) {
+                            let grade = (altDiff / dPast) * 100;
+                            if (grade >= 2.0) { 
+                                if (spd > topSpeedAscent) topSpeedAscent = spd;
+                            } else if (grade <= -2.0) {
+                                if (spd > topSpeedDescent) topSpeedDescent = spd;
                             } else {
                                 if (spd > topSpeedFlat) topSpeedFlat = spd;
                             }
                         } else {
-                            if (spd > topSpeedFlat) topSpeedFlat = spd; 
+                            if (spd > topSpeedFlat) topSpeedFlat = spd;
                         }
-                        
-                        if (prevMaxSpeed > 0 && topSpeedMph > prevMaxSpeed && !announcedPRSpeed) {
-                            announcedPRSpeed = true;
-                            speakText("New personal record for top speed!");
-                        }
-                        
-                        if (prevMaxDist > 0 && totalDistanceMiles > prevMaxDist && !announcedPRDist) {
-                            announcedPRDist = true;
-                            speakText("Congratulations. New personal record for longest distance.");
-                        }
-
-                        if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
-                            currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
-                            
-                            let elevationDropFt = (consistentStartAlt - alt) * 3.28084;
-                            if (elevationDropFt <= 15) {
-                                let currentScore = currentConsistentSec * consistentSpeedRef;
-                                let longestScore = longestConsistentSec * longestConsistentSpeed;
-                                
-                                if(currentScore > longestScore) { 
-                                    longestConsistentSec = currentConsistentSec; 
-                                    longestConsistentDist = currentConsistentDist; 
-                                    longestConsistentSpeed = consistentSpeedRef; 
-                                }
-                            } else {
-                                consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; consistentStartAlt = alt;
-                            }
-                        } else { consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; consistentStartAlt = alt; }
-
-                        if(totalDistanceMiles - lastSplitDist >= 0.5) {
-                            splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
-                            lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
-                        }
-
-                        let currentWholeMile = Math.floor(totalDistanceMiles);
-                        if (currentWholeMile > lastAnnouncedMile && currentWholeMile >= 1) {
-                            lastAnnouncedMile = currentWholeMile;
-                            let currentAvg = (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1);
-                            speakText(`Mile ${currentWholeMile} completed. Average speed, ${currentAvg} miles per hour.`);
-                        }
-
-                        lastPosition = pos;
-                        lastGpsTimestamp = now;
+                    } else {
+                        if (spd > topSpeedFlat) topSpeedFlat = spd; 
                     }
+                    
+                    if (prevMaxSpeed > 0 && topSpeedMph > prevMaxSpeed && !announcedPRSpeed) {
+                        announcedPRSpeed = true;
+                        speakText("New personal record for top speed!");
+                    }
+                    
+                    if (prevMaxDist > 0 && totalDistanceMiles > prevMaxDist && !announcedPRDist) {
+                        announcedPRDist = true;
+                        speakText("Congratulations. New personal record for longest distance.");
+                    }
+
+                    if(lastGpsTimestamp > 0 && spd >= 4.0 && Math.abs(spd - consistentSpeedRef) <= 1.5) {
+                        currentConsistentSec += (now - lastGpsTimestamp) / 1000; currentConsistentDist += d;
+                        
+                        let elevationDropFt = (consistentStartAlt - alt) * 3.28084;
+                        if (elevationDropFt <= 15) {
+                            let currentScore = currentConsistentSec * consistentSpeedRef;
+                            let longestScore = longestConsistentSec * longestConsistentSpeed;
+                            
+                            if(currentScore > longestScore) { 
+                                longestConsistentSec = currentConsistentSec; 
+                                longestConsistentDist = currentConsistentDist; 
+                                longestConsistentSpeed = consistentSpeedRef; 
+                            }
+                        } else {
+                            consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; consistentStartAlt = alt;
+                        }
+                    } else { consistentSpeedRef = spd; currentConsistentSec = 0; currentConsistentDist = 0; consistentStartAlt = alt; }
+
+                    if(totalDistanceMiles - lastSplitDist >= 0.5) {
+                        splits.push({ dist: totalDistanceMiles, time: rideSeconds - lastSplitTime, avg: (totalDistanceMiles - lastSplitDist) / ((rideSeconds - lastSplitTime)/3600) });
+                        lastSplitDist = totalDistanceMiles; lastSplitTime = rideSeconds;
+                    }
+
+                    let currentWholeMile = Math.floor(totalDistanceMiles);
+                    if (currentWholeMile > lastAnnouncedMile && currentWholeMile >= 1) {
+                        lastAnnouncedMile = currentWholeMile;
+                        let currentAvg = (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1);
+                        speakText(`Mile ${currentWholeMile} completed. Average speed, ${currentAvg} miles per hour.`);
+                    }
+
                 } else {
                     lastPosition = pos;
                     lastGpsTimestamp = now;
