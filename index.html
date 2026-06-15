@@ -945,18 +945,18 @@
                 const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                 let dt = (now - lastGpsTimestamp) / 1000;
                 
-                if (dt > 0 && d > 0.0002) {
+                if (dt > 0) {
                     let impSpd = d / (dt / 3600);
                     
-                    // PERFECTED PHYSICS SHIELD: Accurate math prevents rapid sub-second GPS updates from bloating distance
-                    if (impSpd > 65 || d > 2.0) {
+                    // 1. PERFECTED PHYSICS SHIELD: Ignore impossible leaps (> 65 MPH or > 1 mile)
+                    if (impSpd > 65 || d > 1.0) {
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                         return; 
                     }
 
-                    // JITTER SHIELD: If stopped (speed < 1mph), ignore tiny sub-15ft coordinate bounces
-                    if (spd < 1.0 && d < 0.003) {
+                    // 2. ANTI-DRIFT SHIELD: Completely stop adding distance if stationary (< 1.0 MPH)
+                    if (spd < 1.0) {
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                         return;
@@ -981,18 +981,14 @@
 
                         if (spd > topSpeedMph) { topSpeedMph = spd; }
                         
+                        // FIX: Ensure Top Speeds (Flat, Ascent, Descent) are recorded accurately
                         if (currentRouteCoords.length >= 10) {
-                            let recentAlts = currentRouteCoords.slice(-5).map(p => p[2] || 0);
-                            let avgAlt = recentAlts.reduce((a,b)=>a+b,0) / recentAlts.length;
-                            
-                            let pastAlts = currentRouteCoords.slice(-10, -5).map(p => p[2] || 0);
-                            let pastAvgAlt = pastAlts.reduce((a,b)=>a+b,0) / pastAlts.length;
-                            
                             let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
                             let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
+                            let altDiff = alt - (pastPt[2] || 0);
                             
                             if (dPast > 10) {
-                                let grade = ((avgAlt - pastAvgAlt) / dPast) * 100;
+                                let grade = (altDiff / dPast) * 100;
                                 if (grade >= 2.0) { 
                                     if (spd > topSpeedAscent) topSpeedAscent = spd;
                                 } else if (grade <= -2.0) {
@@ -1000,6 +996,8 @@
                                 } else {
                                     if (spd > topSpeedFlat) topSpeedFlat = spd;
                                 }
+                            } else {
+                                if (spd > topSpeedFlat) topSpeedFlat = spd;
                             }
                         } else {
                             if (spd > topSpeedFlat) topSpeedFlat = spd; 
