@@ -142,7 +142,6 @@
             <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
             <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
-            <!-- 1. Speed -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center space-y-4 py-2 opacity-100 z-10 transition-opacity">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center bg-black rounded-full border-[4px] border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)_inset] transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -162,7 +161,6 @@
                 </div>
             </div>
 
-            <!-- 2. Distance -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="odoScale" class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-6">Total Distance</div>
@@ -173,7 +171,6 @@
                 </div>
             </div>
 
-            <!-- 3. Compass -->
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="compassScale" class="flex flex-col items-center">
                     <div id="headingDir" class="text-5xl font-digital neon-glow mb-6 text-neon-main">--</div>
@@ -186,7 +183,6 @@
                 </div>
             </div>
 
-            <!-- 4. Goal -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6 pointer-events-auto">
                 <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-white text-black uppercase">Miles</button>
@@ -198,7 +194,6 @@
                 </div>
             </div>
 
-            <!-- 6. Cadence -->
             <div id="view-cadence" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-4">Est. Pedal Cadence</div>
@@ -207,11 +202,9 @@
                 </div>
             </div>
             
-            <!-- 5. Map -->
             <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
-        <!-- Master Control Buttons -->
         <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0 pointer-events-auto">
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
             <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
@@ -220,7 +213,6 @@
         </div>
     </div>
 
-    <!-- Totals Modal -->
     <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-4 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
         <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-4 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[75vh] overflow-y-auto p-5 font-digital text-white text-left space-y-5">
@@ -277,7 +269,6 @@
         </div>
     </div>
 
-    <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
         <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)] flex-1 max-h-[70vh]">
@@ -364,7 +355,6 @@
         </div>
     </div>
 
-    <!-- Confirm Discard Modal -->
     <div id="confirmDiscardModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
             <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
@@ -375,7 +365,6 @@
         </div>
     </div>
 
-    <!-- Modals for saving and browsing routes -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
@@ -512,7 +501,6 @@
         <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto">OK</button></div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settingsModal" class="hidden absolute inset-0 bg-black/95 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#050505] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-6 rounded-2xl w-full max-w-sm flex flex-col">
             <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest border-b border-zinc-800 pb-3 mb-4">Settings</h3>
@@ -901,10 +889,21 @@
         }
 
         function updatePosition(pos) {
-            // 1. Strict Accuracy Filter (Ignore severe garbage data)
+            // 1. Strict Accuracy Filter
             if (pos.coords.accuracy > 100) return; 
 
-            const lat = pos.coords.latitude, lng = pos.coords.longitude, alt = pos.coords.altitude || 0, now = Date.now();
+            const lat = pos.coords.latitude, lng = pos.coords.longitude, now = Date.now();
+            
+            // 2. Altitude Smoothing to protect calculations against GPS Jitter
+            let rawAlt = pos.coords.altitude || 0;
+            let alt = rawAlt;
+            if (currentRouteCoords.length > 0) {
+                let lastAlt = currentRouteCoords[currentRouteCoords.length - 1][2] || 0;
+                // Clamp massive instantaneous altitude jumps (e.g. max 2m per tick jump limitation)
+                if (Math.abs(alt - lastAlt) > 2.0) {
+                    alt = lastAlt + (Math.sign(alt - lastAlt) * 2.0);
+                }
+            }
             
             let rawSpd = 0;
             if (pos.coords.speed !== null && pos.coords.speed >= 0) {
@@ -939,31 +938,24 @@
             
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
+            
+            // Map tracking smooth-follow logic
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
+            else if (isTracking && spd > 2.0 && layoutMode === 0 && currentViewIndex === 4) {
+                map.panTo([lat, lng], {animate: true, duration: 1.0});
+            }
             
             if (isTracking && !isAutoPaused) {
                 if (lastPosition) {
                     const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                     let dt = (now - lastGpsTimestamp) / 1000;
                     
-                    // 1. THE DRIFT & JITTER SHIELD
-                    if (d < 0.003 && spd < 1.5) {
-                        return; 
-                    }
-
-                    // 2. THE PHYSICS SHIELD
+                    // The combined Shield against physics bugs and stationary drift
                     let impSpd = dt > 0 ? (d / (dt / 3600)) : 0;
-                    if (impSpd > 65 || d > 1.0) {
+                    if ((d < 0.003 && spd < 1.5) || spd < 1.0 || impSpd > 65 || d > 1.0) {
                         lastPosition = pos;
                         lastGpsTimestamp = now;
                         return; 
-                    }
-
-                    // 3. ANTI-DRIFT SHIELD: Completely stop adding distance if stationary (< 1.0 MPH)
-                    if (spd < 1.0) {
-                        lastPosition = pos;
-                        lastGpsTimestamp = now;
-                        return;
                     }
 
                     // 4. VALID MOVEMENT - LOG IT
@@ -987,28 +979,25 @@
                         if (d30 > maxDist30m) maxDist30m = d30;
                     }
 
+                    // --- FULL TOP SPEEDS LOGIC (FIXED) ---
                     if (spd > topSpeedMph) { topSpeedMph = spd; }
                     
-                    // FIX: Ensure Top Speeds (Flat, Ascent, Descent) are recorded accurately
-                    if (currentRouteCoords.length >= 10) {
-                        let pastPt = currentRouteCoords[currentRouteCoords.length - 10];
-                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
-                        let altDiff = alt - (pastPt[2] || 0);
-                        
-                        if (dPast > 10) {
-                            let grade = (altDiff / dPast) * 100;
-                            if (grade >= 2.0) { 
-                                if (spd > topSpeedAscent) topSpeedAscent = spd;
-                            } else if (grade <= -2.0) {
-                                if (spd > topSpeedDescent) topSpeedDescent = spd;
-                            } else {
-                                if (spd > topSpeedFlat) topSpeedFlat = spd;
-                            }
-                        } else {
-                            if (spd > topSpeedFlat) topSpeedFlat = spd;
+                    let currentGrade = 0;
+                    if (currentRouteCoords.length >= 5) {
+                        // Math.max forces it to not error out looking back, evaluating last 5 safe points
+                        let pastPt = currentRouteCoords[Math.max(0, currentRouteCoords.length - 5)];
+                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34; // distance in meters
+                        if (dPast > 5) {
+                            currentGrade = ((alt - (pastPt[2] || 0)) / dPast) * 100;
                         }
+                    }
+                    
+                    if (currentGrade >= 2.0) { 
+                        if (spd > topSpeedAscent) topSpeedAscent = spd;
+                    } else if (currentGrade <= -2.0) {
+                        if (spd > topSpeedDescent) topSpeedDescent = spd;
                     } else {
-                        if (spd > topSpeedFlat) topSpeedFlat = spd; 
+                        if (spd > topSpeedFlat) topSpeedFlat = spd;
                     }
                     
                     if (prevMaxSpeed > 0 && topSpeedMph > prevMaxSpeed && !announcedPRSpeed) {
@@ -1062,6 +1051,7 @@
                 lastPosition = pos;
             }
             
+            // Explicitly sync the UI data for live view outputs
             get('topSpeed').innerText = topSpeedMph.toFixed(1);
             get('flatTopSpeed').innerText = topSpeedFlat.toFixed(1);
             get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
@@ -1100,20 +1090,21 @@
                         if(isTracking && watchId !== null){ 
                             
                             if (!isAutoPaused && currentSpeed > 0) {
-                                let grade = 0;
-                                if (currentRouteCoords.length >= 2) {
+                                // Simplified scope-level grade calculation for wattage using the smoothed history
+                                let gradeForPower = 0;
+                                if (currentRouteCoords.length >= 5) {
                                     let p1 = currentRouteCoords[Math.max(0, currentRouteCoords.length-5)]; 
                                     let p2 = currentRouteCoords[currentRouteCoords.length-1];
                                     if(p1 && p2) {
-                                        let d = calculateDistance(p1[0], p1[1], p2[0], p2[1]) * 1609.34;
-                                        if (d > 5) grade = ((p2[2] || 0) - (p1[2] || 0)) / d;
+                                        let dMeter = calculateDistance(p1[0], p1[1], p2[0], p2[1]) * 1609.34;
+                                        if (dMeter > 5) gradeForPower = ((p2[2] || 0) - (p1[2] || 0)) / dMeter;
                                     }
                                 }
 
                                 let v = currentSpeed * 0.44704; 
                                 let m = 85; 
                                 let p_roll = m * 9.81 * 0.005 * v;
-                                let p_grav = m * 9.81 * grade * v;
+                                let p_grav = m * 9.81 * gradeForPower * v;
                                 let p_aero = 0.5 * 1.225 * 0.32 * Math.pow(v, 3);
                                 let watts = Math.max(0, (p_roll + p_grav + p_aero) / 0.96);
 
