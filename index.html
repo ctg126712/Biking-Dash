@@ -927,6 +927,40 @@
             get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
             get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
 
+            // --- 3. UNBLOCKED TOP SPEED LOGIC ---
+            // Pulled out of the distance drift shield so we never miss a max reading.
+            if (isTracking && !isAutoPaused && spd >= 1.0 && spd <= 65) {
+                // Absolute Max
+                if (spd > topSpeedMph) topSpeedMph = spd;
+
+                // Stable Grade Calculation (Uses 4-point lookback distance directly from the mapped line)
+                let currentGrade = 0;
+                if (currentRouteCoords.length >= 4) {
+                    let pastPt = currentRouteCoords[currentRouteCoords.length - 4];
+                    let distMeters = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
+                    // Needs at least ~5 meters of travel to calculate a reasonable slope
+                    if (distMeters > 5) {
+                        let pastAlt = pastPt[2] || 0;
+                        currentGrade = ((alt - pastAlt) / distMeters) * 100;
+                    }
+                }
+
+                // Categorize
+                if (currentGrade >= 2.0) {
+                    if (spd > topSpeedAscent) topSpeedAscent = spd;
+                } else if (currentGrade <= -2.0) {
+                    if (spd > topSpeedDescent) topSpeedDescent = spd;
+                } else {
+                    if (spd > topSpeedFlat) topSpeedFlat = spd;
+                }
+
+                // Check PR against Flat Top Speed
+                if (prevMaxSpeed > 0 && topSpeedFlat > prevMaxSpeed && !announcedPRSpeed) {
+                    announcedPRSpeed = true;
+                    speakText("New personal record for top speed!");
+                }
+            }
+
             let cadence = 0;
             if (spd > 1.5) {
                 let wheelRpm = (spd * 26822.4) / tireSizeMm;
@@ -977,32 +1011,6 @@
                     if (dist30mBuffer.length > 0) {
                         let d30 = totalDistanceMiles - dist30mBuffer[0].d;
                         if (d30 > maxDist30m) maxDist30m = d30;
-                    }
-
-                    // --- FULL TOP SPEEDS LOGIC (FIXED) ---
-                    if (spd > topSpeedMph) { topSpeedMph = spd; }
-                    
-                    let currentGrade = 0;
-                    if (currentRouteCoords.length >= 5) {
-                        // Math.max forces it to not error out looking back, evaluating last 5 safe points
-                        let pastPt = currentRouteCoords[Math.max(0, currentRouteCoords.length - 5)];
-                        let dPast = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34; // distance in meters
-                        if (dPast > 5) {
-                            currentGrade = ((alt - (pastPt[2] || 0)) / dPast) * 100;
-                        }
-                    }
-                    
-                    if (currentGrade >= 2.0) { 
-                        if (spd > topSpeedAscent) topSpeedAscent = spd;
-                    } else if (currentGrade <= -2.0) {
-                        if (spd > topSpeedDescent) topSpeedDescent = spd;
-                    } else {
-                        if (spd > topSpeedFlat) topSpeedFlat = spd;
-                    }
-                    
-                    if (prevMaxSpeed > 0 && topSpeedMph > prevMaxSpeed && !announcedPRSpeed) {
-                        announcedPRSpeed = true;
-                        speakText("New personal record for top speed!");
                     }
                     
                     if (prevMaxDist > 0 && totalDistanceMiles > prevMaxDist && !announcedPRDist) {
@@ -1442,8 +1450,8 @@
                 renderPR('5-Min Power', max5 ? Math.round(parseFloat(max5.p5m)) + ' W' : '--', max5) +
                 renderPR('20-Min Power', max20 ? Math.round(parseFloat(max20.p20m)) + ' W' : '--', max20) +
                 renderPR('Best FTP', max20 ? Math.round(parseFloat(max20.p20m)*0.95) + ' W' : '--', max20) +
+                renderPR('Best Top Speed (Flat)', maxFlat ? parseFloat(maxFlat.flatTopSpeed).toFixed(1) + ' MPH' : '--', maxFlat) +
                 renderPR('Fastest Ascent', maxAsc ? parseFloat(maxAsc.ascentTopSpeed).toFixed(1) + ' MPH' : '--', maxAsc) +
-                renderPR('Fastest Flat', maxFlat ? parseFloat(maxFlat.flatTopSpeed).toFixed(1) + ' MPH' : '--', maxFlat) +
                 renderPR('Fastest Descent', maxDesc ? parseFloat(maxDesc.descentTopSpeed).toFixed(1) + ' MPH' : '--', maxDesc) +
                 renderPR('Fastest Avg Speed', maxAvgS ? parseFloat(maxAvgS.avgSpeed).toFixed(1) + ' MPH' : '--', maxAvgS) +
                 renderPR('Fastest Segment', maxSeg ? parseFloat(maxSeg.maxConsistentSpeed).toFixed(1) + ' MPH' : '--', maxSeg) +
@@ -1605,7 +1613,7 @@
                 r._d = parseFloat(r.distance) || 0; 
                 r._t = parseFloat(r.timeSec) || 0; 
                 r._s = parseFloat(r.avgSpeed) || 0;
-                r._ts = parseFloat(r.topSpeed) || parseFloat(r.flatTopSpeed) || 0;
+                r._ts = parseFloat(r.flatTopSpeed) || parseFloat(r.topSpeed) || 0;
             });
 
             const dRank = [...rts].sort((a,b) => b._d - a._d);
@@ -1684,7 +1692,7 @@
                         </div>
                         <div class="flex flex-col border-l border-zinc-800">
                             <span class="text-[0.55rem] text-white opacity-70 tracking-widest">TOP SPD</span>
-                            <span class="text-white font-bold mt-1 text-[0.85rem]">${(r.topSpeed || r.flatTopSpeed || '0.0')} ${r.mTopSpeed}</span>
+                            <span class="text-white font-bold mt-1 text-[0.85rem]">${(r.flatTopSpeed || r.topSpeed || '0.0')} ${r.mTopSpeed}</span>
                         </div>
                     </div>
                 `;
