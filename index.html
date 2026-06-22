@@ -142,6 +142,7 @@
             <button id="navLeft" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
             <button id="navRight" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 z-20 text-zinc-500 hover:text-white active:text-white transition-colors pointer-events-auto"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
 
+            <!-- 1. Speed -->
             <div id="view-speed" class="dash-view absolute inset-0 flex flex-col items-center justify-center space-y-4 py-2 opacity-100 z-10 transition-opacity">
                 <div id="speedGaugeContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 flex flex-col items-center justify-center bg-black rounded-full border-[4px] border-zinc-900 shadow-[0_0_20px_rgba(0,0,0,0.8)_inset] transition-all duration-300">
                     <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
@@ -161,6 +162,7 @@
                 </div>
             </div>
 
+            <!-- 2. Distance -->
             <div id="view-distance" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="odoScale" class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-6">Total Distance</div>
@@ -171,6 +173,7 @@
                 </div>
             </div>
 
+            <!-- 3. Compass -->
             <div id="view-compass" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div id="compassScale" class="flex flex-col items-center">
                     <div id="headingDir" class="text-5xl font-digital neon-glow mb-6 text-neon-main">--</div>
@@ -183,6 +186,7 @@
                 </div>
             </div>
 
+            <!-- 4. Goal -->
             <div id="view-goal" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity p-6 pointer-events-auto">
                 <div class="flex space-x-2 bg-black p-2 rounded-xl mb-4 w-full max-w-[250px] border border-zinc-900 shadow-inner">
                     <button id="btnGoalDistance" class="flex-1 py-2 text-sm font-digital tracking-widest rounded-lg bg-white text-black uppercase">Miles</button>
@@ -194,6 +198,7 @@
                 </div>
             </div>
 
+            <!-- 6. Cadence -->
             <div id="view-cadence" class="dash-view absolute inset-0 flex flex-col items-center justify-center opacity-0 z-0 transition-opacity">
                 <div class="flex flex-col items-center">
                     <div class="text-[0.6rem] text-white opacity-80 font-digital uppercase tracking-widest mb-4">Est. Pedal Cadence</div>
@@ -202,9 +207,11 @@
                 </div>
             </div>
             
+            <!-- 5. Map -->
             <div id="view-map" class="dash-view absolute inset-0 opacity-0 z-0 pointer-events-none"></div>
         </div>
 
+        <!-- Master Control Buttons -->
         <div class="grid grid-cols-2 gap-3 mb-4 w-full max-w-sm mx-auto shrink-0 pointer-events-auto">
             <button id="mainActionBtn" class="w-full bg-[#2ecc71] text-black font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform active:scale-95 shadow-[0_0_15px_rgba(46,204,113,0.4)] border border-[#2ecc71]">Start Ride</button>
             <button id="saveRouteBtn" disabled class="w-full bg-[#1a1a1a] text-zinc-600 font-digital text-xl tracking-widest py-3.5 rounded-xl uppercase transition-transform border border-zinc-800">Stop / Save</button>
@@ -213,6 +220,7 @@
         </div>
     </div>
 
+    <!-- Totals Modal -->
     <div id="totalsModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-4 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Totals</h2>
         <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-4 shadow-[0_0_10px_rgba(255,255,255,0.1)] flex-1 max-h-[75vh] overflow-y-auto p-5 font-digital text-white text-left space-y-5">
@@ -269,6 +277,7 @@
         </div>
     </div>
 
+    <!-- Summary Modal -->
     <div id="summaryModal" class="hidden absolute inset-0 bg-black/98 z-[2500] flex flex-col items-center justify-center p-6 text-center backdrop-blur-xl">
         <h2 class="text-3xl font-digital text-white font-bold mb-6 tracking-widest uppercase" style="text-shadow: 0 0 5px rgba(255,255,255,0.6);">Ride Summary</h2>
         <div class="w-full max-w-sm relative bg-[#0a0a0a] border border-zinc-700 rounded-2xl mb-6 overflow-hidden shadow-[0_0_10px_rgba(255,255,255,0.05)] flex-1 max-h-[70vh]">
@@ -355,6 +364,7 @@
         </div>
     </div>
 
+    <!-- Confirm Discard Modal -->
     <div id="confirmDiscardModal" class="hidden absolute inset-0 bg-black/90 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#0a0a0a] border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] p-8 rounded-2xl max-w-xs w-full text-center font-digital">
             <p class="text-red-500 mb-8 tracking-widest text-xl">Discard this ride?</p>
@@ -365,6 +375,7 @@
         </div>
     </div>
 
+    <!-- Modals for saving and browsing routes -->
     <div id="saveModal" class="hidden absolute inset-0 bg-black/90 z-[2000] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-[#050505] border border-neon-main shadow-neon-sm p-6 rounded-2xl w-full max-w-sm text-center">
             <h3 class="text-xl font-digital text-white font-bold mb-6 uppercase tracking-widest">Save Route</h3>
@@ -501,6 +512,7 @@
         <div class="bg-[#0a0a0a] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-8 rounded-2xl max-w-xs text-center font-digital"><p id="alertText" class="text-white font-bold mb-8 tracking-widest text-lg"></p><button id="closeAlertBtn" class="w-full py-3 bg-white text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_5px_rgba(255,255,255,0.3)] pointer-events-auto">OK</button></div>
     </div>
 
+    <!-- Settings Modal -->
     <div id="settingsModal" class="hidden absolute inset-0 bg-black/95 z-[3000] flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-[#050505] border border-zinc-700 shadow-[0_0_10px_rgba(255,255,255,0.1)] p-6 rounded-2xl w-full max-w-sm flex flex-col">
             <h3 class="text-xl font-digital text-white font-bold uppercase tracking-widest border-b border-zinc-800 pb-3 mb-4">Settings</h3>
@@ -684,16 +696,28 @@
             return {num: 5, color: '#ff0000'}; // Red
         }
 
+        // AGGRESSIVE AUDIO RESUME AND QUEUE CLEAR TO PREVENT IOS SLEEP
         function speakText(text) {
             if (!voiceEnabled || !('speechSynthesis' in window)) return;
+            
+            window.speechSynthesis.cancel();
+            
             let msg = new SpeechSynthesisUtterance(text);
             msg.volume = 1.0;
+            
             let voices = window.speechSynthesis.getVoices();
-            let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK') || v.name.includes('Siri'))) 
-                            || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB')
-                            || voices.find(v => v.lang.startsWith('en'));
-            if (britVoice) msg.voice = britVoice;
+            if (voices.length > 0) {
+                let britVoice = voices.find(v => (v.lang === 'en-GB' || v.lang === 'en_GB') && (v.name.includes('Female') || v.name.includes('Google UK') || v.name.includes('Siri'))) 
+                                || voices.find(v => v.lang === 'en-GB' || v.lang === 'en_GB')
+                                || voices.find(v => v.lang.startsWith('en'));
+                if (britVoice) msg.voice = britVoice;
+            }
+            
             window.speechSynthesis.speak(msg);
+            
+            if (window.speechSynthesis.resume) {
+                window.speechSynthesis.resume();
+            }
         }
 
         function getBearing(lat1, lon1, lat2, lon2) {
@@ -889,17 +913,14 @@
         }
 
         function updatePosition(pos) {
-            // 1. Strict Accuracy Filter
             if (pos.coords.accuracy > 100) return; 
 
             const lat = pos.coords.latitude, lng = pos.coords.longitude, now = Date.now();
             
-            // 2. Altitude Smoothing to protect calculations against GPS Jitter
             let rawAlt = pos.coords.altitude || 0;
             let alt = rawAlt;
             if (currentRouteCoords.length > 0) {
                 let lastAlt = currentRouteCoords[currentRouteCoords.length - 1][2] || 0;
-                // Clamp massive instantaneous altitude jumps (e.g. max 2m per tick jump limitation)
                 if (Math.abs(alt - lastAlt) > 2.0) {
                     alt = lastAlt + (Math.sign(alt - lastAlt) * 2.0);
                 }
@@ -927,25 +948,19 @@
             get('speed').innerText = Math.round(spd).toString().padStart(2, '0');
             get('speedGauge').style.strokeDashoffset = 75 - (75 * Math.min(spd / 50, 1));
 
-            // --- 3. UNBLOCKED TOP SPEED LOGIC ---
-            // Pulled out of the distance drift shield so we never miss a max reading.
             if (isTracking && !isAutoPaused && spd >= 1.0 && spd <= 65) {
-                // Absolute Max
                 if (spd > topSpeedMph) topSpeedMph = spd;
 
-                // Stable Grade Calculation (Uses 4-point lookback distance directly from the mapped line)
                 let currentGrade = 0;
                 if (currentRouteCoords.length >= 4) {
                     let pastPt = currentRouteCoords[currentRouteCoords.length - 4];
                     let distMeters = calculateDistance(pastPt[0], pastPt[1], lat, lng) * 1609.34;
-                    // Needs at least ~5 meters of travel to calculate a reasonable slope
                     if (distMeters > 5) {
                         let pastAlt = pastPt[2] || 0;
                         currentGrade = ((alt - pastAlt) / distMeters) * 100;
                     }
                 }
 
-                // Categorize
                 if (currentGrade >= 2.0) {
                     if (spd > topSpeedAscent) topSpeedAscent = spd;
                 } else if (currentGrade <= -2.0) {
@@ -954,7 +969,6 @@
                     if (spd > topSpeedFlat) topSpeedFlat = spd;
                 }
 
-                // Check PR against Flat Top Speed
                 if (prevMaxSpeed > 0 && topSpeedFlat > prevMaxSpeed && !announcedPRSpeed) {
                     announcedPRSpeed = true;
                     speakText("New personal record for top speed!");
@@ -973,7 +987,6 @@
             if(!currentMarker) currentMarker = L.circleMarker([lat, lng], {radius: 8, fillColor: themes[activeThemeIndex].vars.main, color: '#000', weight: 3, opacity: 1, fillOpacity: 1}).addTo(map);
             else currentMarker.setLatLng([lat, lng]);
             
-            // Map tracking smooth-follow logic
             if(isFirstFix) { map.setView([lat, lng], 16); isFirstFix = false; }
             else if (isTracking && spd > 2.0 && layoutMode === 0 && currentViewIndex === 4) {
                 map.panTo([lat, lng], {animate: true, duration: 1.0});
@@ -984,7 +997,6 @@
                     const d = calculateDistance(lastPosition.coords.latitude, lastPosition.coords.longitude, lat, lng);
                     let dt = (now - lastGpsTimestamp) / 1000;
                     
-                    // The combined Shield against physics bugs and stationary drift
                     let impSpd = dt > 0 ? (d / (dt / 3600)) : 0;
                     if ((d < 0.003 && spd < 1.5) || spd < 1.0 || impSpd > 65 || d > 1.0) {
                         lastPosition = pos;
@@ -992,7 +1004,6 @@
                         return; 
                     }
 
-                    // 4. VALID MOVEMENT - LOG IT
                     totalDistanceMiles += d; 
                     updateOdometer(totalDistanceMiles);
                     const da = alt - (lastPosition.coords.altitude || 0);
@@ -1059,7 +1070,6 @@
                 lastPosition = pos;
             }
             
-            // Explicitly sync the UI data for live view outputs
             get('topSpeed').innerText = topSpeedMph.toFixed(1);
             get('flatTopSpeed').innerText = topSpeedFlat.toFixed(1);
             get('avgSpeed').innerText = rideSeconds > 0 ? (totalDistanceMiles / (rideSeconds / 3600)).toFixed(1) : "0.0";
@@ -1085,6 +1095,13 @@
                 updateMainButtons();
                 updateStatus("Recording...", "bg-neon-main");
                 
+                // EXPLICIT WARMUP TO PREVENT IOS SAFARI FROM SUSPENDING AUDIO
+                if ('speechSynthesis' in window) {
+                    if (window.speechSynthesis.resume) window.speechSynthesis.resume();
+                    let silentMsg = new SpeechSynthesisUtterance("");
+                    silentMsg.volume = 0;
+                    window.speechSynthesis.speak(silentMsg);
+                }
                 speakText("Tracking started.");
                 
                 watchId = navigator.geolocation.watchPosition(updatePosition, (err) => console.warn(err), {
@@ -1098,7 +1115,6 @@
                         if(isTracking && watchId !== null){ 
                             
                             if (!isAutoPaused && currentSpeed > 0) {
-                                // Simplified scope-level grade calculation for wattage using the smoothed history
                                 let gradeForPower = 0;
                                 if (currentRouteCoords.length >= 5) {
                                     let p1 = currentRouteCoords[Math.max(0, currentRouteCoords.length-5)]; 
@@ -1514,18 +1530,15 @@
                 }
                 
                 const checkEl = get('saveMapDataCheck');
-                const shouldSaveMap = checkEl ? checkEl.checked : false;
+                const isChallenge = checkEl ? checkEl.checked : false;
                 
+                // ALWAYS save and compress map points to preserve Elevation and Mapping
                 let compressedCoords = currentRouteCoords;
-                let encodedPoints = "";
-                
-                if (shouldSaveMap) {
-                    if (compressedCoords.length > 1200) {
-                        const step = Math.ceil(compressedCoords.length / 1200);
-                        compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
-                    }
-                    encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
+                if (compressedCoords.length > 1200) {
+                    const step = Math.ceil(compressedCoords.length / 1200);
+                    compressedCoords = compressedCoords.filter((_, idx) => idx % step === 0);
                 }
+                let encodedPoints = compressedCoords.map(p => `${Number(p[0]).toFixed(5)},${Number(p[1]).toFixed(5)},${Number(p[2]||0).toFixed(0)},${Number(p[3]||0).toFixed(1)},${Number(p[4]||0)},${Number(p[5]||0).toFixed(2)}`).join('|');
                 
                 let compressedSplits = calculateQuartersFromData(currentRouteCoords, totalDistanceMiles, rideSeconds);
 
@@ -1552,7 +1565,7 @@
                     maxDist30m: maxDist30m.toFixed(2),
                     splits: JSON.stringify(compressedSplits), 
                     points: encodedPoints, 
-                    isChallenge: shouldSaveMap,
+                    isChallenge: isChallenge,
                     notes: get('routeNotesInput').value || "",
                     timestamp: Date.now() 
                 });
@@ -1572,8 +1585,6 @@
                 }
                 
                 localStorage.setItem(ROUTES_KEY, JSON.stringify(rts));
-                if (!shouldSaveMap) localStorage.setItem('bikeTracker_saveMapPref', false);
-                else localStorage.setItem('bikeTracker_saveMapPref', true);
                 
                 releaseWakeLock();
                 localStorage.removeItem(STATE_KEY); 
@@ -1732,12 +1743,12 @@
             drawElevationProfile(decodePoints(r.points), 'detailElevationCanvas');
             
             const loadBtn = get('btnLoadMap');
-            if (!r.isChallenge || !r.points || r.points.length === 0 || r.points === "[]") {
-                loadBtn.innerText = "Free Ride";
+            if (!r.points || r.points.length === 0 || r.points === "[]") {
+                loadBtn.innerText = "No Map Data";
                 loadBtn.className = "flex-1 py-3.5 bg-zinc-900 text-zinc-600 font-bold font-digital rounded-xl tracking-widest uppercase border border-zinc-800 pointer-events-none";
                 loadBtn.onclick = null;
             } else {
-                loadBtn.innerText = "Load Challenge";
+                loadBtn.innerText = r.isChallenge ? "Load Challenge" : "Load Map Route";
                 loadBtn.className = "flex-1 py-3.5 bg-[#eab308] text-black font-bold font-digital rounded-xl tracking-widest uppercase shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-[#eab308] pointer-events-auto";
                 loadBtn.onclick = () => {
                     const pts = decodePoints(r.points); 
@@ -2140,8 +2151,6 @@
                 nameInput.value = "";
                 nameInput.placeholder = "Loading location...";
                 
-                const pref = localStorage.getItem('bikeTracker_saveMapPref');
-                
                 let isRecord = false;
                 let curAvgSpd = rideSeconds > 0 ? (totalDistanceMiles/(rideSeconds/3600)) : 0;
                 let curTopSpd = topSpeedMph;
@@ -2179,8 +2188,8 @@
                 } else {
                     challengeToggleHtml.innerHTML = `
                         <label class="flex items-center justify-center space-x-2 cursor-pointer opacity-60 pointer-events-auto mb-4" style="position:relative; z-index:10000;">
-                            <input type="checkbox" id="saveMapDataCheck" ${pref !== 'false' ? 'checked' : ''} class="w-4 h-4 accent-zinc-500 cursor-pointer pointer-events-auto">
-                            <span class="text-xs text-white font-digital tracking-widest">Save Map Data (Free Ride)</span>
+                            <input type="checkbox" id="saveMapDataCheck" class="w-4 h-4 accent-zinc-500 cursor-pointer pointer-events-auto">
+                            <span class="text-xs text-white font-digital tracking-widest">Mark as Challenge Route</span>
                         </label>
                     `;
                 }
